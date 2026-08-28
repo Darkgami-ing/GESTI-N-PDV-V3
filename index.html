@@ -1,0 +1,4668 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+  name="viewport"
+  content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"
+>
+
+<meta name="theme-color" content="#174a7e">
+
+<title>Recepción de Unidades</title>
+
+
+<!-- =====================================================
+     ZXING
+     QR + CÓDIGOS DE BARRAS
+====================================================== -->
+
+<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+
+
+<style>
+
+/* =====================================================
+   GENERAL
+===================================================== */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f4f7fa;
+  color: #1f2937;
+}
+
+.contenedor {
+  width: min(100%, 650px);
+  margin: auto;
+  padding: 12px;
+}
+
+.logo {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  color: #174a7e;
+  margin: 12px 0 3px;
+}
+
+.subtitulo {
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.card {
+  background: white;
+  border-radius: 14px;
+  padding: 17px;
+  margin-bottom: 14px;
+  box-shadow: 0 2px 8px rgba(15,23,42,.08);
+}
+
+.titulo-card {
+  font-size: 17px;
+  font-weight: 700;
+  color: #174a7e;
+  margin-bottom: 15px;
+}
+
+label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: white;
+  margin-bottom: 14px;
+  outline: none;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37,99,235,.10);
+}
+
+textarea {
+  min-height: 90px;
+}
+
+button {
+  width: 100%;
+  min-height: 49px;
+  border: none;
+  border-radius: 9px;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+button:disabled {
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.btn-principal {
+  background: #174a7e;
+  color: white;
+}
+
+.btn-verde {
+  background: #059669;
+  color: white;
+}
+
+.btn-azul {
+  background: #2563eb;
+  color: white;
+}
+
+.btn-rojo {
+  background: #dc2626;
+  color: white;
+}
+
+.btn-naranja {
+  background: #ea580c;
+  color: white;
+}
+
+.btn-gris {
+  background: #e2e8f0;
+  color: #334155;
+}
+
+.oculto {
+  display: none !important;
+}
+
+
+/* =====================================================
+   USUARIO
+===================================================== */
+
+.usuario-barra {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+
+  background: #174a7e;
+  color: white;
+
+  padding: 12px 14px;
+  border-radius: 10px;
+  margin-bottom: 14px;
+}
+
+.usuario-nombre {
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.usuario-info {
+  font-size: 11px;
+  opacity: .85;
+  margin-top: 3px;
+}
+
+.btn-salir {
+  width: auto;
+  min-height: 35px;
+  padding: 5px 12px;
+  color: white;
+  background: rgba(255,255,255,.18);
+}
+
+
+/* =====================================================
+   PROGRESO
+===================================================== */
+
+.progreso {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 5px;
+  margin-bottom: 15px;
+}
+
+.paso-mini {
+  text-align: center;
+  padding: 9px 2px;
+  border-radius: 8px;
+  background: #e2e8f0;
+  color: #64748b;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.paso-mini.activo {
+  background: #174a7e;
+  color: white;
+}
+
+.paso-mini.completo {
+  background: #dcfce7;
+  color: #047857;
+}
+
+
+/* =====================================================
+   ID RECEPCIÓN
+===================================================== */
+
+.recepcion-id {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.recepcion-id-label {
+  font-size: 11px;
+  color: #64748b;
+}
+
+.recepcion-id-valor {
+  font-size: 18px;
+  font-weight: 800;
+  color: #174a7e;
+  margin-top: 3px;
+}
+
+
+/* =====================================================
+   FOTO
+===================================================== */
+
+.foto-bloque {
+  margin-bottom: 15px;
+}
+
+.preview {
+  width: 100%;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 9px;
+  background: #f1f5f9;
+  margin-top: -6px;
+  margin-bottom: 12px;
+}
+
+.foto-ok {
+  color: #047857;
+  font-size: 12px;
+  font-weight: 700;
+  margin: -7px 0 12px;
+}
+
+
+/* =====================================================
+   CONTADORES
+===================================================== */
+
+.contadores {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+  margin-bottom: 12px;
+}
+
+.contador {
+  border-radius: 10px;
+  background: #eff6ff;
+  padding: 12px;
+  text-align: center;
+}
+
+.contador-titulo {
+  font-size: 11px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.contador-numero {
+  font-size: 27px;
+  color: #174a7e;
+  font-weight: 800;
+  margin-top: 3px;
+}
+
+.total-box {
+  border-radius: 10px;
+  background: #ecfdf5;
+  padding: 12px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.total-numero {
+  color: #047857;
+  font-size: 28px;
+  font-weight: 800;
+}
+
+
+/* =====================================================
+   TIPO ESCANEO
+===================================================== */
+
+.selector-tipo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 7px;
+  margin-bottom: 12px;
+}
+
+.selector-tipo button {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.selector-tipo button.seleccionado {
+  background: #174a7e;
+  color: white;
+}
+
+
+/* =====================================================
+   SCANNER
+===================================================== */
+
+.video-box {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 14px;
+  background: #000;
+}
+
+#videoScanner {
+  display: block;
+  width: 100%;
+  min-height: 260px;
+  max-height: 430px;
+  object-fit: cover;
+}
+
+.zona-lectura {
+  position: absolute;
+  left: 7%;
+  top: 28%;
+  width: 86%;
+  height: 44%;
+  border: 3px solid #22c55e;
+  border-radius: 13px;
+  overflow: hidden;
+  pointer-events: none;
+  box-shadow: 0 0 0 9999px rgba(0,0,0,.20);
+}
+
+.linea {
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background: #22c55e;
+  animation: scan 1.7s linear infinite;
+}
+
+@keyframes scan {
+
+  from {
+    top: 0;
+  }
+
+  to {
+    top: calc(100% - 3px);
+  }
+
+}
+
+.estado-scanner {
+  margin-top: 8px;
+  padding: 10px;
+  border-radius: 8px;
+  background: #f1f5f9;
+  color: #475569;
+  font-size: 12px;
+  text-align: center;
+}
+
+.estado-scanner.ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.botones-doble {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 9px;
+}
+
+
+/* =====================================================
+   MANUAL
+===================================================== */
+
+.manual {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 75px;
+  gap: 8px;
+}
+
+.manual input {
+  margin: 0;
+}
+
+
+/* =====================================================
+   LISTA
+===================================================== */
+
+.lista {
+  margin-top: 15px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 8px;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 9px;
+  padding: 10px;
+
+  margin-bottom: 7px;
+}
+
+.item-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.item-tipo {
+  font-size: 10px;
+  color: #64748b;
+}
+
+.item-codigo {
+  font-size: 14px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+  margin-top: 2px;
+}
+
+.item-hora {
+  font-size: 10px;
+  color: #94a3b8;
+  margin-top: 3px;
+}
+
+.btn-eliminar {
+  width: 38px;
+  min-width: 38px;
+  min-height: 38px;
+  border-radius: 50%;
+  font-size: 19px;
+  padding: 0;
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+
+/* =====================================================
+   LOGÍSTICA INVERSA
+===================================================== */
+
+.decision {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px;
+}
+
+.decision button {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.decision button.activo-si {
+  background: #059669;
+  color: white;
+}
+
+.decision button.activo-no {
+  background: #64748b;
+  color: white;
+}
+
+
+/* =====================================================
+   GPS
+===================================================== */
+
+.gps {
+  padding: 11px;
+  border-radius: 9px;
+  background: #f1f5f9;
+  font-size: 12px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.gps-ok {
+  background: #ecfdf5;
+  color: #047857;
+}
+
+.gps-error {
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+
+/* =====================================================
+   MENSAJE
+===================================================== */
+
+.mensaje {
+  padding: 12px;
+  margin-bottom: 13px;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.mensaje-ok {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #047857;
+}
+
+.mensaje-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #b91c1c;
+}
+
+
+/* =====================================================
+   LOADING
+===================================================== */
+
+.cargando {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(15,23,42,.72);
+}
+
+.cargando-box {
+  background: white;
+  border-radius: 14px;
+  width: min(85%,300px);
+  padding: 25px;
+  text-align: center;
+  font-weight: 700;
+}
+
+.spinner {
+  width: 42px;
+  height: 42px;
+  margin: 0 auto 14px;
+
+  border-radius: 50%;
+  border: 4px solid #e2e8f0;
+  border-top-color: #174a7e;
+
+  animation: giro .8s linear infinite;
+}
+
+@keyframes giro {
+
+  to {
+    transform: rotate(360deg);
+  }
+
+}
+
+
+/* =====================================================
+   RESUMEN FINAL
+===================================================== */
+
+.resumen-final {
+  background: #f8fafc;
+  border-radius: 10px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.8;
+}
+
+.resumen-final strong {
+  color: #174a7e;
+}
+
+
+@media (max-width:420px) {
+
+  .contenedor {
+    padding: 9px;
+  }
+
+  .card {
+    padding: 14px;
+  }
+
+  #videoScanner {
+    min-height: 230px;
+  }
+
+}
+
+</style>
+
+</head>
+
+
+
+<body>
+
+
+<!-- =====================================================
+     LOADING
+====================================================== -->
+
+<div
+  id="cargando"
+  class="cargando oculto"
+>
+
+  <div class="cargando-box">
+
+    <div class="spinner"></div>
+
+    <div id="textoCargando">
+      Procesando...
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<div class="contenedor">
+
+
+<!-- =====================================================
+     LOGIN
+====================================================== -->
+
+<section id="pantallaLogin">
+
+  <div class="logo">
+    RECEPCIÓN DE UNIDADES
+  </div>
+
+  <div class="subtitulo">
+    Control de recepción y logística inversa
+  </div>
+
+
+  <div class="card">
+
+    <div class="titulo-card">
+      Iniciar sesión
+    </div>
+
+    <div
+      id="mensajeLogin"
+      class="oculto"
+    ></div>
+
+
+    <label>
+      Usuario
+    </label>
+
+    <input
+      id="loginUsuario"
+      type="text"
+      autocapitalize="characters"
+      autocomplete="username"
+      placeholder="Usuario"
+    >
+
+
+    <label>
+      Contraseña
+    </label>
+
+    <input
+      id="loginPassword"
+      type="password"
+      autocomplete="current-password"
+      placeholder="Contraseña"
+    >
+
+
+    <button
+      id="btnLogin"
+      class="btn-principal"
+      onclick="login()"
+    >
+      INGRESAR
+    </button>
+
+  </div>
+
+</section>
+
+
+
+<!-- =====================================================
+     APLICACIÓN
+====================================================== -->
+
+<section
+  id="pantallaApp"
+  class="oculto"
+>
+
+
+<!-- USUARIO -->
+
+<div class="usuario-barra">
+
+  <div>
+
+    <div
+      id="usuarioNombre"
+      class="usuario-nombre"
+    ></div>
+
+    <div
+      id="usuarioInfo"
+      class="usuario-info"
+    ></div>
+
+  </div>
+
+
+  <button
+    class="btn-salir"
+    onclick="logout()"
+  >
+    SALIR
+  </button>
+
+</div>
+
+
+<!-- PROGRESO -->
+
+<div class="progreso">
+
+  <div
+    id="mini1"
+    class="paso-mini activo"
+  >
+    1<br>LLEGADA
+  </div>
+
+  <div
+    id="mini2"
+    class="paso-mini"
+  >
+    2<br>RECEPCIÓN
+  </div>
+
+  <div
+    id="mini3"
+    class="paso-mini"
+  >
+    3<br>INVERSA
+  </div>
+
+  <div
+    id="mini4"
+    class="paso-mini"
+  >
+    4<br>CIERRE
+  </div>
+
+</div>
+
+
+<div
+  id="mensajeGeneral"
+  class="oculto"
+></div>
+
+
+<div
+  id="boxIdRecepcion"
+  class="recepcion-id oculto"
+>
+
+  <div class="recepcion-id-label">
+    ID RECEPCIÓN
+  </div>
+
+  <div
+    id="idRecepcionVisible"
+    class="recepcion-id-valor"
+  ></div>
+
+</div>
+
+
+
+<!-- =====================================================
+     PASO 1
+====================================================== -->
+
+<section id="paso1">
+
+
+<div class="card">
+
+<div class="titulo-card">
+1. Llegada de la unidad
+</div>
+
+
+<label>
+ID Ruta
+</label>
+
+<input
+  id="idRuta"
+  type="text"
+  autocapitalize="characters"
+  placeholder="Ej. R-260828-001"
+>
+
+
+<label>
+Placa
+</label>
+
+<input
+  id="placa"
+  type="text"
+  autocapitalize="characters"
+  placeholder="ABC123"
+>
+
+
+<label>
+DNI / RUC del receptor
+</label>
+
+<input
+  id="dni"
+  type="tel"
+  inputmode="numeric"
+  maxlength="11"
+  placeholder="DNI 8 / RUC 11"
+  oninput="soloNumeros(this)"
+>
+
+
+<!-- FOTO LLEGADA -->
+
+<div class="foto-bloque">
+
+<label>
+Foto de llegada de la unidad *
+</label>
+
+<input
+  id="fotoLlegada"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'fotoLlegada')"
+>
+
+<img
+  id="previewFotoLlegada"
+  class="preview oculto"
+>
+
+<div
+  id="okFotoLlegada"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+<!-- PRECINTO ABIERTO 1 -->
+
+<div class="foto-bloque">
+
+<label>
+Precinto abierto 1
+</label>
+
+<input
+  id="precintoAbierto1"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'precintoAbierto1')"
+>
+
+<img
+  id="previewPrecintoAbierto1"
+  class="preview oculto"
+>
+
+<div
+  id="okPrecintoAbierto1"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+<!-- PRECINTO ABIERTO 2 -->
+
+<div class="foto-bloque">
+
+<label>
+Precinto abierto 2
+</label>
+
+<input
+  id="precintoAbierto2"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'precintoAbierto2')"
+>
+
+<img
+  id="previewPrecintoAbierto2"
+  class="preview oculto"
+>
+
+<div
+  id="okPrecintoAbierto2"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+<button
+  id="btnIniciarRecepcion"
+  class="btn-principal"
+  onclick="iniciarRecepcion()"
+>
+  INICIAR RECEPCIÓN
+</button>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PASO 2
+====================================================== -->
+
+<section
+  id="paso2"
+  class="oculto"
+>
+
+
+<div class="card">
+
+<div class="titulo-card">
+2. Recepción de carga
+</div>
+
+
+<div class="contadores">
+
+  <div class="contador">
+
+    <div class="contador-titulo">
+      SACOS
+    </div>
+
+    <div
+      id="contadorSacos"
+      class="contador-numero"
+    >
+      0
+    </div>
+
+  </div>
+
+
+  <div class="contador">
+
+    <div class="contador-titulo">
+      BULTOS SUELTOS
+    </div>
+
+    <div
+      id="contadorBultos"
+      class="contador-numero"
+    >
+      0
+    </div>
+
+  </div>
+
+</div>
+
+
+<div class="total-box">
+
+  <div class="contador-titulo">
+    TOTAL RECEPCIONADO
+  </div>
+
+  <div
+    id="contadorTotal"
+    class="total-numero"
+  >
+    0
+  </div>
+
+</div>
+
+
+
+<label>
+¿Qué está escaneando?
+</label>
+
+<div class="selector-tipo">
+
+  <button
+    id="btnTipoSaco"
+    class="seleccionado"
+    onclick="seleccionarTipoBulto('SACO')"
+  >
+    SACO
+  </button>
+
+  <button
+    id="btnTipoBulto"
+    onclick="seleccionarTipoBulto('BULTO SUELTO')"
+  >
+    BULTO SUELTO
+  </button>
+
+</div>
+
+
+
+<button
+  class="btn-verde"
+  onclick="iniciarScanner()"
+>
+  📷 INICIAR LECTOR
+</button>
+
+
+<div
+  id="scannerBox"
+  class="oculto"
+  style="margin-top:12px;"
+>
+
+<div class="video-box">
+
+  <video
+    id="videoScanner"
+    autoplay
+    muted
+    playsinline
+  ></video>
+
+  <div class="zona-lectura">
+    <div class="linea"></div>
+  </div>
+
+</div>
+
+
+<div
+  id="estadoScanner"
+  class="estado-scanner"
+>
+  Apunte al código.
+</div>
+
+
+<div class="botones-doble">
+
+  <button
+    class="btn-rojo"
+    onclick="detenerScanner()"
+  >
+    DETENER
+  </button>
+
+  <button
+    class="btn-azul"
+    onclick="cambiarCamara()"
+  >
+    🔄 CÁMARA
+  </button>
+
+</div>
+
+</div>
+
+
+<hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
+
+
+<label>
+Ingreso manual
+</label>
+
+<div class="manual">
+
+<input
+  id="codigoManual"
+  type="text"
+  autocapitalize="characters"
+  autocomplete="off"
+  placeholder="Código"
+>
+
+<button
+  class="btn-azul"
+  onclick="agregarManual()"
+>
++
+</button>
+
+</div>
+
+
+<div
+  id="listaRecepcion"
+  class="lista"
+></div>
+
+
+<div style="margin-top:15px;">
+
+<button
+  class="btn-principal"
+  onclick="irPaso3()"
+>
+  CONTINUAR
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PASO 3
+====================================================== -->
+
+<section
+  id="paso3"
+  class="oculto"
+>
+
+
+<div class="card">
+
+<div class="titulo-card">
+3. Logística inversa
+</div>
+
+
+<label>
+¿Se entrega logística inversa?
+</label>
+
+
+<div class="decision">
+
+<button
+  id="btnInversaNo"
+  class="activo-no"
+  onclick="seleccionarInversa(false)"
+>
+NO
+</button>
+
+<button
+  id="btnInversaSi"
+  onclick="seleccionarInversa(true)"
+>
+SÍ
+</button>
+
+</div>
+
+
+
+<div
+  id="contenidoInversa"
+  class="oculto"
+  style="margin-top:18px;"
+>
+
+
+<div class="contador">
+
+  <div class="contador-titulo">
+    BULTOS LOGÍSTICA INVERSA
+  </div>
+
+  <div
+    id="contadorInversa"
+    class="contador-numero"
+  >
+    0
+  </div>
+
+</div>
+
+
+<label>
+Tipo de bulto
+</label>
+
+
+<div class="selector-tipo">
+
+<button
+  id="btnInvSaco"
+  class="seleccionado"
+  onclick="seleccionarTipoInversa('SACO')"
+>
+SACO
+</button>
+
+<button
+  id="btnInvBulto"
+  onclick="seleccionarTipoInversa('BULTO SUELTO')"
+>
+BULTO SUELTO
+</button>
+
+</div>
+
+
+<button
+  class="btn-verde"
+  onclick="iniciarScannerInversa()"
+>
+📷 INICIAR LECTOR
+</button>
+
+
+<div style="margin-top:12px;">
+
+<label>
+Ingreso manual
+</label>
+
+<div class="manual">
+
+<input
+  id="codigoManualInversa"
+  type="text"
+  autocapitalize="characters"
+  placeholder="Código"
+>
+
+<button
+  class="btn-azul"
+  onclick="agregarManualInversa()"
+>
++
+</button>
+
+</div>
+
+</div>
+
+
+<div
+  id="listaInversa"
+  class="lista"
+></div>
+
+
+<div
+  class="foto-bloque"
+  style="margin-top:15px;"
+>
+
+<label>
+Foto de logística inversa *
+</label>
+
+<input
+  id="fotoInversa"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'fotoInversa')"
+>
+
+<img
+  id="previewFotoInversa"
+  class="preview oculto"
+>
+
+<div
+  id="okFotoInversa"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+</div>
+
+
+
+<div class="botones-doble">
+
+<button
+  class="btn-gris"
+  onclick="volverPaso2()"
+>
+ATRÁS
+</button>
+
+<button
+  class="btn-principal"
+  onclick="irPaso4()"
+>
+CONTINUAR
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+
+<!-- =====================================================
+     PASO 4
+====================================================== -->
+
+<section
+  id="paso4"
+  class="oculto"
+>
+
+
+<div class="card">
+
+<div class="titulo-card">
+4. Cierre de recepción
+</div>
+
+
+<div class="foto-bloque">
+
+<label>
+Foto de sacos / bultos recibidos *
+</label>
+
+<input
+  id="fotoCarga"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'fotoCarga')"
+>
+
+<img
+  id="previewFotoCarga"
+  class="preview oculto"
+>
+
+<div
+  id="okFotoCarga"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+
+<div class="foto-bloque">
+
+<label>
+Precinto cerrado 1 *
+</label>
+
+<input
+  id="precintoCerrado1"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'precintoCerrado1')"
+>
+
+<img
+  id="previewPrecintoCerrado1"
+  class="preview oculto"
+>
+
+<div
+  id="okPrecintoCerrado1"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+
+<div class="foto-bloque">
+
+<label>
+Precinto cerrado 2
+</label>
+
+<input
+  id="precintoCerrado2"
+  type="file"
+  accept="image/*"
+  capture="environment"
+  onchange="procesarFotoInput(this,'precintoCerrado2')"
+>
+
+<img
+  id="previewPrecintoCerrado2"
+  class="preview oculto"
+>
+
+<div
+  id="okPrecintoCerrado2"
+  class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+
+
+<label>
+Observaciones
+</label>
+
+<textarea
+  id="observaciones"
+  placeholder="Ingrese observaciones si corresponde"
+></textarea>
+
+
+
+<label>
+Ubicación GPS
+</label>
+
+<div
+  id="estadoGps"
+  class="gps"
+>
+Ubicación pendiente.
+</div>
+
+
+<button
+  class="btn-azul"
+  onclick="obtenerGPS()"
+>
+📍 ACTUALIZAR UBICACIÓN
+</button>
+
+
+
+<div
+  id="resumenFinal"
+  class="resumen-final"
+  style="margin-top:15px;"
+></div>
+
+
+<div class="botones-doble">
+
+<button
+  class="btn-gris"
+  onclick="volverPaso3()"
+>
+ATRÁS
+</button>
+
+<button
+  id="btnFinalizar"
+  class="btn-principal"
+  onclick="finalizarRecepcion()"
+>
+FINALIZAR RECEPCIÓN
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+</section>
+
+</div>
+
+
+
+<script>
+
+/* =====================================================
+   CONFIGURACIÓN
+===================================================== */
+
+const API_URL =
+  "https://script.google.com/macros/s/AKfycbzOtjAzFM_qYKtxFDTB9acq-NOcqobDMCp0H55FzserkLAa631lYtL-JN-0RSBQfOcv/exec";
+
+
+
+/* =====================================================
+   VARIABLES
+===================================================== */
+
+let tokenSesion = "";
+
+let usuarioActual = null;
+
+let idRecepcionActual = "";
+
+let pasoActual = 1;
+
+
+// GPS
+
+let latitudActual = null;
+
+let longitudActual = null;
+
+let precisionActual = null;
+
+
+// Fotos
+
+const fotos = {
+
+  fotoLlegada: "",
+
+  precintoAbierto1: "",
+
+  precintoAbierto2: "",
+
+  fotoInversa: "",
+
+  fotoCarga: "",
+
+  precintoCerrado1: "",
+
+  precintoCerrado2: ""
+
+};
+
+
+// Detalles
+
+let detalles = [];
+
+let tipoBultoActual =
+  "SACO";
+
+let tipoInversaActual =
+  "SACO";
+
+let tieneInversa =
+  false;
+
+
+// Scanner
+
+let lectorZXing = null;
+
+let scannerActivo =
+  false;
+
+let scannerMovimiento =
+  "RECEPCIÓN";
+
+let ultimoCodigo =
+  "";
+
+let ultimaLectura =
+  0;
+
+let bloqueoLectura =
+  false;
+
+let dispositivosVideo =
+  [];
+
+let indiceCamara =
+  0;
+
+
+
+/* =====================================================
+   API
+===================================================== */
+
+async function llamarAPI(
+  payload
+) {
+
+  /*
+    Se envía como application/x-www-form-urlencoded
+    para reducir problemas de preflight/CORS
+    con Apps Script.
+  */
+
+  const cuerpo =
+    new URLSearchParams();
+
+
+  cuerpo.append(
+    "payload",
+    JSON.stringify(
+      payload
+    )
+  );
+
+
+  const respuesta =
+    await fetch(
+      API_URL,
+      {
+
+        method:
+          "POST",
+
+        body:
+          cuerpo
+
+      }
+    );
+
+
+  if (!respuesta.ok) {
+
+    throw new Error(
+      "No se pudo conectar con el servidor."
+    );
+
+  }
+
+
+  const texto =
+    await respuesta.text();
+
+
+  let json;
+
+
+  try {
+
+    json =
+      JSON.parse(
+        texto
+      );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      texto
+    );
+
+
+    throw new Error(
+      "El servidor devolvió una respuesta no válida."
+    );
+
+  }
+
+
+  if (!json.success) {
+
+    throw new Error(
+      json.error ||
+      "Ocurrió un error."
+    );
+
+  }
+
+
+  return json.data;
+
+}
+
+
+
+/* =====================================================
+   LOGIN
+===================================================== */
+
+async function login() {
+
+  ocultarMensaje(
+    "mensajeLogin"
+  );
+
+
+  const usuario =
+    document
+      .getElementById(
+        "loginUsuario"
+      )
+      .value
+      .trim()
+      .toUpperCase();
+
+
+  const password =
+    document
+      .getElementById(
+        "loginPassword"
+      )
+      .value;
+
+
+  if (
+    !usuario ||
+    !password
+  ) {
+
+    mostrarMensaje(
+      "mensajeLogin",
+      "Ingrese usuario y contraseña.",
+      false
+    );
+
+    return;
+
+  }
+
+
+  mostrarCargando(
+    "Validando usuario..."
+  );
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "LOGIN",
+
+        usuario:
+          usuario,
+
+        contrasena:
+          password
+
+      });
+
+
+    tokenSesion =
+      res.token;
+
+
+    usuarioActual =
+      res;
+
+
+    sessionStorage.setItem(
+      "tokenSesionRecepcion",
+      tokenSesion
+    );
+
+
+    mostrarAplicacion();
+
+
+    obtenerGPS();
+
+
+    /*
+      Si existe una recepción pendiente
+      intentamos recuperarla.
+    */
+
+    const idPendiente =
+      localStorage.getItem(
+        "recepcionActiva"
+      );
+
+
+    if (idPendiente) {
+
+      await recuperarRecepcion(
+        idPendiente
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    mostrarMensaje(
+      "mensajeLogin",
+      obtenerError(error),
+      false
+    );
+
+  }
+
+  finally {
+
+    ocultarCargando();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   MOSTRAR APP
+===================================================== */
+
+function mostrarAplicacion() {
+
+  document
+    .getElementById(
+      "pantallaLogin"
+    )
+    .classList
+    .add("oculto");
+
+
+  document
+    .getElementById(
+      "pantallaApp"
+    )
+    .classList
+    .remove("oculto");
+
+
+  document
+    .getElementById(
+      "usuarioNombre"
+    )
+    .textContent =
+      usuarioActual.usuario;
+
+
+  const datos = [];
+
+
+  if (usuarioActual.rol) {
+    datos.push(usuarioActual.rol);
+  }
+
+  if (usuarioActual.area) {
+    datos.push(usuarioActual.area);
+  }
+
+  if (usuarioActual.region) {
+    datos.push(usuarioActual.region);
+  }
+
+
+  document
+    .getElementById(
+      "usuarioInfo"
+    )
+    .textContent =
+      datos.join(" | ");
+
+}
+
+
+
+/* =====================================================
+   RESTAURAR SESIÓN
+===================================================== */
+
+async function restaurarSesion() {
+
+  const token =
+    sessionStorage.getItem(
+      "tokenSesionRecepcion"
+    );
+
+
+  if (!token) {
+    return;
+  }
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "VALIDAR_SESION",
+
+        token:
+          token
+
+      });
+
+
+    tokenSesion =
+      token;
+
+
+    usuarioActual =
+      res;
+
+
+    mostrarAplicacion();
+
+
+    obtenerGPS();
+
+
+    const idPendiente =
+      localStorage.getItem(
+        "recepcionActiva"
+      );
+
+
+    if (idPendiente) {
+
+      await recuperarRecepcion(
+        idPendiente
+      );
+
+    }
+
+  }
+
+  catch (error) {
+
+    sessionStorage.removeItem(
+      "tokenSesionRecepcion"
+    );
+
+  }
+
+}
+
+
+
+/* =====================================================
+   RECUPERAR RECEPCIÓN
+===================================================== */
+
+async function recuperarRecepcion(
+  id
+) {
+
+  mostrarCargando(
+    "Recuperando recepción pendiente..."
+  );
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "CONSULTAR_RECEPCION",
+
+        token:
+          tokenSesion,
+
+        idRecepcion:
+          id
+
+      });
+
+
+    /*
+      Si fecha salida existe,
+      ya estaba cerrada.
+    */
+
+    if (
+      res.resumen &&
+      res.resumen[2]
+    ) {
+
+      localStorage.removeItem(
+        "recepcionActiva"
+      );
+
+
+      return;
+
+    }
+
+
+    idRecepcionActual =
+      id;
+
+
+    detalles =
+      res.detalles || [];
+
+
+    document
+      .getElementById(
+        "idRecepcionVisible"
+      )
+      .textContent =
+        idRecepcionActual;
+
+
+    document
+      .getElementById(
+        "boxIdRecepcion"
+      )
+      .classList
+      .remove("oculto");
+
+
+    /*
+      Resumen:
+      E = idRuta índice 4
+      F = placa índice 5
+      G = documento índice 6
+    */
+
+    if (res.resumen) {
+
+      document
+        .getElementById(
+          "idRuta"
+        )
+        .value =
+          res.resumen[4] || "";
+
+
+      document
+        .getElementById(
+          "placa"
+        )
+        .value =
+          res.resumen[5] || "";
+
+
+      document
+        .getElementById(
+          "dni"
+        )
+        .value =
+          res.resumen[6] || "";
+
+    }
+
+
+    renderizarDetalles();
+
+
+    irPaso(
+      2
+    );
+
+
+    mostrarMensaje(
+      "mensajeGeneral",
+      "Se recuperó una recepción que estaba en proceso.",
+      true
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+
+    localStorage.removeItem(
+      "recepcionActiva"
+    );
+
+  }
+
+  finally {
+
+    ocultarCargando();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+async function logout() {
+
+  detenerScanner();
+
+
+  const token =
+    tokenSesion;
+
+
+  tokenSesion =
+    "";
+
+
+  sessionStorage.removeItem(
+    "tokenSesionRecepcion"
+  );
+
+
+  try {
+
+    if (token) {
+
+      await llamarAPI({
+
+        accion:
+          "LOGOUT",
+
+        token:
+          token
+
+      });
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.log(error);
+
+  }
+
+
+  location.reload();
+
+}
+
+
+
+/* =====================================================
+   INICIAR RECEPCIÓN
+===================================================== */
+
+async function iniciarRecepcion() {
+
+  ocultarMensaje(
+    "mensajeGeneral"
+  );
+
+
+  const idRuta =
+    document
+      .getElementById(
+        "idRuta"
+      )
+      .value
+      .trim()
+      .toUpperCase();
+
+
+  const placa =
+    document
+      .getElementById(
+        "placa"
+      )
+      .value
+      .trim()
+      .toUpperCase();
+
+
+  const dni =
+    document
+      .getElementById(
+        "dni"
+      )
+      .value
+      .trim();
+
+
+  if (!idRuta) {
+
+    mostrarError(
+      "Ingrese el ID de ruta."
+    );
+
+    return;
+
+  }
+
+
+  if (!placa) {
+
+    mostrarError(
+      "Ingrese la placa."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !/^(?:\d{8}|\d{11})$/
+      .test(dni)
+  ) {
+
+    mostrarError(
+      "Ingrese DNI de 8 dígitos o RUC de 11 dígitos."
+    );
+
+    return;
+
+  }
+
+
+  if (!fotos.fotoLlegada) {
+
+    mostrarError(
+      "Debe registrar la foto de llegada de la unidad."
+    );
+
+    return;
+
+  }
+
+
+  mostrarCargando(
+    "Iniciando recepción..."
+  );
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "INICIAR_RECEPCION",
+
+        datos: {
+
+          token:
+            tokenSesion,
+
+          idRuta:
+            idRuta,
+
+          placa:
+            placa,
+
+          dni:
+            dni,
+
+          fotoLlegada:
+            fotos.fotoLlegada,
+
+          precintoAbierto1:
+            fotos.precintoAbierto1,
+
+          precintoAbierto2:
+            fotos.precintoAbierto2
+
+        }
+
+      });
+
+
+    idRecepcionActual =
+      res.idRecepcion;
+
+
+    localStorage.setItem(
+      "recepcionActiva",
+      idRecepcionActual
+    );
+
+
+    document
+      .getElementById(
+        "idRecepcionVisible"
+      )
+      .textContent =
+        idRecepcionActual;
+
+
+    document
+      .getElementById(
+        "boxIdRecepcion"
+      )
+      .classList
+      .remove("oculto");
+
+
+    /*
+      Las fotos ya están guardadas
+      en Drive. Podemos liberar memoria.
+    */
+
+    fotos.fotoLlegada = "";
+    fotos.precintoAbierto1 = "";
+    fotos.precintoAbierto2 = "";
+
+
+    irPaso(
+      2
+    );
+
+
+    mostrarMensaje(
+      "mensajeGeneral",
+      "✅ Recepción iniciada: " +
+      idRecepcionActual,
+      true
+    );
+
+  }
+
+  catch (error) {
+
+    mostrarError(
+      obtenerError(error)
+    );
+
+  }
+
+  finally {
+
+    ocultarCargando();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   PASOS
+===================================================== */
+
+function irPaso(
+  numero
+) {
+
+  detenerScanner();
+
+
+  pasoActual =
+    numero;
+
+
+  for (
+    let i = 1;
+    i <= 4;
+    i++
+  ) {
+
+    const seccion =
+      document
+        .getElementById(
+          "paso" + i
+        );
+
+
+    seccion
+      .classList
+      .toggle(
+        "oculto",
+        i !== numero
+      );
+
+
+    const mini =
+      document
+        .getElementById(
+          "mini" + i
+        );
+
+
+    mini.className =
+      "paso-mini";
+
+
+    if (
+      i < numero
+    ) {
+
+      mini.classList.add(
+        "completo"
+      );
+
+    }
+
+    else if (
+      i === numero
+    ) {
+
+      mini.classList.add(
+        "activo"
+      );
+
+    }
+
+  }
+
+
+  if (
+    numero === 4
+  ) {
+
+    actualizarResumenFinal();
+
+    obtenerGPS();
+
+  }
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+function irPaso3() {
+
+  if (
+    detalles.filter(
+      x =>
+        x.tipoMovimiento ===
+        "RECEPCIÓN"
+    ).length === 0
+  ) {
+
+    if (
+      !confirm(
+        "No hay sacos ni bultos escaneados. ¿Desea continuar?"
+      )
+    ) {
+
+      return;
+
+    }
+
+  }
+
+
+  irPaso(3);
+
+}
+
+
+function irPaso4() {
+
+  if (
+    tieneInversa
+  ) {
+
+    const cantidad =
+      detalles.filter(
+        x =>
+          x.tipoMovimiento ===
+          "LOGÍSTICA INVERSA"
+      ).length;
+
+
+    if (
+      cantidad === 0
+    ) {
+
+      mostrarError(
+        "Indicó que existe logística inversa, pero todavía no registró ningún bulto."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !fotos.fotoInversa
+    ) {
+
+      mostrarError(
+        "Debe registrar la fotografía de logística inversa."
+      );
+
+      return;
+
+    }
+
+  }
+
+
+  irPaso(4);
+
+}
+
+
+function volverPaso2() {
+  irPaso(2);
+}
+
+
+function volverPaso3() {
+  irPaso(3);
+}
+
+
+
+/* =====================================================
+   LOGÍSTICA INVERSA
+===================================================== */
+
+function seleccionarInversa(
+  valor
+) {
+
+  tieneInversa =
+    valor;
+
+
+  document
+    .getElementById(
+      "btnInversaSi"
+    )
+    .className =
+      valor
+        ? "activo-si"
+        : "";
+
+
+  document
+    .getElementById(
+      "btnInversaNo"
+    )
+    .className =
+      valor
+        ? ""
+        : "activo-no";
+
+
+  document
+    .getElementById(
+      "contenidoInversa"
+    )
+    .classList
+    .toggle(
+      "oculto",
+      !valor
+    );
+
+
+  renderizarDetalles();
+
+}
+
+
+
+/* =====================================================
+   SELECCIONAR TIPO
+===================================================== */
+
+function seleccionarTipoBulto(
+  tipo
+) {
+
+  tipoBultoActual =
+    tipo;
+
+
+  document
+    .getElementById(
+      "btnTipoSaco"
+    )
+    .classList
+    .toggle(
+      "seleccionado",
+      tipo === "SACO"
+    );
+
+
+  document
+    .getElementById(
+      "btnTipoBulto"
+    )
+    .classList
+    .toggle(
+      "seleccionado",
+      tipo === "BULTO SUELTO"
+    );
+
+}
+
+
+function seleccionarTipoInversa(
+  tipo
+) {
+
+  tipoInversaActual =
+    tipo;
+
+
+  document
+    .getElementById(
+      "btnInvSaco"
+    )
+    .classList
+    .toggle(
+      "seleccionado",
+      tipo === "SACO"
+    );
+
+
+  document
+    .getElementById(
+      "btnInvBulto"
+    )
+    .classList
+    .toggle(
+      "seleccionado",
+      tipo === "BULTO SUELTO"
+    );
+
+}
+
+
+
+/* =====================================================
+   GUARDAR DETALLE
+===================================================== */
+
+async function guardarCodigo(
+  codigo,
+  movimiento,
+  tipoBulto
+) {
+
+  codigo =
+    String(
+      codigo || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (!codigo) {
+    return false;
+  }
+
+
+  if (!idRecepcionActual) {
+
+    mostrarError(
+      "No existe una recepción activa."
+    );
+
+    return false;
+
+  }
+
+
+  /*
+    Validación local antes de llamar
+    al servidor.
+  */
+
+  const duplicado =
+    detalles.some(
+      item =>
+        String(
+          item.codigo
+        )
+          .toUpperCase() ===
+        codigo
+    );
+
+
+  if (duplicado) {
+
+    mostrarError(
+      "El código " +
+      codigo +
+      " ya fue registrado."
+    );
+
+
+    vibrarError();
+
+
+    return false;
+
+  }
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "REGISTRAR_DETALLE",
+
+        datos: {
+
+          token:
+            tokenSesion,
+
+          idRecepcion:
+            idRecepcionActual,
+
+          tipoMovimiento:
+            movimiento,
+
+          tipoBulto:
+            tipoBulto,
+
+          codigo:
+            codigo
+
+        }
+
+      });
+
+
+    detalles.push({
+
+      idRecepcion:
+        idRecepcionActual,
+
+      fechaHora:
+        new Date().toISOString(),
+
+      tipoMovimiento:
+        res.tipoMovimiento,
+
+      tipoBulto:
+        res.tipoBulto,
+
+      codigo:
+        res.codigo,
+
+      orden:
+        res.orden,
+
+      usuario:
+        usuarioActual.usuario
+
+    });
+
+
+    renderizarDetalles();
+
+
+    vibrar();
+
+
+    return true;
+
+  }
+
+  catch (error) {
+
+    mostrarError(
+      obtenerError(error)
+    );
+
+
+    vibrarError();
+
+
+    return false;
+
+  }
+
+}
+
+
+
+/* =====================================================
+   ELIMINAR DETALLE
+===================================================== */
+
+async function eliminarDetalle(
+  codigo
+) {
+
+  if (
+    !confirm(
+      "¿Quitar el código " +
+      codigo +
+      "?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  mostrarCargando(
+    "Eliminando..."
+  );
+
+
+  try {
+
+    await llamarAPI({
+
+      accion:
+        "ELIMINAR_DETALLE",
+
+      datos: {
+
+        token:
+          tokenSesion,
+
+        idRecepcion:
+          idRecepcionActual,
+
+        codigo:
+          codigo
+
+      }
+
+    });
+
+
+    detalles =
+      detalles.filter(
+        item =>
+          String(
+            item.codigo
+          )
+            .toUpperCase() !==
+          String(
+            codigo
+          )
+            .toUpperCase()
+      );
+
+
+    renderizarDetalles();
+
+
+    mostrarMensaje(
+      "mensajeGeneral",
+      "Código eliminado correctamente.",
+      true
+    );
+
+  }
+
+  catch (error) {
+
+    mostrarError(
+      obtenerError(error)
+    );
+
+  }
+
+  finally {
+
+    ocultarCargando();
+
+  }
+
+}
+
+
+
+/* =====================================================
+   RENDER DETALLES
+===================================================== */
+
+function renderizarDetalles() {
+
+  const recepcion =
+    detalles.filter(
+      item =>
+        item.tipoMovimiento ===
+        "RECEPCIÓN"
+    );
+
+
+  const inversa =
+    detalles.filter(
+      item =>
+        item.tipoMovimiento ===
+        "LOGÍSTICA INVERSA"
+    );
+
+
+  const sacos =
+    recepcion.filter(
+      item =>
+        item.tipoBulto ===
+        "SACO"
+    ).length;
+
+
+  const bultos =
+    recepcion.filter(
+      item =>
+        item.tipoBulto ===
+        "BULTO SUELTO"
+    ).length;
+
+
+  document
+    .getElementById(
+      "contadorSacos"
+    )
+    .textContent =
+      sacos;
+
+
+  document
+    .getElementById(
+      "contadorBultos"
+    )
+    .textContent =
+      bultos;
+
+
+  document
+    .getElementById(
+      "contadorTotal"
+    )
+    .textContent =
+      sacos + bultos;
+
+
+  document
+    .getElementById(
+      "contadorInversa"
+    )
+    .textContent =
+      inversa.length;
+
+
+  renderLista(
+    "listaRecepcion",
+    recepcion
+  );
+
+
+  renderLista(
+    "listaInversa",
+    inversa
+  );
+
+
+  actualizarResumenFinal();
+
+}
+
+
+
+function renderLista(
+  id,
+  datos
+) {
+
+  const lista =
+    document
+      .getElementById(id);
+
+
+  lista.innerHTML =
+    "";
+
+
+  datos.forEach(
+    function(item) {
+
+      const fila =
+        document
+          .createElement(
+            "div"
+          );
+
+
+      fila.className =
+        "item";
+
+
+      const info =
+        document
+          .createElement(
+            "div"
+          );
+
+
+      info.className =
+        "item-info";
+
+
+      const tipo =
+        document
+          .createElement(
+            "div"
+          );
+
+
+      tipo.className =
+        "item-tipo";
+
+
+      tipo.textContent =
+        item.tipoMovimiento +
+        " • " +
+        item.tipoBulto;
+
+
+      const codigo =
+        document
+          .createElement(
+            "div"
+          );
+
+
+      codigo.className =
+        "item-codigo";
+
+
+      codigo.textContent =
+        item.codigo;
+
+
+      const hora =
+        document
+          .createElement(
+            "div"
+          );
+
+
+      hora.className =
+        "item-hora";
+
+
+      if (item.fechaHora) {
+
+        const f =
+          new Date(
+            item.fechaHora
+          );
+
+
+        if (!isNaN(f)) {
+
+          hora.textContent =
+            f.toLocaleString(
+              "es-PE"
+            );
+
+        }
+
+      }
+
+
+      const boton =
+        document
+          .createElement(
+            "button"
+          );
+
+
+      boton.className =
+        "btn-eliminar";
+
+
+      boton.textContent =
+        "×";
+
+
+      boton.onclick =
+        function() {
+
+          eliminarDetalle(
+            item.codigo
+          );
+
+        };
+
+
+      info.appendChild(
+        tipo
+      );
+
+      info.appendChild(
+        codigo
+      );
+
+      info.appendChild(
+        hora
+      );
+
+
+      fila.appendChild(
+        info
+      );
+
+      fila.appendChild(
+        boton
+      );
+
+
+      lista.appendChild(
+        fila
+      );
+
+    }
+  );
+
+}
+
+
+
+/* =====================================================
+   MANUAL
+===================================================== */
+
+async function agregarManual() {
+
+  const input =
+    document
+      .getElementById(
+        "codigoManual"
+      );
+
+
+  const codigo =
+    input.value;
+
+
+  const ok =
+    await guardarCodigo(
+
+      codigo,
+
+      "RECEPCIÓN",
+
+      tipoBultoActual
+
+    );
+
+
+  if (ok) {
+
+    input.value = "";
+
+  }
+
+}
+
+
+async function agregarManualInversa() {
+
+  const input =
+    document
+      .getElementById(
+        "codigoManualInversa"
+      );
+
+
+  const ok =
+    await guardarCodigo(
+
+      input.value,
+
+      "LOGÍSTICA INVERSA",
+
+      tipoInversaActual
+
+    );
+
+
+  if (ok) {
+
+    input.value = "";
+
+  }
+
+}
+
+
+
+/* =====================================================
+   SCANNER
+===================================================== */
+
+async function iniciarScanner() {
+
+  scannerMovimiento =
+    "RECEPCIÓN";
+
+
+  await activarScanner();
+
+}
+
+
+async function iniciarScannerInversa() {
+
+  scannerMovimiento =
+    "LOGÍSTICA INVERSA";
+
+
+  await activarScanner();
+
+}
+
+
+
+async function activarScanner() {
+
+  detenerScanner(false);
+
+
+  if (
+    typeof ZXing ===
+    "undefined"
+  ) {
+
+    mostrarError(
+      "No se pudo cargar el lector."
+    );
+
+    return;
+
+  }
+
+
+  document
+    .getElementById(
+      "scannerBox"
+    )
+    .classList
+    .remove("oculto");
+
+
+  const estado =
+    document
+      .getElementById(
+        "estadoScanner"
+      );
+
+
+  estado.className =
+    "estado-scanner";
+
+
+  estado.textContent =
+    "Solicitando acceso a cámara...";
+
+
+  try {
+
+    lectorZXing =
+      new ZXing
+        .BrowserMultiFormatReader();
+
+
+    scannerActivo =
+      true;
+
+
+    await lectorZXing
+      .decodeFromConstraints(
+
+        {
+
+          audio:
+            false,
+
+          video: {
+
+            facingMode: {
+              ideal:
+                "environment"
+            },
+
+            width: {
+              ideal:
+                1280
+            },
+
+            height: {
+              ideal:
+                720
+            }
+
+          }
+
+        },
+
+        "videoScanner",
+
+        function(
+          resultado
+        ) {
+
+          if (
+            scannerActivo &&
+            resultado
+          ) {
+
+            procesarLectura(
+              resultado
+            );
+
+          }
+
+        }
+
+      );
+
+
+    estado.className =
+      "estado-scanner ok";
+
+
+    estado.textContent =
+      "✅ Lector activo";
+
+
+    try {
+
+      dispositivosVideo =
+        await lectorZXing
+          .listVideoInputDevices();
+
+    }
+
+    catch (e) {
+
+      console.log(e);
+
+    }
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+
+    detenerScanner();
+
+
+    mostrarError(
+      "No se pudo abrir la cámara. Revise los permisos de Chrome."
+    );
+
+  }
+
+}
+
+
+
+/* =====================================================
+   PROCESAR LECTURA
+===================================================== */
+
+async function procesarLectura(
+  resultado
+) {
+
+  if (
+    bloqueoLectura
+  ) {
+    return;
+  }
+
+
+  let codigo =
+    typeof resultado.getText ===
+    "function"
+      ? resultado.getText()
+      : resultado.text;
+
+
+  codigo =
+    String(
+      codigo || ""
+    )
+      .trim()
+      .toUpperCase();
+
+
+  if (!codigo) {
+    return;
+  }
+
+
+  const ahora =
+    Date.now();
+
+
+  if (
+    codigo === ultimoCodigo &&
+    ahora - ultimaLectura < 2500
+  ) {
+
+    return;
+
+  }
+
+
+  ultimoCodigo =
+    codigo;
+
+
+  ultimaLectura =
+    ahora;
+
+
+  bloqueoLectura =
+    true;
+
+
+  const tipo =
+    scannerMovimiento ===
+    "RECEPCIÓN"
+      ? tipoBultoActual
+      : tipoInversaActual;
+
+
+  const ok =
+    await guardarCodigo(
+
+      codigo,
+
+      scannerMovimiento,
+
+      tipo
+
+    );
+
+
+  const estado =
+    document
+      .getElementById(
+        "estadoScanner"
+      );
+
+
+  if (ok) {
+
+    estado.className =
+      "estado-scanner ok";
+
+
+    estado.textContent =
+      "✅ " + codigo;
+
+  }
+
+
+  setTimeout(
+    function() {
+
+      bloqueoLectura =
+        false;
+
+
+      if (
+        scannerActivo
+      ) {
+
+        estado.textContent =
+          "Apunte al siguiente código...";
+
+      }
+
+    },
+    700
+  );
+
+}
+
+
+
+/* =====================================================
+   DETENER SCANNER
+===================================================== */
+
+function detenerScanner(
+  ocultar = true
+) {
+
+  scannerActivo =
+    false;
+
+
+  bloqueoLectura =
+    false;
+
+
+  if (lectorZXing) {
+
+    try {
+
+      lectorZXing.reset();
+
+    }
+
+    catch (e) {}
+
+  }
+
+
+  lectorZXing =
+    null;
+
+
+  const video =
+    document
+      .getElementById(
+        "videoScanner"
+      );
+
+
+  if (
+    video &&
+    video.srcObject
+  ) {
+
+    video
+      .srcObject
+      .getTracks()
+      .forEach(
+        track =>
+          track.stop()
+      );
+
+
+    video.srcObject =
+      null;
+
+  }
+
+
+  if (ocultar) {
+
+    document
+      .getElementById(
+        "scannerBox"
+      )
+      .classList
+      .add("oculto");
+
+  }
+
+}
+
+
+
+/* =====================================================
+   CAMBIAR CÁMARA
+===================================================== */
+
+async function cambiarCamara() {
+
+  if (
+    dispositivosVideo.length < 2
+  ) {
+
+    mostrarError(
+      "No se detectó otra cámara."
+    );
+
+    return;
+
+  }
+
+
+  detenerScanner(false);
+
+
+  indiceCamara++;
+
+
+  if (
+    indiceCamara >=
+    dispositivosVideo.length
+  ) {
+
+    indiceCamara =
+      0;
+
+  }
+
+
+  try {
+
+    lectorZXing =
+      new ZXing
+        .BrowserMultiFormatReader();
+
+
+    scannerActivo =
+      true;
+
+
+    await lectorZXing
+      .decodeFromVideoDevice(
+
+        dispositivosVideo[
+          indiceCamara
+        ].deviceId,
+
+        "videoScanner",
+
+        function(resultado) {
+
+          if (
+            resultado &&
+            scannerActivo
+          ) {
+
+            procesarLectura(
+              resultado
+            );
+
+          }
+
+        }
+
+      );
+
+  }
+
+  catch (error) {
+
+    mostrarError(
+      "No se pudo cambiar de cámara."
+    );
+
+  }
+
+}
+
+
+
+/* =====================================================
+   PROCESAR FOTO
+===================================================== */
+
+function procesarFotoInput(
+  input,
+  clave
+) {
+
+  const archivo =
+    input.files &&
+    input.files[0];
+
+
+  if (!archivo) {
+    return;
+  }
+
+
+  mostrarCargando(
+    "Procesando fotografía..."
+  );
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    function(event) {
+
+      const imagen =
+        new Image();
+
+
+      imagen.onload =
+        function() {
+
+          try {
+
+            /*
+              Compresión para almacenamiento.
+
+              Máximo 1280px.
+              JPEG 0.67.
+
+              Adecuado para evidencia
+              operacional y reduce bastante
+              el consumo de Drive.
+            */
+
+            const MAX =
+              1280;
+
+
+            let ancho =
+              imagen.width;
+
+            let alto =
+              imagen.height;
+
+
+            if (
+              ancho > alto &&
+              ancho > MAX
+            ) {
+
+              alto =
+                Math.round(
+                  alto *
+                  MAX /
+                  ancho
+                );
+
+
+              ancho =
+                MAX;
+
+            }
+
+            else if (
+              alto > MAX
+            ) {
+
+              ancho =
+                Math.round(
+                  ancho *
+                  MAX /
+                  alto
+                );
+
+
+              alto =
+                MAX;
+
+            }
+
+
+            const canvas =
+              document
+                .createElement(
+                  "canvas"
+                );
+
+
+            canvas.width =
+              ancho;
+
+            canvas.height =
+              alto;
+
+
+            canvas
+              .getContext("2d")
+              .drawImage(
+                imagen,
+                0,
+                0,
+                ancho,
+                alto
+              );
+
+
+            fotos[clave] =
+              canvas.toDataURL(
+                "image/jpeg",
+                .67
+              );
+
+
+            mostrarPreview(
+              clave
+            );
+
+          }
+
+          finally {
+
+            ocultarCargando();
+
+          }
+
+        };
+
+
+      imagen.onerror =
+        function() {
+
+          ocultarCargando();
+
+
+          mostrarError(
+            "No se pudo abrir la fotografía."
+          );
+
+        };
+
+
+      imagen.src =
+        event.target.result;
+
+    };
+
+
+  reader.readAsDataURL(
+    archivo
+  );
+
+}
+
+
+
+/* =====================================================
+   PREVIEW FOTO
+===================================================== */
+
+function mostrarPreview(
+  clave
+) {
+
+  const mapa = {
+
+    fotoLlegada:
+      [
+        "previewFotoLlegada",
+        "okFotoLlegada"
+      ],
+
+    precintoAbierto1:
+      [
+        "previewPrecintoAbierto1",
+        "okPrecintoAbierto1"
+      ],
+
+    precintoAbierto2:
+      [
+        "previewPrecintoAbierto2",
+        "okPrecintoAbierto2"
+      ],
+
+    fotoInversa:
+      [
+        "previewFotoInversa",
+        "okFotoInversa"
+      ],
+
+    fotoCarga:
+      [
+        "previewFotoCarga",
+        "okFotoCarga"
+      ],
+
+    precintoCerrado1:
+      [
+        "previewPrecintoCerrado1",
+        "okPrecintoCerrado1"
+      ],
+
+    precintoCerrado2:
+      [
+        "previewPrecintoCerrado2",
+        "okPrecintoCerrado2"
+      ]
+
+  };
+
+
+  const ids =
+    mapa[clave];
+
+
+  if (!ids) {
+    return;
+  }
+
+
+  const img =
+    document
+      .getElementById(
+        ids[0]
+      );
+
+
+  img.src =
+    fotos[clave];
+
+
+  img.classList.remove(
+    "oculto"
+  );
+
+
+  document
+    .getElementById(
+      ids[1]
+    )
+    .classList
+    .remove("oculto");
+
+}
+
+
+
+/* =====================================================
+   GPS
+===================================================== */
+
+function obtenerGPS() {
+
+  const estado =
+    document
+      .getElementById(
+        "estadoGps"
+      );
+
+
+  estado.className =
+    "gps";
+
+
+  estado.textContent =
+    "Obteniendo ubicación...";
+
+
+  navigator.geolocation
+    .getCurrentPosition(
+
+      function(pos) {
+
+        latitudActual =
+          pos.coords.latitude;
+
+
+        longitudActual =
+          pos.coords.longitude;
+
+
+        precisionActual =
+          pos.coords.accuracy;
+
+
+        estado.className =
+          "gps gps-ok";
+
+
+        estado.innerHTML =
+
+          "✅ Ubicación obtenida" +
+
+          "<br>Lat: " +
+          latitudActual.toFixed(6) +
+
+          "<br>Lon: " +
+          longitudActual.toFixed(6) +
+
+          "<br>Precisión: " +
+          Math.round(
+            precisionActual
+          ) +
+          " m";
+
+      },
+
+
+      function() {
+
+        latitudActual =
+          null;
+
+
+        longitudActual =
+          null;
+
+
+        estado.className =
+          "gps gps-error";
+
+
+        estado.textContent =
+          "No se pudo obtener la ubicación.";
+
+      },
+
+
+      {
+
+        enableHighAccuracy:
+          true,
+
+        timeout:
+          20000,
+
+        maximumAge:
+          0
+
+      }
+
+    );
+
+}
+
+
+
+/* =====================================================
+   FINALIZAR
+===================================================== */
+
+async function finalizarRecepcion() {
+
+  if (!fotos.fotoCarga) {
+
+    mostrarError(
+      "Debe registrar la foto de sacos/bultos recibidos."
+    );
+
+    return;
+
+  }
+
+
+  if (!fotos.precintoCerrado1) {
+
+    mostrarError(
+      "Debe registrar el precinto cerrado 1."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    tieneInversa &&
+    !fotos.fotoInversa
+  ) {
+
+    mostrarError(
+      "Debe registrar la foto de logística inversa."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    latitudActual === null ||
+    longitudActual === null
+  ) {
+
+    mostrarError(
+      "Debe obtener la ubicación GPS."
+    );
+
+    return;
+
+  }
+
+
+  if (
+    !confirm(
+      "¿Finalizar la recepción " +
+      idRecepcionActual +
+      "?"
+    )
+  ) {
+
+    return;
+
+  }
+
+
+  document
+    .getElementById(
+      "btnFinalizar"
+    )
+    .disabled =
+      true;
+
+
+  mostrarCargando(
+    "Finalizando recepción..."
+  );
+
+
+  try {
+
+    const res =
+      await llamarAPI({
+
+        accion:
+          "FINALIZAR_RECEPCION",
+
+        datos: {
+
+          token:
+            tokenSesion,
+
+          idRecepcion:
+            idRecepcionActual,
+
+          fotoCarga:
+            fotos.fotoCarga,
+
+          fotoLogisticaInversa:
+            tieneInversa
+              ? fotos.fotoInversa
+              : "",
+
+          precintoCerrado1:
+            fotos.precintoCerrado1,
+
+          precintoCerrado2:
+            fotos.precintoCerrado2,
+
+          observaciones:
+            document
+              .getElementById(
+                "observaciones"
+              )
+              .value
+              .trim(),
+
+          latitud:
+            latitudActual,
+
+          longitud:
+            longitudActual,
+
+          precision:
+            precisionActual || 0
+
+        }
+
+      });
+
+
+    localStorage.removeItem(
+      "recepcionActiva"
+    );
+
+
+    alert(
+
+      "✅ RECEPCIÓN FINALIZADA\n\n" +
+
+      "ID: " +
+      res.idRecepcion +
+
+      "\nSacos: " +
+      res.cantidadSacos +
+
+      "\nBultos sueltos: " +
+      res.cantidadBultosSueltos +
+
+      "\nTotal: " +
+      res.totalRecepcionado +
+
+      "\nLogística inversa: " +
+      res.cantidadLogisticaInversa
+
+    );
+
+
+    location.reload();
+
+  }
+
+  catch (error) {
+
+    mostrarError(
+      obtenerError(error)
+    );
+
+  }
+
+  finally {
+
+    ocultarCargando();
+
+
+    document
+      .getElementById(
+        "btnFinalizar"
+      )
+      .disabled =
+        false;
+
+  }
+
+}
+
+
+
+/* =====================================================
+   RESUMEN
+===================================================== */
+
+function actualizarResumenFinal() {
+
+  const sacos =
+    detalles.filter(
+      item =>
+        item.tipoMovimiento ===
+          "RECEPCIÓN" &&
+        item.tipoBulto ===
+          "SACO"
+    ).length;
+
+
+  const bultos =
+    detalles.filter(
+      item =>
+        item.tipoMovimiento ===
+          "RECEPCIÓN" &&
+        item.tipoBulto ===
+          "BULTO SUELTO"
+    ).length;
+
+
+  const inversa =
+    detalles.filter(
+      item =>
+        item.tipoMovimiento ===
+        "LOGÍSTICA INVERSA"
+    ).length;
+
+
+  document
+    .getElementById(
+      "resumenFinal"
+    )
+    .innerHTML =
+
+      "<strong>ID Recepción:</strong> " +
+      (
+        idRecepcionActual ||
+        "-"
+      ) +
+
+      "<br>" +
+
+      "<strong>ID Ruta:</strong> " +
+      (
+        document
+          .getElementById(
+            "idRuta"
+          )
+          .value ||
+        "-"
+      ) +
+
+      "<br>" +
+
+      "<strong>Placa:</strong> " +
+      (
+        document
+          .getElementById(
+            "placa"
+          )
+          .value ||
+        "-"
+      ) +
+
+      "<br>" +
+
+      "<strong>Sacos:</strong> " +
+      sacos +
+
+      "<br>" +
+
+      "<strong>Bultos sueltos:</strong> " +
+      bultos +
+
+      "<br>" +
+
+      "<strong>Total recepción:</strong> " +
+      (
+        sacos +
+        bultos
+      ) +
+
+      "<br>" +
+
+      "<strong>Logística inversa:</strong> " +
+      inversa;
+
+}
+
+
+
+/* =====================================================
+   UTILIDADES
+===================================================== */
+
+function soloNumeros(
+  input
+) {
+
+  input.value =
+    input.value
+      .replace(/\D/g,"")
+      .substring(0,11);
+
+}
+
+
+function mostrarMensaje(
+  id,
+  texto,
+  correcto
+) {
+
+  const elemento =
+    document
+      .getElementById(id);
+
+
+  elemento.textContent =
+    texto;
+
+
+  elemento.className =
+    correcto
+      ? "mensaje mensaje-ok"
+      : "mensaje mensaje-error";
+
+}
+
+
+function mostrarError(
+  texto
+) {
+
+  mostrarMensaje(
+    "mensajeGeneral",
+    texto,
+    false
+  );
+
+
+  window.scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+
+}
+
+
+function ocultarMensaje(
+  id
+) {
+
+  const el =
+    document
+      .getElementById(id);
+
+
+  if (el) {
+
+    el.className =
+      "oculto";
+
+  }
+
+}
+
+
+function mostrarCargando(
+  texto
+) {
+
+  document
+    .getElementById(
+      "textoCargando"
+    )
+    .textContent =
+      texto;
+
+
+  document
+    .getElementById(
+      "cargando"
+    )
+    .classList
+    .remove("oculto");
+
+}
+
+
+function ocultarCargando() {
+
+  document
+    .getElementById(
+      "cargando"
+    )
+    .classList
+    .add("oculto");
+
+}
+
+
+function obtenerError(
+  error
+) {
+
+  if (
+    error &&
+    error.message
+  ) {
+
+    return error.message;
+
+  }
+
+
+  return String(
+    error ||
+    "Error inesperado."
+  );
+
+}
+
+
+function vibrar() {
+
+  if (
+    navigator.vibrate
+  ) {
+
+    navigator.vibrate(
+      80
+    );
+
+  }
+
+}
+
+
+function vibrarError() {
+
+  if (
+    navigator.vibrate
+  ) {
+
+    navigator.vibrate(
+      [
+        100,
+        80,
+        100
+      ]
+    );
+
+  }
+
+}
+
+
+
+/* =====================================================
+   ENTER MANUAL
+===================================================== */
+
+document
+  .getElementById(
+    "codigoManual"
+  )
+  .addEventListener(
+    "keydown",
+    function(e) {
+
+      if (
+        e.key ===
+        "Enter"
+      ) {
+
+        e.preventDefault();
+
+        agregarManual();
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "codigoManualInversa"
+  )
+  .addEventListener(
+    "keydown",
+    function(e) {
+
+      if (
+        e.key ===
+        "Enter"
+      ) {
+
+        e.preventDefault();
+
+        agregarManualInversa();
+
+      }
+
+    }
+  );
+
+
+document
+  .getElementById(
+    "loginPassword"
+  )
+  .addEventListener(
+    "keydown",
+    function(e) {
+
+      if (
+        e.key ===
+        "Enter"
+      ) {
+
+        e.preventDefault();
+
+        login();
+
+      }
+
+    }
+  );
+
+
+
+/* =====================================================
+   CERRAR CÁMARA
+===================================================== */
+
+window.addEventListener(
+  "beforeunload",
+  function() {
+
+    detenerScanner();
+
+  }
+);
+
+
+
+/* =====================================================
+   INICIALIZACIÓN
+===================================================== */
+  
+
+window.addEventListener(
+  "load",
+  async function() {
+
+    await restaurarSesion();
+
+  }
+);
+
+</script>
+
+</body>
+
+</html>
