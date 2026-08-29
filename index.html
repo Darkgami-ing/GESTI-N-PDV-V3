@@ -5514,6 +5514,69 @@ function renderDetalleGestion(res) {
    FOTO CONSULTA
 ===================================================== */
 
+/* =====================================================
+   CONVERTIR LINK GOOGLE DRIVE A MINIATURA
+===================================================== */
+
+function convertirUrlDrive(url) {
+
+  if (!url) {
+    return "";
+  }
+
+  url = String(url).trim();
+
+  let id = "";
+
+
+  // Formato:
+  // https://drive.google.com/file/d/ID/view
+  const coincidencia1 =
+    url.match(/\/file\/d\/([^/]+)/);
+
+  if (coincidencia1) {
+    id = coincidencia1[1];
+  }
+
+
+  // Formato:
+  // https://drive.google.com/open?id=ID
+  // https://drive.google.com/uc?id=ID
+  if (!id) {
+
+    const coincidencia2 =
+      url.match(/[?&]id=([^&]+)/);
+
+    if (coincidencia2) {
+      id = coincidencia2[1];
+    }
+
+  }
+
+
+  // Si encontramos ID de Drive
+  if (id) {
+
+    return (
+      "https://drive.google.com/thumbnail?id=" +
+      encodeURIComponent(id) +
+      "&sz=w1000"
+    );
+
+  }
+
+
+  // Si ya es una URL directa
+  return url;
+
+}
+
+
+
+/* =====================================================
+   FOTO EN CONSULTA
+===================================================== */
+
 function fotoGestion(
   titulo,
   url
@@ -5549,6 +5612,10 @@ function fotoGestion(
   }
 
 
+  const miniatura =
+    convertirUrlDrive(url);
+
+
   return `
 
     <div>
@@ -5565,10 +5632,32 @@ function fotoGestion(
 
         <img
           class="foto-gestion"
-          src="${escaparHtml(url)}"
+          src="${escaparHtml(miniatura)}"
           loading="lazy"
           alt="${escaparHtml(titulo)}"
+
+          onerror="
+            this.style.display='none';
+            this.nextElementSibling.style.display='flex';
+          "
         >
+
+        <div
+          style="
+            display:none;
+            min-height:110px;
+            background:#f1f5f9;
+            align-items:center;
+            justify-content:center;
+            border-radius:8px;
+            color:#64748b;
+            font-size:11px;
+            text-align:center;
+            padding:10px;
+          "
+        >
+          📷 TOCAR PARA VER FOTO
+        </div>
 
       </a>
 
