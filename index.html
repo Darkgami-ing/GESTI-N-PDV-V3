@@ -16,801 +16,691 @@
 
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
 
-
 <style>
 
-* {
-  box-sizing: border-box;
+*{box-sizing:border-box}
+
+html{-webkit-text-size-adjust:100%}
+
+body{
+margin:0;
+font-family:Arial,Helvetica,sans-serif;
+background:#f4f7fa;
+color:#1f2937
 }
 
-html {
-  -webkit-text-size-adjust: 100%;
+.contenedor{
+width:min(100%,780px);
+margin:auto;
+padding:12px
 }
 
-body {
-  margin: 0;
-  font-family: Arial, Helvetica, sans-serif;
-  background: #f4f7fa;
-  color: #1f2937;
+.logo{
+text-align:center;
+font-size:23px;
+font-weight:800;
+color:#174a7e;
+margin:12px 0 4px
 }
 
-.contenedor {
-  width: min(100%, 780px);
-  margin: auto;
-  padding: 12px;
+.subtitulo{
+text-align:center;
+color:#64748b;
+font-size:13px;
+margin-bottom:18px
 }
 
-.logo {
-  text-align: center;
-  font-size: 23px;
-  font-weight: 800;
-  color: #174a7e;
-  margin: 12px 0 4px;
+.card{
+background:white;
+border-radius:14px;
+padding:17px;
+margin-bottom:14px;
+box-shadow:0 2px 8px rgba(15,23,42,.08)
 }
 
-.subtitulo {
-  text-align: center;
-  color: #64748b;
-  font-size: 13px;
-  margin-bottom: 18px;
+.titulo-card{
+font-size:17px;
+font-weight:700;
+color:#174a7e;
+margin-bottom:15px
 }
 
-.card {
-  background: white;
-  border-radius: 14px;
-  padding: 17px;
-  margin-bottom: 14px;
-  box-shadow: 0 2px 8px rgba(15,23,42,.08);
+.subtitulo-card{
+font-size:14px;
+font-weight:800;
+color:#334155;
+margin:18px 0 10px
 }
 
-.titulo-card {
-  font-size: 17px;
-  font-weight: 700;
-  color: #174a7e;
-  margin-bottom: 15px;
+label{
+display:block;
+font-size:13px;
+font-weight:700;
+margin-bottom:6px
 }
 
-.subtitulo-card {
-  font-size: 14px;
-  font-weight: 800;
-  color: #334155;
-  margin: 18px 0 10px;
-}
-
-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 6px;
-}
-
-input,
-select,
-textarea {
-  width: 100%;
-  min-height: 48px;
-  border: 1px solid #cbd5e1;
-  border-radius: 9px;
-  padding: 10px 12px;
-  font-size: 16px;
-  background: white;
-  margin-bottom: 14px;
-  outline: none;
+input,select,textarea{
+width:100%;
+min-height:48px;
+border:1px solid #cbd5e1;
+border-radius:9px;
+padding:10px 12px;
+font-size:16px;
+background:white;
+margin-bottom:14px;
+outline:none
 }
 
 input:focus,
 select:focus,
-textarea:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37,99,235,.10);
+textarea:focus{
+border-color:#2563eb;
+box-shadow:0 0 0 2px rgba(37,99,235,.10)
 }
 
-textarea {
-  min-height: 90px;
-  resize: vertical;
+textarea{
+min-height:90px;
+resize:vertical
 }
 
-button {
-  width: 100%;
-  min-height: 49px;
-  border: none;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 700;
-  cursor: pointer;
-  touch-action: manipulation;
+button{
+width:100%;
+min-height:49px;
+border:none;
+border-radius:9px;
+font-size:14px;
+font-weight:700;
+cursor:pointer;
+touch-action:manipulation
 }
 
-button:disabled {
-  opacity: .55;
+button:disabled{opacity:.55}
+
+.oculto{display:none!important}
+
+.btn-principal{background:#174a7e;color:white}
+.btn-azul{background:#2563eb;color:white}
+.btn-verde{background:#059669;color:white}
+.btn-rojo{background:#dc2626;color:white}
+.btn-gris{background:#e2e8f0;color:#334155}
+
+.usuario-barra{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:10px;
+background:#174a7e;
+color:white;
+border-radius:11px;
+padding:12px 14px;
+margin-bottom:12px
 }
 
-.oculto {
-  display: none !important;
+.usuario-nombre{
+font-weight:800;
+font-size:14px
 }
 
-.btn-principal {
-  background: #174a7e;
-  color: white;
+.usuario-info{
+font-size:11px;
+margin-top:4px;
+opacity:.9
 }
 
-.btn-azul {
-  background: #2563eb;
-  color: white;
+.btn-salir{
+width:auto;
+min-width:70px;
+min-height:36px;
+padding:5px 10px;
+background:rgba(255,255,255,.17);
+color:white
 }
 
-.btn-verde {
-  background: #059669;
-  color: white;
+.menu-principal{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-bottom:14px
 }
 
-.btn-rojo {
-  background: #dc2626;
-  color: white;
+.progreso{
+display:grid;
+grid-template-columns:repeat(4,1fr);
+gap:5px;
+margin-bottom:14px
 }
 
-.btn-gris {
-  background: #e2e8f0;
-  color: #334155;
+.paso-mini{
+text-align:center;
+padding:9px 2px;
+border-radius:8px;
+background:#e2e8f0;
+color:#64748b;
+font-size:10px;
+font-weight:700
 }
 
-
-/* USUARIO */
-
-.usuario-barra {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  background: #174a7e;
-  color: white;
-  border-radius: 11px;
-  padding: 12px 14px;
-  margin-bottom: 12px;
+.paso-mini.activo{
+background:#174a7e;
+color:white
 }
 
-.usuario-nombre {
-  font-weight: 800;
-  font-size: 14px;
+.paso-mini.completo{
+background:#dcfce7;
+color:#047857
 }
 
-.usuario-info {
-  font-size: 11px;
-  margin-top: 4px;
-  opacity: .9;
+.recepcion-id{
+background:#eff6ff;
+border:1px solid #bfdbfe;
+border-radius:10px;
+padding:12px;
+margin-bottom:14px;
+text-align:center
 }
 
-.btn-salir {
-  width: auto;
-  min-width: 70px;
-  min-height: 36px;
-  padding: 5px 10px;
-  background: rgba(255,255,255,.17);
-  color: white;
+.recepcion-id-label{
+font-size:11px;
+color:#64748b
 }
 
-
-/* MENÚ */
-
-.menu-principal {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 14px;
+.recepcion-id-valor{
+font-size:18px;
+color:#174a7e;
+font-weight:800;
+margin-top:4px
 }
 
-
-/* PROGRESO */
-
-.progreso {
-  display: grid;
-  grid-template-columns: repeat(4,1fr);
-  gap: 5px;
-  margin-bottom: 14px;
+.campo-escanear{
+display:grid;
+grid-template-columns:minmax(0,1fr) 58px;
+gap:7px;
+margin-bottom:14px
 }
 
-.paso-mini {
-  text-align: center;
-  padding: 9px 2px;
-  border-radius: 8px;
-  background: #e2e8f0;
-  color: #64748b;
-  font-size: 10px;
-  font-weight: 700;
+.campo-escanear input{margin-bottom:0}
+
+.campo-escanear button{
+min-height:48px;
+font-size:20px
 }
 
-.paso-mini.activo {
-  background: #174a7e;
-  color: white;
+.precinto-box{
+border:1px solid #e2e8f0;
+background:#f8fafc;
+border-radius:11px;
+padding:12px;
+margin-bottom:13px
 }
 
-.paso-mini.completo {
-  background: #dcfce7;
-  color: #047857;
+.precinto-titulo{
+font-weight:800;
+color:#174a7e;
+font-size:13px;
+margin-bottom:10px
 }
 
-
-/* ID RECEPCIÓN */
-
-.recepcion-id {
-  background: #eff6ff;
-  border: 1px solid #bfdbfe;
-  border-radius: 10px;
-  padding: 12px;
-  margin-bottom: 14px;
-  text-align: center;
+.codigo-ok{
+color:#047857;
+font-size:11px;
+font-weight:700;
+margin:-5px 0 10px
 }
 
-.recepcion-id-label {
-  font-size: 11px;
-  color: #64748b;
+.preview{
+width:100%;
+max-height:270px;
+object-fit:contain;
+border-radius:9px;
+background:#f1f5f9;
+margin-top:-5px;
+margin-bottom:10px
 }
 
-.recepcion-id-valor {
-  font-size: 18px;
-  color: #174a7e;
-  font-weight: 800;
-  margin-top: 4px;
+.foto-ok{
+font-size:12px;
+color:#047857;
+font-weight:700;
+margin-bottom:10px
 }
 
-
-/* ESCANEO */
-
-.campo-escanear {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) 58px;
-  gap: 7px;
-  margin-bottom: 14px;
+.contadores{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:9px;
+margin-bottom:10px
 }
 
-.campo-escanear input {
-  margin-bottom: 0;
+.contador{
+padding:12px;
+border-radius:10px;
+background:#eff6ff;
+text-align:center
 }
 
-.campo-escanear button {
-  min-height: 48px;
-  font-size: 20px;
+.contador-titulo{
+font-size:11px;
+font-weight:700;
+color:#64748b
 }
 
-
-/* PRECINTO */
-
-.precinto-box {
-  border: 1px solid #e2e8f0;
-  background: #f8fafc;
-  border-radius: 11px;
-  padding: 12px;
-  margin-bottom: 13px;
+.contador-numero{
+font-size:28px;
+font-weight:800;
+color:#174a7e;
+margin-top:4px
 }
 
-.precinto-titulo {
-  font-weight: 800;
-  color: #174a7e;
-  font-size: 13px;
-  margin-bottom: 10px;
+.total-box{
+background:#ecfdf5;
+border-radius:10px;
+padding:12px;
+text-align:center;
+margin-bottom:15px
 }
 
-.codigo-ok {
-  color: #047857;
-  font-size: 11px;
-  font-weight: 700;
-  margin: -5px 0 10px;
+.total-numero{
+font-size:29px;
+font-weight:800;
+color:#047857
 }
-
-
-/* FOTO */
-
-.foto-bloque {
-  margin-bottom: 12px;
-}
-
-.preview {
-  width: 100%;
-  max-height: 270px;
-  object-fit: contain;
-  border-radius: 9px;
-  background: #f1f5f9;
-  margin-top: -5px;
-  margin-bottom: 10px;
-}
-
-.foto-ok {
-  font-size: 12px;
-  color: #047857;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-
-/* CONTADORES */
-
-.contadores {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 9px;
-  margin-bottom: 10px;
-}
-
-.contador {
-  padding: 12px;
-  border-radius: 10px;
-  background: #eff6ff;
-  text-align: center;
-}
-
-.contador-titulo {
-  font-size: 11px;
-  font-weight: 700;
-  color: #64748b;
-}
-
-.contador-numero {
-  font-size: 28px;
-  font-weight: 800;
-  color: #174a7e;
-  margin-top: 4px;
-}
-
-.total-box {
-  background: #ecfdf5;
-  border-radius: 10px;
-  padding: 12px;
-  text-align: center;
-  margin-bottom: 15px;
-}
-
-.total-numero {
-  font-size: 29px;
-  font-weight: 800;
-  color: #047857;
-}
-
-
-/* SELECTORES */
 
 .selector-tipo,
-.decision {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-bottom: 13px;
+.decision{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-bottom:13px
 }
 
 .selector-tipo button,
-.decision button {
-  background: #e2e8f0;
-  color: #475569;
+.decision button{
+background:#e2e8f0;
+color:#475569
 }
 
-.selector-tipo button.seleccionado {
-  background: #174a7e;
-  color: white;
+.selector-tipo button.seleccionado{
+background:#174a7e;
+color:white
 }
 
-.decision button.activo-si {
-  background: #059669;
-  color: white;
+.decision button.activo-si{
+background:#059669;
+color:white
 }
 
-.decision button.activo-no {
-  background: #64748b;
-  color: white;
+.decision button.activo-no{
+background:#64748b;
+color:white
 }
 
-
-/* MANUAL */
-
-.manual {
-  display: grid;
-  grid-template-columns: minmax(0,1fr) 70px;
-  gap: 8px;
+.manual{
+display:grid;
+grid-template-columns:minmax(0,1fr) 70px;
+gap:8px
 }
 
-.manual input {
-  margin: 0;
+.manual input{margin:0}
+
+.lista{margin-top:15px}
+
+.item{
+display:flex;
+align-items:center;
+justify-content:space-between;
+gap:8px;
+border:1px solid #e2e8f0;
+border-radius:9px;
+padding:10px;
+margin-bottom:7px
 }
 
-
-/* LISTA */
-
-.lista {
-  margin-top: 15px;
+.item-info{
+flex:1;
+min-width:0
 }
 
-.item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  border: 1px solid #e2e8f0;
-  border-radius: 9px;
-  padding: 10px;
-  margin-bottom: 7px;
+.item-tipo{
+font-size:10px;
+color:#64748b
 }
 
-.item-info {
-  flex: 1;
-  min-width: 0;
+.item-codigo{
+font-size:14px;
+font-weight:700;
+overflow-wrap:anywhere;
+margin-top:2px
 }
 
-.item-tipo {
-  font-size: 10px;
-  color: #64748b;
+.item-hora{
+font-size:10px;
+color:#94a3b8;
+margin-top:3px
 }
 
-.item-codigo {
-  font-size: 14px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
-  margin-top: 2px;
+.btn-eliminar{
+width:38px;
+min-width:38px;
+min-height:38px;
+border-radius:50%;
+background:#fee2e2;
+color:#b91c1c;
+font-size:19px
 }
 
-.item-hora {
-  font-size: 10px;
-  color: #94a3b8;
-  margin-top: 3px;
+.botones-doble{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px;
+margin-top:10px
 }
 
-.btn-eliminar {
-  width: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  border-radius: 50%;
-  background: #fee2e2;
-  color: #b91c1c;
-  font-size: 19px;
+.gps{
+padding:11px;
+border-radius:9px;
+background:#f1f5f9;
+font-size:12px;
+line-height:1.5;
+margin-bottom:12px
 }
 
-
-/* BOTONES */
-
-.botones-doble {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 10px;
+.gps-ok{
+background:#ecfdf5;
+color:#047857
 }
 
-
-/* GPS */
-
-.gps {
-  padding: 11px;
-  border-radius: 9px;
-  background: #f1f5f9;
-  font-size: 12px;
-  line-height: 1.5;
-  margin-bottom: 12px;
+.gps-error{
+background:#fef2f2;
+color:#b91c1c
 }
 
-.gps-ok {
-  background: #ecfdf5;
-  color: #047857;
+.mensaje{
+padding:12px;
+margin-bottom:13px;
+border-radius:9px;
+font-size:13px
 }
 
-.gps-error {
-  background: #fef2f2;
-  color: #b91c1c;
+.mensaje-ok{
+background:#ecfdf5;
+border:1px solid #a7f3d0;
+color:#047857
 }
 
-
-/* MENSAJES */
-
-.mensaje {
-  padding: 12px;
-  margin-bottom: 13px;
-  border-radius: 9px;
-  font-size: 13px;
+.mensaje-error{
+background:#fef2f2;
+border:1px solid #fecaca;
+color:#b91c1c
 }
 
-.mensaje-ok {
-  background: #ecfdf5;
-  border: 1px solid #a7f3d0;
-  color: #047857;
+.cargando{
+position:fixed;
+inset:0;
+z-index:99999;
+display:flex;
+align-items:center;
+justify-content:center;
+background:rgba(15,23,42,.72)
 }
 
-.mensaje-error {
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  color: #b91c1c;
+.cargando-box{
+width:min(85%,300px);
+background:white;
+border-radius:14px;
+padding:25px;
+text-align:center;
+font-weight:700
 }
 
-
-/* CARGANDO */
-
-.cargando {
-  position: fixed;
-  inset: 0;
-  z-index: 99999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(15,23,42,.72);
+.spinner{
+width:42px;
+height:42px;
+border-radius:50%;
+border:4px solid #e2e8f0;
+border-top-color:#174a7e;
+margin:0 auto 14px;
+animation:giro .8s linear infinite
 }
 
-.cargando-box {
-  width: min(85%,300px);
-  background: white;
-  border-radius: 14px;
-  padding: 25px;
-  text-align: center;
-  font-weight: 700;
+@keyframes giro{
+to{transform:rotate(360deg)}
 }
 
-.spinner {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 4px solid #e2e8f0;
-  border-top-color: #174a7e;
-  margin: 0 auto 14px;
-  animation: giro .8s linear infinite;
+.scanner-modal{
+position:fixed;
+inset:0;
+background:rgba(0,0,0,.94);
+z-index:100000;
+display:flex;
+flex-direction:column;
+padding:12px
 }
 
-@keyframes giro {
-  to {
-    transform: rotate(360deg);
-  }
+.scanner-header{
+color:white;
+text-align:center;
+font-size:16px;
+font-weight:800;
+padding:8px
 }
 
-
-/* SCANNER */
-
-.scanner-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.94);
-  z-index: 100000;
-  display: flex;
-  flex-direction: column;
-  padding: 12px;
+.video-box{
+position:relative;
+width:100%;
+max-width:650px;
+margin:auto;
+overflow:hidden;
+border-radius:14px;
+background:#000
 }
 
-.scanner-header {
-  color: white;
-  text-align: center;
-  font-size: 16px;
-  font-weight: 800;
-  padding: 8px;
+#videoScanner{
+display:block;
+width:100%;
+height:min(65vh,540px);
+object-fit:cover
 }
 
-.video-box {
-  position: relative;
-  width: 100%;
-  max-width: 650px;
-  margin: auto;
-  overflow: hidden;
-  border-radius: 14px;
-  background: #000;
+.zona-lectura{
+position:absolute;
+left:7%;
+top:30%;
+width:86%;
+height:38%;
+border:3px solid #22c55e;
+border-radius:12px;
+pointer-events:none;
+box-shadow:0 0 0 9999px rgba(0,0,0,.22)
 }
 
-#videoScanner {
-  display: block;
-  width: 100%;
-  height: min(65vh,540px);
-  object-fit: cover;
+.linea{
+position:absolute;
+width:100%;
+height:3px;
+background:#22c55e;
+animation:scan 1.7s linear infinite
 }
 
-.zona-lectura {
-  position: absolute;
-  left: 7%;
-  top: 30%;
-  width: 86%;
-  height: 38%;
-  border: 3px solid #22c55e;
-  border-radius: 12px;
-  pointer-events: none;
-  box-shadow: 0 0 0 9999px rgba(0,0,0,.22);
+@keyframes scan{
+from{top:0}
+to{top:calc(100% - 3px)}
 }
 
-.linea {
-  position: absolute;
-  width: 100%;
-  height: 3px;
-  background: #22c55e;
-  animation: scan 1.7s linear infinite;
+.estado-scanner{
+width:min(100%,650px);
+margin:10px auto;
+border-radius:8px;
+padding:10px;
+background:#f1f5f9;
+text-align:center;
+font-size:12px
 }
 
-@keyframes scan {
-  from { top: 0; }
-  to { top: calc(100% - 3px); }
+.estado-scanner.ok{
+background:#dcfce7;
+color:#047857
 }
 
-.estado-scanner {
-  width: min(100%,650px);
-  margin: 10px auto;
-  border-radius: 8px;
-  padding: 10px;
-  background: #f1f5f9;
-  text-align: center;
-  font-size: 12px;
+.scanner-botones{
+width:min(100%,650px);
+margin:0 auto;
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px
 }
 
-.estado-scanner.ok {
-  background: #dcfce7;
-  color: #047857;
+.resumen-final{
+background:#f8fafc;
+border-radius:10px;
+padding:12px;
+font-size:13px;
+line-height:1.8
 }
 
-.scanner-botones {
-  width: min(100%,650px);
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.resumen-final strong{
+color:#174a7e
 }
 
-
-/* RESUMEN */
-
-.resumen-final {
-  background: #f8fafc;
-  border-radius: 10px;
-  padding: 12px;
-  font-size: 13px;
-  line-height: 1.8;
+.gestion-card{
+background:white;
+border-radius:13px;
+padding:15px;
+margin-bottom:10px;
+box-shadow:0 2px 8px rgba(15,23,42,.08)
 }
 
-.resumen-final strong {
-  color: #174a7e;
+.gestion-cabecera{
+display:flex;
+justify-content:space-between;
+gap:8px
 }
 
-
-/* CONSULTA */
-
-.gestion-card {
-  background: white;
-  border-radius: 13px;
-  padding: 15px;
-  margin-bottom: 10px;
-  box-shadow: 0 2px 8px rgba(15,23,42,.08);
+.gestion-id{
+font-size:16px;
+font-weight:800;
+color:#174a7e
 }
 
-.gestion-cabecera {
-  display: flex;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.gestion-id {
-  font-size: 16px;
-  font-weight: 800;
-  color: #174a7e;
-}
-
-.gestion-fecha {
-  font-size: 11px;
-  color: #64748b;
-  margin-top: 4px;
+.gestion-fecha{
+font-size:11px;
+color:#64748b;
+margin-top:4px
 }
 
 .estado-finalizado,
-.estado-proceso {
-  padding: 5px 8px;
-  border-radius: 20px;
-  font-size: 10px;
-  font-weight: 800;
-  white-space: nowrap;
+.estado-proceso{
+padding:5px 8px;
+border-radius:20px;
+font-size:10px;
+font-weight:800;
+white-space:nowrap
 }
 
-.estado-finalizado {
-  background: #dcfce7;
-  color: #047857;
+.estado-finalizado{
+background:#dcfce7;
+color:#047857
 }
 
-.estado-proceso {
-  background: #fef3c7;
-  color: #92400e;
+.estado-proceso{
+background:#fef3c7;
+color:#92400e
 }
 
-.gestion-datos {
-  margin-top: 12px;
-  font-size: 13px;
-  line-height: 1.7;
+.gestion-datos{
+margin-top:12px;
+font-size:13px;
+line-height:1.7
 }
 
-.gestion-total {
-  margin-top: 10px;
-  padding: 9px;
-  border-radius: 8px;
-  background: #eff6ff;
-  text-align: center;
-  font-weight: 700;
+.gestion-total{
+margin-top:10px;
+padding:9px;
+border-radius:8px;
+background:#eff6ff;
+text-align:center;
+font-weight:700
 }
 
-.detalle-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.detalle-grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px
 }
 
-.detalle-dato {
-  background: #f8fafc;
-  padding: 10px;
-  border-radius: 8px;
+.detalle-dato{
+background:#f8fafc;
+padding:10px;
+border-radius:8px
 }
 
-.detalle-label {
-  font-size: 10px;
-  color: #64748b;
-  font-weight: 700;
+.detalle-label{
+font-size:10px;
+color:#64748b;
+font-weight:700
 }
 
-.detalle-valor {
-  margin-top: 3px;
-  font-size: 13px;
-  font-weight: 700;
-  overflow-wrap: anywhere;
+.detalle-valor{
+margin-top:3px;
+font-size:13px;
+font-weight:700;
+overflow-wrap:anywhere
 }
 
-.galeria {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+.galeria{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:8px
 }
 
-.foto-gestion {
-  width: 100%;
-  min-height: 110px;
-  max-height: 230px;
-  object-fit: cover;
-  background: #e2e8f0;
-  border-radius: 8px;
+.foto-gestion{
+width:100%;
+min-height:110px;
+max-height:230px;
+object-fit:cover;
+background:#e2e8f0;
+border-radius:8px
 }
 
-.foto-titulo {
-  font-size: 10px;
-  font-weight: 700;
-  margin-bottom: 4px;
+.foto-titulo{
+font-size:10px;
+font-weight:700;
+margin-bottom:4px
 }
 
-.foto-codigo {
-  font-size: 9px;
-  color: #64748b;
-  margin-bottom: 4px;
-  overflow-wrap: anywhere;
+.foto-codigo{
+font-size:9px;
+color:#64748b;
+margin-bottom:4px;
+overflow-wrap:anywhere
 }
 
-.tabla-contenedor {
-  overflow-x: auto;
+.tabla-contenedor{
+overflow-x:auto
 }
 
-.tabla-detalle {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 11px;
+.tabla-detalle{
+width:100%;
+border-collapse:collapse;
+font-size:11px
 }
 
 .tabla-detalle th,
-.tabla-detalle td {
-  border-bottom: 1px solid #e2e8f0;
-  padding: 8px 5px;
-  text-align: left;
+.tabla-detalle td{
+border-bottom:1px solid #e2e8f0;
+padding:8px 5px;
+text-align:left
 }
 
-.tabla-detalle th {
-  background: #f1f5f9;
+.tabla-detalle th{
+background:#f1f5f9
 }
 
+@media(max-width:420px){
 
-/* RESPONSIVE */
-
-@media(max-width:420px) {
-
-  .contenedor {
-    padding: 9px;
-  }
-
-  .card {
-    padding: 14px;
-  }
-
-  .menu-principal {
-    grid-template-columns: 1fr;
-  }
-
-  .detalle-grid {
-    grid-template-columns: 1fr;
-  }
+.contenedor{padding:9px}
+.card{padding:14px}
+.menu-principal{grid-template-columns:1fr}
+.detalle-grid{grid-template-columns:1fr}
 
 }
 
@@ -821,167 +711,157 @@ button:disabled {
 
 <body>
 
-
 <div id="cargando" class="cargando oculto">
 
-  <div class="cargando-box">
+<div class="cargando-box">
 
-    <div class="spinner"></div>
+<div class="spinner"></div>
 
-    <div id="textoCargando">
-      Procesando...
-    </div>
-
-  </div>
+<div id="textoCargando">
+Procesando...
+</div>
 
 </div>
 
+</div>
 
-
-<!-- SCANNER GLOBAL -->
 
 <div id="scannerModal" class="scanner-modal oculto">
 
-  <div id="scannerTitulo" class="scanner-header">
-    Escanear código
-  </div>
+<div id="scannerTitulo" class="scanner-header">
+Escanear código
+</div>
 
-  <div class="video-box">
+<div class="video-box">
 
-    <video
-      id="videoScanner"
-      autoplay
-      muted
-      playsinline
-    ></video>
+<video
+id="videoScanner"
+autoplay
+muted
+playsinline
+></video>
 
-    <div class="zona-lectura">
-      <div class="linea"></div>
-    </div>
-
-  </div>
-
-  <div id="estadoScanner" class="estado-scanner">
-    Apunte al código.
-  </div>
-
-  <div class="scanner-botones">
-
-    <button
-      class="btn-rojo"
-      onclick="detenerScanner()"
-    >
-      CERRAR
-    </button>
-
-    <button
-      class="btn-azul"
-      onclick="cambiarCamara()"
-    >
-      🔄 CÁMARA
-    </button>
-
-  </div>
+<div class="zona-lectura">
+<div class="linea"></div>
+</div>
 
 </div>
 
+<div id="estadoScanner" class="estado-scanner">
+Apunte al código.
+</div>
+
+<div class="scanner-botones">
+
+<button
+class="btn-rojo"
+onclick="detenerScanner()"
+>
+CERRAR
+</button>
+
+<button
+class="btn-azul"
+onclick="cambiarCamara()"
+>
+🔄 CÁMARA
+</button>
+
+</div>
+
+</div>
 
 
 <div class="contenedor">
 
 
-<!-- LOGIN -->
-
 <section id="pantallaLogin">
 
-  <div class="logo">
-    RECEPCIÓN DE UNIDADES
-  </div>
+<div class="logo">
+RECEPCIÓN DE UNIDADES
+</div>
 
-  <div class="subtitulo">
-    Control de recepción y logística inversa
-  </div>
+<div class="subtitulo">
+Control de recepción y logística inversa
+</div>
 
-  <div class="card">
+<div class="card">
 
-    <div class="titulo-card">
-      Iniciar sesión
-    </div>
+<div class="titulo-card">
+Iniciar sesión
+</div>
 
-    <div id="mensajeLogin" class="oculto"></div>
+<div id="mensajeLogin" class="oculto"></div>
 
-    <label>Usuario</label>
+<label>Usuario</label>
 
-    <input
-      id="loginUsuario"
-      type="text"
-      autocapitalize="characters"
-      autocomplete="username"
-      placeholder="Usuario"
-    >
+<input
+id="loginUsuario"
+type="text"
+autocapitalize="characters"
+autocomplete="username"
+placeholder="Usuario"
+>
 
-    <label>Contraseña</label>
+<label>Contraseña</label>
 
-    <input
-      id="loginPassword"
-      type="password"
-      autocomplete="current-password"
-      placeholder="Contraseña"
-    >
+<input
+id="loginPassword"
+type="password"
+autocomplete="current-password"
+placeholder="Contraseña"
+>
 
-    <button
-      class="btn-principal"
-      onclick="login()"
-    >
-      INGRESAR
-    </button>
+<button
+class="btn-principal"
+onclick="login()"
+>
+INGRESAR
+</button>
 
-  </div>
+</div>
 
 </section>
 
-
-
-<!-- APP -->
 
 <section id="pantallaApp" class="oculto">
 
 <div class="usuario-barra">
 
-  <div>
+<div>
 
-    <div id="usuarioNombre" class="usuario-nombre"></div>
+<div id="usuarioNombre" class="usuario-nombre"></div>
 
-    <div id="usuarioInfo" class="usuario-info"></div>
+<div id="usuarioInfo" class="usuario-info"></div>
 
-  </div>
+</div>
 
-  <button
-    class="btn-salir"
-    onclick="logout()"
-  >
-    SALIR
-  </button>
+<button
+class="btn-salir"
+onclick="logout()"
+>
+SALIR
+</button>
 
 </div>
 
 
 <div class="menu-principal">
 
-  <button
-    class="btn-principal"
-    onclick="abrirRegistro()"
-  >
-    ➕ REGISTRO
-  </button>
+<button
+class="btn-principal"
+onclick="abrirRegistro()"
+>
+➕ REGISTRO
+</button>
 
-  <button
-    id="btnVerGestiones"
-    class="btn-azul oculto"
-    onclick="abrirGestiones()"
-  >
-    📋 VER GESTIONES
-  </button>
+<button
+id="btnVerGestiones"
+class="btn-azul oculto"
+onclick="abrirGestiones()"
+>
+📋 VER GESTIONES
+</button>
 
 </div>
 
@@ -989,45 +869,39 @@ button:disabled {
 <div id="mensajeGeneral" class="oculto"></div>
 
 
-
-<!-- REGISTRO -->
-
 <section id="contenedorRegistro">
 
 <div class="progreso">
 
-  <div id="mini1" class="paso-mini activo">
-    1<br>LLEGADA
-  </div>
+<div id="mini1" class="paso-mini activo">
+1<br>LLEGADA
+</div>
 
-  <div id="mini2" class="paso-mini">
-    2<br>RECEPCIÓN
-  </div>
+<div id="mini2" class="paso-mini">
+2<br>RECEPCIÓN
+</div>
 
-  <div id="mini3" class="paso-mini">
-    3<br>INVERSA
-  </div>
+<div id="mini3" class="paso-mini">
+3<br>INVERSA
+</div>
 
-  <div id="mini4" class="paso-mini">
-    4<br>CIERRE
-  </div>
+<div id="mini4" class="paso-mini">
+4<br>SALIDA
+</div>
 
 </div>
 
 
 <div id="boxIdRecepcion" class="recepcion-id oculto">
 
-  <div class="recepcion-id-label">
-    ID RECEPCIÓN
-  </div>
+<div class="recepcion-id-label">
+ID RECEPCIÓN
+</div>
 
-  <div id="idRecepcionVisible" class="recepcion-id-valor"></div>
+<div id="idRecepcionVisible" class="recepcion-id-valor"></div>
 
 </div>
 
-
-
-<!-- PASO 1 -->
 
 <section id="paso1">
 
@@ -1042,24 +916,23 @@ button:disabled {
 
 <div class="campo-escanear">
 
-  <input
-    id="idRuta"
-    type="text"
-    autocapitalize="characters"
-    autocomplete="off"
-    placeholder="Escanee o ingrese ID Ruta"
-  >
+<input
+id="idRuta"
+type="text"
+autocapitalize="characters"
+autocomplete="off"
+placeholder="Escanee o ingrese ID Ruta"
+>
 
-  <button
-    type="button"
-    class="btn-verde"
-    onclick="iniciarScannerRuta()"
-  >
-    📷
-  </button>
+<button
+type="button"
+class="btn-verde"
+onclick="iniciarScannerRuta()"
+>
+📷
+</button>
 
 </div>
-
 
 <div id="rutaEscaneada" class="codigo-ok oculto">
 ✅ ID Ruta escaneado
@@ -1069,67 +942,59 @@ button:disabled {
 <label>Placa *</label>
 
 <input
-  id="placa"
-  type="text"
-  autocapitalize="characters"
-  placeholder="ABC123"
+id="placa"
+type="text"
+autocapitalize="characters"
+placeholder="ABC123"
 >
 
 
 <label>DNI / RUC del receptor *</label>
 
 <input
-  id="dni"
-  type="tel"
-  inputmode="numeric"
-  maxlength="11"
-  placeholder="DNI 8 / RUC 11"
-  oninput="soloNumeros(this)"
+id="dni"
+type="tel"
+inputmode="numeric"
+maxlength="11"
+placeholder="DNI 8 / RUC 11"
+oninput="soloNumeros(this)"
 >
 
 
-<div class="foto-bloque">
+<label>Foto llegada de unidad *</label>
 
-  <label>Foto llegada de unidad *</label>
+<input
+type="file"
+accept="image/*"
+capture="environment"
+onchange="procesarFotoInput(this,'fotoLlegada')"
+>
 
-  <input
-    type="file"
-    accept="image/*"
-    capture="environment"
-    onchange="procesarFotoInput(this,'fotoLlegada')"
-  >
+<img id="previewFotoLlegada" class="preview oculto">
 
-  <img id="previewFotoLlegada" class="preview oculto">
-
-  <div id="okFotoLlegada" class="foto-ok oculto">
-    ✅ Fotografía preparada
-  </div>
-
+<div id="okFotoLlegada" class="foto-ok oculto">
+✅ Fotografía preparada
 </div>
 
 
 <div class="subtitulo-card">
-Precintos abiertos
+PRECINTOS DE LLEGADA
 </div>
 
-
-<div id="precintosAbiertos"></div>
+<div id="precintosLlegada"></div>
 
 
 <button
-  class="btn-principal"
-  onclick="iniciarRecepcion()"
+class="btn-principal"
+onclick="iniciarRecepcion()"
 >
-  INICIAR RECEPCIÓN
+INICIAR RECEPCIÓN
 </button>
 
 </div>
 
 </section>
 
-
-
-<!-- PASO 2 -->
 
 <section id="paso2" class="oculto">
 
@@ -1142,43 +1007,43 @@ Precintos abiertos
 
 <div class="contadores">
 
-  <div class="contador">
+<div class="contador">
 
-    <div class="contador-titulo">
-      SACOS
-    </div>
+<div class="contador-titulo">
+SACOS
+</div>
 
-    <div id="contadorSacos" class="contador-numero">
-      0
-    </div>
+<div id="contadorSacos" class="contador-numero">
+0
+</div>
 
-  </div>
+</div>
 
 
-  <div class="contador">
+<div class="contador">
 
-    <div class="contador-titulo">
-      BULTOS SUELTOS
-    </div>
+<div class="contador-titulo">
+BULTOS SUELTOS
+</div>
 
-    <div id="contadorBultos" class="contador-numero">
-      0
-    </div>
+<div id="contadorBultos" class="contador-numero">
+0
+</div>
 
-  </div>
+</div>
 
 </div>
 
 
 <div class="total-box">
 
-  <div class="contador-titulo">
-    TOTAL RECEPCIONADO
-  </div>
+<div class="contador-titulo">
+TOTAL RECEPCIONADO
+</div>
 
-  <div id="contadorTotal" class="total-numero">
-    0
-  </div>
+<div id="contadorTotal" class="total-numero">
+0
+</div>
 
 </div>
 
@@ -1187,29 +1052,29 @@ Precintos abiertos
 
 <div class="selector-tipo">
 
-  <button
-    id="btnTipoSaco"
-    class="seleccionado"
-    onclick="seleccionarTipoBulto('SACO')"
-  >
-    SACO
-  </button>
+<button
+id="btnTipoSaco"
+class="seleccionado"
+onclick="seleccionarTipoBulto('SACO')"
+>
+SACO
+</button>
 
-  <button
-    id="btnTipoBulto"
-    onclick="seleccionarTipoBulto('BULTO SUELTO')"
-  >
-    BULTO SUELTO
-  </button>
+<button
+id="btnTipoBulto"
+onclick="seleccionarTipoBulto('BULTO SUELTO')"
+>
+BULTO SUELTO
+</button>
 
 </div>
 
 
 <button
-  class="btn-verde"
-  onclick="iniciarScannerRecepcion()"
+class="btn-verde"
+onclick="iniciarScannerRecepcion()"
 >
-  📷 INICIAR LECTOR
+📷 INICIAR LECTOR
 </button>
 
 
@@ -1220,20 +1085,20 @@ Precintos abiertos
 
 <div class="manual">
 
-  <input
-    id="codigoManual"
-    type="text"
-    autocapitalize="characters"
-    autocomplete="off"
-    placeholder="Código"
-  >
+<input
+id="codigoManual"
+type="text"
+autocapitalize="characters"
+autocomplete="off"
+placeholder="Código"
+>
 
-  <button
-    class="btn-azul"
-    onclick="agregarManual()"
-  >
-    +
-  </button>
+<button
+class="btn-azul"
+onclick="agregarManual()"
+>
++
+</button>
 
 </div>
 
@@ -1243,12 +1108,12 @@ Precintos abiertos
 
 <div style="margin-top:15px;">
 
-  <button
-    class="btn-principal"
-    onclick="irPaso3()"
-  >
-    CONTINUAR
-  </button>
+<button
+class="btn-principal"
+onclick="irPaso3()"
+>
+CONTINUAR
+</button>
 
 </div>
 
@@ -1256,9 +1121,6 @@ Precintos abiertos
 
 </section>
 
-
-
-<!-- PASO 3 -->
 
 <section id="paso3" class="oculto">
 
@@ -1273,137 +1135,137 @@ Precintos abiertos
 
 <div class="decision">
 
-  <button
-    id="btnInversaNo"
-    class="activo-no"
-    onclick="seleccionarInversa(false)"
-  >
-    NO
-  </button>
+<button
+id="btnInversaNo"
+class="activo-no"
+onclick="seleccionarInversa(false)"
+>
+NO
+</button>
 
-  <button
-    id="btnInversaSi"
-    onclick="seleccionarInversa(true)"
-  >
-    SÍ
-  </button>
+<button
+id="btnInversaSi"
+onclick="seleccionarInversa(true)"
+>
+SÍ
+</button>
 
 </div>
 
 
 <div id="contenidoInversa" class="oculto">
 
-  <div class="contador">
+<div class="contador">
 
-    <div class="contador-titulo">
-      BULTOS LOGÍSTICA INVERSA
-    </div>
+<div class="contador-titulo">
+BULTOS LOGÍSTICA INVERSA
+</div>
 
-    <div id="contadorInversa" class="contador-numero">
-      0
-    </div>
+<div id="contadorInversa" class="contador-numero">
+0
+</div>
 
-  </div>
-
-
-  <label style="margin-top:15px;">
-    Tipo de bulto
-  </label>
-
-  <div class="selector-tipo">
-
-    <button
-      id="btnInvSaco"
-      class="seleccionado"
-      onclick="seleccionarTipoInversa('SACO')"
-    >
-      SACO
-    </button>
-
-    <button
-      id="btnInvBulto"
-      onclick="seleccionarTipoInversa('BULTO SUELTO')"
-    >
-      BULTO SUELTO
-    </button>
-
-  </div>
+</div>
 
 
-  <button
-    class="btn-verde"
-    onclick="iniciarScannerInversa()"
-  >
-    📷 INICIAR LECTOR
-  </button>
+<label style="margin-top:15px;">
+Tipo de bulto
+</label>
+
+<div class="selector-tipo">
+
+<button
+id="btnInvSaco"
+class="seleccionado"
+onclick="seleccionarTipoInversa('SACO')"
+>
+SACO
+</button>
+
+<button
+id="btnInvBulto"
+onclick="seleccionarTipoInversa('BULTO SUELTO')"
+>
+BULTO SUELTO
+</button>
+
+</div>
 
 
-  <div style="margin-top:15px;">
-
-    <label>Ingreso manual</label>
-
-    <div class="manual">
-
-      <input
-        id="codigoManualInversa"
-        type="text"
-        autocapitalize="characters"
-        autocomplete="off"
-        placeholder="Código"
-      >
-
-      <button
-        class="btn-azul"
-        onclick="agregarManualInversa()"
-      >
-        +
-      </button>
-
-    </div>
-
-  </div>
+<button
+class="btn-verde"
+onclick="iniciarScannerInversa()"
+>
+📷 INICIAR LECTOR
+</button>
 
 
-  <div id="listaInversa" class="lista"></div>
+<div style="margin-top:15px;">
+
+<label>Ingreso manual</label>
+
+<div class="manual">
+
+<input
+id="codigoManualInversa"
+type="text"
+autocapitalize="characters"
+autocomplete="off"
+placeholder="Código"
+>
+
+<button
+class="btn-azul"
+onclick="agregarManualInversa()"
+>
++
+</button>
+
+</div>
+
+</div>
 
 
-  <div class="foto-bloque" style="margin-top:15px;">
+<div id="listaInversa" class="lista"></div>
 
-    <label>Foto logística inversa *</label>
 
-    <input
-      type="file"
-      accept="image/*"
-      capture="environment"
-      onchange="procesarFotoInput(this,'fotoInversa')"
-    >
+<div style="margin-top:15px;">
 
-    <img id="previewFotoInversa" class="preview oculto">
+<label>Foto logística inversa *</label>
 
-    <div id="okFotoInversa" class="foto-ok oculto">
-      ✅ Fotografía preparada
-    </div>
+<input
+type="file"
+accept="image/*"
+capture="environment"
+onchange="procesarFotoInput(this,'fotoInversa')"
+>
 
-  </div>
+<img id="previewFotoInversa" class="preview oculto">
+
+<div id="okFotoInversa" class="foto-ok oculto">
+✅ Fotografía preparada
+</div>
+
+</div>
 
 </div>
 
 
 <div class="botones-doble">
 
-  <button
-    class="btn-gris"
-    onclick="irPaso(2)"
-  >
-    ATRÁS
-  </button>
+<button
+class="btn-gris"
+onclick="irPaso(2)"
+>
+ATRÁS
+</button>
 
-  <button
-    class="btn-principal"
-    onclick="irPaso4()"
-  >
-    CONTINUAR
-  </button>
+<button
+class="btn-principal"
+onclick="irPaso4()"
+>
+CONTINUAR
+</button>
 
 </div>
 
@@ -1412,51 +1274,43 @@ Precintos abiertos
 </section>
 
 
-
-<!-- PASO 4 -->
-
 <section id="paso4" class="oculto">
 
 <div class="card">
 
 <div class="titulo-card">
-4. Cierre de recepción
+4. Salida de la unidad
 </div>
 
 
-<div class="foto-bloque">
+<label>Foto sacos / bultos recibidos *</label>
 
-  <label>Foto sacos / bultos recibidos *</label>
+<input
+type="file"
+accept="image/*"
+capture="environment"
+onchange="procesarFotoInput(this,'fotoCarga')"
+>
 
-  <input
-    type="file"
-    accept="image/*"
-    capture="environment"
-    onchange="procesarFotoInput(this,'fotoCarga')"
-  >
+<img id="previewFotoCarga" class="preview oculto">
 
-  <img id="previewFotoCarga" class="preview oculto">
-
-  <div id="okFotoCarga" class="foto-ok oculto">
-    ✅ Fotografía preparada
-  </div>
-
+<div id="okFotoCarga" class="foto-ok oculto">
+✅ Fotografía preparada
 </div>
 
 
 <div class="subtitulo-card">
-Precintos cerrados
+PRECINTOS DE SALIDA
 </div>
 
-
-<div id="precintosCerrados"></div>
+<div id="precintosSalida"></div>
 
 
 <label>Observaciones</label>
 
 <textarea
-  id="observaciones"
-  placeholder="Observaciones"
+id="observaciones"
+placeholder="Observaciones"
 ></textarea>
 
 
@@ -1468,36 +1322,36 @@ Ubicación pendiente.
 
 
 <button
-  class="btn-azul"
-  onclick="obtenerGPS()"
+class="btn-azul"
+onclick="obtenerGPS()"
 >
-  📍 ACTUALIZAR UBICACIÓN
+📍 ACTUALIZAR UBICACIÓN
 </button>
 
 
 <div
-  id="resumenFinal"
-  class="resumen-final"
-  style="margin-top:15px;"
+id="resumenFinal"
+class="resumen-final"
+style="margin-top:15px;"
 ></div>
 
 
 <div class="botones-doble">
 
-  <button
-    class="btn-gris"
-    onclick="irPaso(3)"
-  >
-    ATRÁS
-  </button>
+<button
+class="btn-gris"
+onclick="irPaso(3)"
+>
+ATRÁS
+</button>
 
-  <button
-    id="btnFinalizar"
-    class="btn-principal"
-    onclick="finalizarRecepcion()"
-  >
-    FINALIZAR RECEPCIÓN
-  </button>
+<button
+id="btnFinalizar"
+class="btn-principal"
+onclick="finalizarRecepcion()"
+>
+FINALIZAR RECEPCIÓN
+</button>
 
 </div>
 
@@ -1507,9 +1361,6 @@ Ubicación pendiente.
 
 </section>
 
-
-
-<!-- CONSULTA -->
 
 <section id="pantallaGestiones" class="oculto">
 
@@ -1526,68 +1377,60 @@ Ubicación pendiente.
 <input id="filtroFechaHasta" type="date">
 
 <label>ID Recepción</label>
-<input id="filtroIdRecepcion" type="text" placeholder="REC-...">
+<input id="filtroIdRecepcion" type="text">
 
 <label>ID Ruta</label>
-<input id="filtroRuta" type="text" placeholder="Ruta">
+<input id="filtroRuta" type="text">
 
 <label>Placa</label>
-<input id="filtroPlaca" type="text" placeholder="Placa">
+<input id="filtroPlaca" type="text">
 
 <label>Estado</label>
 
 <select id="filtroEstado">
 
-  <option value="">TODOS</option>
-
-  <option value="EN PROCESO">
-    EN PROCESO
-  </option>
-
-  <option value="FINALIZADO">
-    FINALIZADO
-  </option>
+<option value="">TODOS</option>
+<option value="EN PROCESO">EN PROCESO</option>
+<option value="FINALIZADO">FINALIZADO</option>
 
 </select>
 
 
 <div class="botones-doble">
 
-  <button
-    class="btn-gris"
-    onclick="limpiarFiltrosGestiones()"
-  >
-    LIMPIAR
-  </button>
+<button
+class="btn-gris"
+onclick="limpiarFiltrosGestiones()"
+>
+LIMPIAR
+</button>
 
-  <button
-    class="btn-azul"
-    onclick="buscarGestiones()"
-  >
-    🔎 BUSCAR
-  </button>
-
-</div>
+<button
+class="btn-azul"
+onclick="buscarGestiones()"
+>
+🔎 BUSCAR
+</button>
 
 </div>
 
+</div>
 
 <div id="resultadoGestiones"></div>
 
 </section>
 
 
-
 <section id="pantallaDetalleGestion" class="oculto">
 
 <div class="card">
 
-  <button
-    class="btn-gris"
-    onclick="volverListaGestiones()"
-  >
-    ← VOLVER A GESTIONES
-  </button>
+<button
+class="btn-gris"
+onclick="volverListaGestiones()"
+>
+← VOLVER A GESTIONES
+</button>
 
 </div>
 
@@ -1595,59 +1438,43 @@ Ubicación pendiente.
 
 </section>
 
-
 </section>
 
 </div>
 
 
-
 <script>
 
-/* =====================================================
-   API
-===================================================== */
-
 const API_URL =
-  "https://script.google.com/macros/s/AKfycbzOtjAzFM_qYKtxFDTB9acq-NOcqobDMCp0H55FzserkLAa631lYtL-JN-0RSBQfOcv/exec";
+"https://script.google.com/macros/s/AKfycbzOtjAzFM_qYKtxFDTB9acq-NOcqobDMCp0H55FzserkLAa631lYtL-JN-0RSBQfOcv/exec";
 
-
-/* =====================================================
-   VARIABLES
-===================================================== */
 
 let tokenSesion = "";
-
 let usuarioActual = null;
-
 let idRecepcionActual = "";
-
 let pasoActual = 1;
 
 let latitudActual = null;
-
 let longitudActual = null;
-
 let precisionActual = null;
 
 
 const fotos = {
 
-  fotoLlegada: "",
+fotoLlegada:"",
 
-  precintoAbierto1: "",
-  precintoAbierto2: "",
-  precintoAbierto3: "",
-  precintoAbierto4: "",
+precintoAbierto1:"",
+precintoAbierto2:"",
+precintoAbierto3:"",
+precintoAbierto4:"",
 
-  fotoInversa: "",
+fotoInversa:"",
+fotoCarga:"",
 
-  fotoCarga: "",
-
-  precintoCerrado1: "",
-  precintoCerrado2: "",
-  precintoCerrado3: "",
-  precintoCerrado4: ""
+precintoCerrado1:"",
+precintoCerrado2:"",
+precintoCerrado3:"",
+precintoCerrado4:""
 
 };
 
@@ -1655,174 +1482,157 @@ const fotos = {
 let detalles = [];
 
 let tipoBultoActual = "SACO";
-
 let tipoInversaActual = "SACO";
 
 let tieneInversa = false;
 
 
-/* SCANNER */
-
 let lectorZXing = null;
-
 let scannerActivo = false;
 
 let scannerDestino = "DETALLE";
-
 let scannerMovimiento = "RECEPCIÓN";
 
 let campoDestinoScanner = "";
 
 let ultimoCodigo = "";
-
 let ultimaLectura = 0;
-
 let bloqueoLectura = false;
 
 let dispositivosVideo = [];
-
 let indiceCamara = 0;
 
 
 /* =====================================================
-   CREAR PRECINTOS
+   PRECINTOS
 ===================================================== */
 
-function crearControlesPrecintos() {
+function crearControlesPrecintos(){
 
-  const abiertos =
-    document.getElementById(
-      "precintosAbiertos"
-    );
+const llegada =
+document.getElementById(
+"precintosLlegada"
+);
 
+const salida =
+document.getElementById(
+"precintosSalida"
+);
 
-  const cerrados =
-    document.getElementById(
-      "precintosCerrados"
-    );
-
-
-  abiertos.innerHTML = "";
-
-  cerrados.innerHTML = "";
+llegada.innerHTML = "";
+salida.innerHTML = "";
 
 
-  for (
-    let i = 1;
-    i <= 4;
-    i++
-  ) {
+for(let i=1;i<=4;i++){
 
-    abiertos.innerHTML +=
-      generarHtmlPrecinto(
-        "ABIERTO",
-        i
-      );
+llegada.innerHTML +=
+generarHtmlPrecinto(
+"LLEGADA",
+i
+);
 
+salida.innerHTML +=
+generarHtmlPrecinto(
+"SALIDA",
+i
+);
 
-    cerrados.innerHTML +=
-      generarHtmlPrecinto(
-        "CERRADO",
-        i
-      );
-
-  }
+}
 
 }
 
 
 function generarHtmlPrecinto(
-  tipo,
-  numero
-) {
+tipo,
+numero
+){
 
-  const clave =
-    tipo === "ABIERTO"
-      ? "precintoAbierto" + numero
-      : "precintoCerrado" + numero;
+const esLlegada =
+tipo === "LLEGADA";
 
 
-  const campoCodigo =
-    tipo === "ABIERTO"
-      ? "codigoPrecintoAbierto" + numero
-      : "codigoPrecintoCerrado" + numero;
+const clave =
+esLlegada
+? "precintoAbierto"+numero
+: "precintoCerrado"+numero;
 
 
-  const requerido =
-    (
-      tipo === "CERRADO" &&
-      numero === 1
-    )
-      ? " *"
-      : "";
+const campoCodigo =
+esLlegada
+? "codigoPrecintoAbierto"+numero
+: "codigoPrecintoCerrado"+numero;
 
 
-  return `
-
-    <div class="precinto-box">
-
-      <div class="precinto-titulo">
-        PRECINTO ${tipo} ${numero}${requerido}
-      </div>
-
-
-      <label>Código del precinto</label>
-
-      <div class="campo-escanear">
-
-        <input
-          id="${campoCodigo}"
-          type="text"
-          autocomplete="off"
-          autocapitalize="characters"
-          placeholder="Escanee o escriba código"
-        >
-
-        <button
-          type="button"
-          class="btn-verde"
-          onclick="iniciarScannerPrecinto('${campoCodigo}')"
-        >
-          📷
-        </button>
-
-      </div>
+const requerido =
+(
+tipo === "SALIDA" &&
+numero === 1
+)
+? " *"
+: "";
 
 
-      <div
-        id="ok${capitalizarPrimera(campoCodigo)}"
-        class="codigo-ok oculto"
-      >
-        ✅ Código escaneado
-      </div>
+return `
 
+<div class="precinto-box">
 
-      <label>Fotografía</label>
+<div class="precinto-titulo">
+PRECINTO DE ${tipo} ${numero}${requerido}
+</div>
 
-      <input
-        type="file"
-        accept="image/*"
-        capture="environment"
-        onchange="procesarFotoInput(this,'${clave}')"
-      >
+<label>Código del precinto</label>
 
+<div class="campo-escanear">
 
-      <img
-        id="preview${capitalizarPrimera(clave)}"
-        class="preview oculto"
-      >
+<input
+id="${campoCodigo}"
+type="text"
+autocomplete="off"
+autocapitalize="characters"
+placeholder="Escanee o escriba código"
+>
 
+<button
+type="button"
+class="btn-verde"
+onclick="iniciarScannerPrecinto('${campoCodigo}','${tipo}',${numero})"
+>
+📷
+</button>
 
-      <div
-        id="ok${capitalizarPrimera(clave)}"
-        class="foto-ok oculto"
-      >
-        ✅ Fotografía preparada
-      </div>
+</div>
 
-    </div>
+<div
+id="ok${capitalizarPrimera(campoCodigo)}"
+class="codigo-ok oculto"
+>
+✅ Código escaneado
+</div>
 
-  `;
+<label>Fotografía del precinto</label>
+
+<input
+type="file"
+accept="image/*"
+capture="environment"
+onchange="procesarFotoInput(this,'${clave}')"
+>
+
+<img
+id="preview${capitalizarPrimera(clave)}"
+class="preview oculto"
+>
+
+<div
+id="ok${capitalizarPrimera(clave)}"
+class="foto-ok oculto"
+>
+✅ Fotografía preparada
+</div>
+
+</div>
+
+`;
 
 }
 
@@ -1831,73 +1641,71 @@ function generarHtmlPrecinto(
    API
 ===================================================== */
 
-async function llamarAPI(payload) {
+async function llamarAPI(payload){
 
-  const cuerpo =
-    new URLSearchParams();
+const cuerpo =
+new URLSearchParams();
 
-
-  cuerpo.append(
-    "payload",
-    JSON.stringify(payload)
-  );
-
-
-  const respuesta =
-    await fetch(
-      API_URL,
-      {
-        method: "POST",
-        body: cuerpo
-      }
-    );
+cuerpo.append(
+"payload",
+JSON.stringify(payload)
+);
 
 
-  if (!respuesta.ok) {
-
-    throw new Error(
-      "No se pudo conectar con el servidor."
-    );
-
-  }
-
-
-  const texto =
-    await respuesta.text();
+const respuesta =
+await fetch(
+API_URL,
+{
+method:"POST",
+body:cuerpo
+}
+);
 
 
-  let json;
+if(!respuesta.ok){
+
+throw new Error(
+"No se pudo conectar con el servidor."
+);
+
+}
 
 
-  try {
-
-    json =
-      JSON.parse(texto);
-
-  }
-
-  catch (error) {
-
-    console.error(texto);
-
-    throw new Error(
-      "El servidor devolvió una respuesta no válida."
-    );
-
-  }
+const texto =
+await respuesta.text();
 
 
-  if (!json.success) {
-
-    throw new Error(
-      json.error ||
-      "Ocurrió un error."
-    );
-
-  }
+let json;
 
 
-  return json.data;
+try{
+
+json =
+JSON.parse(texto);
+
+}
+catch(error){
+
+console.error(texto);
+
+throw new Error(
+"El servidor devolvió una respuesta no válida."
+);
+
+}
+
+
+if(!json.success){
+
+throw new Error(
+json.error ||
+"Ocurrió un error."
+);
+
+}
+
+
+return json.data;
 
 }
 
@@ -1906,341 +1714,322 @@ async function llamarAPI(payload) {
    LOGIN
 ===================================================== */
 
-async function login() {
+async function login(){
 
-  ocultarMensaje(
-    "mensajeLogin"
-  );
-
-
-  const usuario =
-    document
-      .getElementById(
-        "loginUsuario"
-      )
-      .value
-      .trim()
-      .toUpperCase();
+ocultarMensaje(
+"mensajeLogin"
+);
 
 
-  const contrasena =
-    document
-      .getElementById(
-        "loginPassword"
-      )
-      .value;
+const usuario =
+document
+.getElementById(
+"loginUsuario"
+)
+.value
+.trim()
+.toUpperCase();
 
 
-  if (
-    !usuario ||
-    !contrasena
-  ) {
-
-    mostrarMensaje(
-      "mensajeLogin",
-      "Ingrese usuario y contraseña.",
-      false
-    );
-
-    return;
-
-  }
+const contrasena =
+document
+.getElementById(
+"loginPassword"
+)
+.value;
 
 
-  mostrarCargando(
-    "Validando usuario..."
-  );
+if(
+!usuario ||
+!contrasena
+){
+
+mostrarMensaje(
+"mensajeLogin",
+"Ingrese usuario y contraseña.",
+false
+);
+
+return;
+
+}
 
 
-  try {
-
-    const res =
-      await llamarAPI({
-
-        accion:
-          "LOGIN",
-
-        usuario:
-          usuario,
-
-        contrasena:
-          contrasena
-
-      });
+mostrarCargando(
+"Validando usuario..."
+);
 
 
-    tokenSesion =
-      res.token;
+try{
+
+const res =
+await llamarAPI({
+
+accion:"LOGIN",
+
+usuario:usuario,
+
+contrasena:contrasena
+
+});
 
 
-    usuarioActual =
-      res;
+tokenSesion =
+res.token;
 
 
-    sessionStorage.setItem(
-      "tokenSesionRecepcion",
-      tokenSesion
-    );
+usuarioActual =
+res;
 
 
-    mostrarAplicacion();
-
-    obtenerGPS();
-
-
-    const pendiente =
-      localStorage.getItem(
-        "recepcionActiva"
-      );
+sessionStorage.setItem(
+"tokenSesionRecepcion",
+tokenSesion
+);
 
 
-    if (pendiente) {
+mostrarAplicacion();
 
-      await recuperarRecepcion(
-        pendiente
-      );
+obtenerGPS();
 
-    }
 
-  }
+const pendiente =
+localStorage.getItem(
+"recepcionActiva"
+);
 
-  catch (error) {
 
-    mostrarMensaje(
-      "mensajeLogin",
-      obtenerError(error),
-      false
-    );
+if(pendiente){
 
-  }
+await recuperarRecepcion(
+pendiente
+);
 
-  finally {
+}
 
-    ocultarCargando();
+}
+catch(error){
 
-  }
+mostrarMensaje(
+"mensajeLogin",
+obtenerError(error),
+false
+);
+
+}
+finally{
+
+ocultarCargando();
+
+}
 
 }
 
 
 /* =====================================================
-   APLICACIÓN
+   APP
 ===================================================== */
 
-function mostrarAplicacion() {
+function mostrarAplicacion(){
 
-  document
-    .getElementById(
-      "pantallaLogin"
-    )
-    .classList
-    .add("oculto");
-
-
-  document
-    .getElementById(
-      "pantallaApp"
-    )
-    .classList
-    .remove("oculto");
+document
+.getElementById(
+"pantallaLogin"
+)
+.classList
+.add("oculto");
 
 
-  document
-    .getElementById(
-      "usuarioNombre"
-    )
-    .textContent =
-      usuarioActual.usuario || "";
+document
+.getElementById(
+"pantallaApp"
+)
+.classList
+.remove("oculto");
 
 
-  const datos = [];
+document
+.getElementById(
+"usuarioNombre"
+)
+.textContent =
+usuarioActual.usuario || "";
 
 
-  if (usuarioActual.rol) {
-    datos.push(usuarioActual.rol);
-  }
+const datos = [];
 
 
-  if (usuarioActual.area) {
-    datos.push(usuarioActual.area);
-  }
+if(usuarioActual.rol){
+datos.push(usuarioActual.rol);
+}
+
+if(usuarioActual.area){
+datos.push(usuarioActual.area);
+}
+
+if(usuarioActual.region){
+datos.push(usuarioActual.region);
+}
 
 
-  if (usuarioActual.region) {
-    datos.push(usuarioActual.region);
-  }
+document
+.getElementById(
+"usuarioInfo"
+)
+.textContent =
+datos.join(" | ");
 
 
-  document
-    .getElementById(
-      "usuarioInfo"
-    )
-    .textContent =
-      datos.join(" | ");
+configurarModuloConsulta();
+
+}
 
 
-  configurarModuloConsulta();
+function configurarModuloConsulta(){
+
+if(!usuarioActual){
+return;
+}
+
+
+const rol =
+String(
+usuarioActual.rol || ""
+)
+.trim()
+.toUpperCase();
+
+
+const permitido =
+[
+"ADMINISTRADOR",
+"ENCARGADO",
+"PDV"
+]
+.includes(rol);
+
+
+document
+.getElementById(
+"btnVerGestiones"
+)
+.classList
+.toggle(
+"oculto",
+!permitido
+);
 
 }
 
 
 /* =====================================================
-   CONSULTA
+   SESIÓN
 ===================================================== */
 
-function configurarModuloConsulta() {
+async function restaurarSesion(){
 
-  if (!usuarioActual) {
-    return;
-  }
-
-
-  const rol =
-    String(
-      usuarioActual.rol || ""
-    )
-      .trim()
-      .toUpperCase();
+const token =
+sessionStorage.getItem(
+"tokenSesionRecepcion"
+);
 
 
-  const permitido =
-    [
-      "ADMINISTRADOR",
-      "ENCARGADO",
-      "PDV"
-    ]
-    .includes(rol);
+if(!token){
+return;
+}
 
 
-  document
-    .getElementById(
-      "btnVerGestiones"
-    )
-    .classList
-    .toggle(
-      "oculto",
-      !permitido
-    );
+try{
+
+const res =
+await llamarAPI({
+
+accion:"VALIDAR_SESION",
+
+token:token
+
+});
+
+
+tokenSesion =
+token;
+
+
+usuarioActual =
+res;
+
+
+mostrarAplicacion();
+
+obtenerGPS();
+
+
+const pendiente =
+localStorage.getItem(
+"recepcionActiva"
+);
+
+
+if(pendiente){
+
+await recuperarRecepcion(
+pendiente
+);
+
+}
+
+}
+catch(error){
+
+sessionStorage.removeItem(
+"tokenSesionRecepcion"
+);
+
+}
 
 }
 
 
-/* =====================================================
-   RESTAURAR SESIÓN
-===================================================== */
+async function logout(){
 
-async function restaurarSesion() {
-
-  const token =
-    sessionStorage.getItem(
-      "tokenSesionRecepcion"
-    );
+detenerScanner();
 
 
-  if (!token) {
-    return;
-  }
+const token =
+tokenSesion;
 
 
-  try {
-
-    const res =
-      await llamarAPI({
-
-        accion:
-          "VALIDAR_SESION",
-
-        token:
-          token
-
-      });
+sessionStorage.removeItem(
+"tokenSesionRecepcion"
+);
 
 
-    tokenSesion =
-      token;
+tokenSesion = "";
 
 
-    usuarioActual =
-      res;
+try{
 
+if(token){
 
-    mostrarAplicacion();
+await llamarAPI({
 
-    obtenerGPS();
+accion:"LOGOUT",
 
+token:token
 
-    const pendiente =
-      localStorage.getItem(
-        "recepcionActiva"
-      );
+});
 
+}
 
-    if (pendiente) {
+}
+catch(error){
 
-      await recuperarRecepcion(
-        pendiente
-      );
-
-    }
-
-  }
-
-  catch (error) {
-
-    sessionStorage.removeItem(
-      "tokenSesionRecepcion"
-    );
-
-  }
+console.log(error);
 
 }
 
 
-/* =====================================================
-   LOGOUT
-===================================================== */
-
-async function logout() {
-
-  detenerScanner();
-
-
-  const token =
-    tokenSesion;
-
-
-  sessionStorage.removeItem(
-    "tokenSesionRecepcion"
-  );
-
-
-  tokenSesion = "";
-
-
-  try {
-
-    if (token) {
-
-      await llamarAPI({
-
-        accion: "LOGOUT",
-
-        token: token
-
-      });
-
-    }
-
-  }
-
-  catch (error) {
-
-    console.log(error);
-
-  }
-
-
-  location.reload();
+location.reload();
 
 }
 
@@ -2249,35 +2038,35 @@ async function logout() {
    NAVEGACIÓN
 ===================================================== */
 
-function abrirRegistro() {
+function abrirRegistro(){
 
-  document
-    .getElementById(
-      "pantallaGestiones"
-    )
-    .classList
-    .add("oculto");
-
-
-  document
-    .getElementById(
-      "pantallaDetalleGestion"
-    )
-    .classList
-    .add("oculto");
+document
+.getElementById(
+"pantallaGestiones"
+)
+.classList
+.add("oculto");
 
 
-  document
-    .getElementById(
-      "contenedorRegistro"
-    )
-    .classList
-    .remove("oculto");
+document
+.getElementById(
+"pantallaDetalleGestion"
+)
+.classList
+.add("oculto");
 
 
-  irPaso(
-    pasoActual || 1
-  );
+document
+.getElementById(
+"contenedorRegistro"
+)
+.classList
+.remove("oculto");
+
+
+irPaso(
+pasoActual || 1
+);
 
 }
 
@@ -2286,248 +2075,238 @@ function abrirRegistro() {
    INICIAR RECEPCIÓN
 ===================================================== */
 
-async function iniciarRecepcion() {
+async function iniciarRecepcion(){
 
-  const idRuta =
-    document
-      .getElementById("idRuta")
-      .value
-      .trim()
-      .toUpperCase();
+const idRuta =
+valorCampo("idRuta");
 
 
-  const placa =
-    document
-      .getElementById("placa")
-      .value
-      .trim()
-      .toUpperCase();
+const placa =
+valorCampo("placa");
 
 
-  const dni =
-    document
-      .getElementById("dni")
-      .value
-      .trim();
+const dni =
+document
+.getElementById("dni")
+.value
+.trim();
 
 
-  if (!idRuta) {
+if(!idRuta){
 
-    mostrarError(
-      "Ingrese o escanee el ID Ruta."
-    );
+mostrarError(
+"Ingrese o escanee el ID Ruta."
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  if (!placa) {
+if(!placa){
 
-    mostrarError(
-      "Ingrese la placa."
-    );
+mostrarError(
+"Ingrese la placa."
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  if (
-    !/^(?:\d{8}|\d{11})$/
-      .test(dni)
-  ) {
+if(
+!/^(?:\d{8}|\d{11})$/
+.test(dni)
+){
 
-    mostrarError(
-      "Ingrese un DNI de 8 dígitos o RUC de 11 dígitos."
-    );
+mostrarError(
+"Ingrese un DNI de 8 dígitos o RUC de 11 dígitos."
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  if (!fotos.fotoLlegada) {
+if(!fotos.fotoLlegada){
 
-    mostrarError(
-      "Debe registrar la foto de llegada."
-    );
+mostrarError(
+"Debe registrar la foto de llegada."
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  for (
-    let i = 1;
-    i <= 4;
-    i++
-  ) {
+for(
+let i=1;
+i<=4;
+i++
+){
 
-    const codigo =
-      valorCampo(
-        "codigoPrecintoAbierto" + i
-      );
+const codigo =
+valorCampo(
+"codigoPrecintoAbierto"+i
+);
 
 
-    const foto =
-      fotos[
-        "precintoAbierto" + i
-      ];
+const foto =
+fotos[
+"precintoAbierto"+i
+];
 
 
-    if (
-      codigo &&
-      !foto
-    ) {
+if(
+codigo &&
+!foto
+){
 
-      mostrarError(
-        "Precinto abierto " +
-        i +
-        ": falta la fotografía."
-      );
+mostrarError(
+"Precinto de llegada "+
+i+
+": falta la fotografía."
+);
 
-      return;
+return;
 
-    }
+}
 
 
-    if (
-      !codigo &&
-      foto
-    ) {
+if(
+!codigo &&
+foto
+){
 
-      mostrarError(
-        "Precinto abierto " +
-        i +
-        ": falta escanear el código."
-      );
+mostrarError(
+"Precinto de llegada "+
+i+
+": falta escanear el código."
+);
 
-      return;
+return;
 
-    }
+}
 
-  }
+}
 
 
-  mostrarCargando(
-    "Iniciando recepción..."
-  );
+mostrarCargando(
+"Iniciando recepción..."
+);
 
 
-  try {
+try{
 
-    const res =
-      await llamarAPI({
+const res =
+await llamarAPI({
 
-        accion:
-          "INICIAR_RECEPCION",
+accion:
+"INICIAR_RECEPCION",
 
-        datos: {
+datos:{
 
-          token:
-            tokenSesion,
+token:
+tokenSesion,
 
-          idRuta:
-            idRuta,
+idRuta:
+idRuta,
 
-          placa:
-            placa,
+placa:
+placa,
 
-          dni:
-            dni,
+dni:
+dni,
 
-          fotoLlegada:
-            fotos.fotoLlegada,
+fotoLlegada:
+fotos.fotoLlegada,
 
-          codigoPrecintoAbierto1:
-            valorCampo(
-              "codigoPrecintoAbierto1"
-            ),
+codigoPrecintoAbierto1:
+valorCampo(
+"codigoPrecintoAbierto1"
+),
 
-          precintoAbierto1:
-            fotos.precintoAbierto1,
+precintoAbierto1:
+fotos.precintoAbierto1,
 
-          codigoPrecintoAbierto2:
-            valorCampo(
-              "codigoPrecintoAbierto2"
-            ),
+codigoPrecintoAbierto2:
+valorCampo(
+"codigoPrecintoAbierto2"
+),
 
-          precintoAbierto2:
-            fotos.precintoAbierto2,
+precintoAbierto2:
+fotos.precintoAbierto2,
 
-          codigoPrecintoAbierto3:
-            valorCampo(
-              "codigoPrecintoAbierto3"
-            ),
+codigoPrecintoAbierto3:
+valorCampo(
+"codigoPrecintoAbierto3"
+),
 
-          precintoAbierto3:
-            fotos.precintoAbierto3,
+precintoAbierto3:
+fotos.precintoAbierto3,
 
-          codigoPrecintoAbierto4:
-            valorCampo(
-              "codigoPrecintoAbierto4"
-            ),
+codigoPrecintoAbierto4:
+valorCampo(
+"codigoPrecintoAbierto4"
+),
 
-          precintoAbierto4:
-            fotos.precintoAbierto4
+precintoAbierto4:
+fotos.precintoAbierto4
 
-        }
+}
 
-      });
+});
 
 
-    idRecepcionActual =
-      res.idRecepcion;
+idRecepcionActual =
+res.idRecepcion;
 
 
-    localStorage.setItem(
-      "recepcionActiva",
-      idRecepcionActual
-    );
+localStorage.setItem(
+"recepcionActiva",
+idRecepcionActual
+);
 
 
-    document
-      .getElementById(
-        "idRecepcionVisible"
-      )
-      .textContent =
-        idRecepcionActual;
+document
+.getElementById(
+"idRecepcionVisible"
+)
+.textContent =
+idRecepcionActual;
 
 
-    document
-      .getElementById(
-        "boxIdRecepcion"
-      )
-      .classList
-      .remove("oculto");
+document
+.getElementById(
+"boxIdRecepcion"
+)
+.classList
+.remove("oculto");
 
 
-    irPaso(2);
+irPaso(2);
 
 
-    mostrarMensaje(
-      "mensajeGeneral",
-      "✅ Recepción iniciada: " +
-      idRecepcionActual,
-      true
-    );
+mostrarMensaje(
+"mensajeGeneral",
+"✅ Recepción iniciada: "+
+idRecepcionActual,
+true
+);
 
-  }
+}
+catch(error){
 
-  catch (error) {
+mostrarError(
+obtenerError(error)
+);
 
-    mostrarError(
-      obtenerError(error)
-    );
+}
+finally{
 
-  }
+ocultarCargando();
 
-  finally {
-
-    ocultarCargando();
-
-  }
+}
 
 }
 
@@ -2536,112 +2315,115 @@ async function iniciarRecepcion() {
    RECUPERAR
 ===================================================== */
 
-async function recuperarRecepcion(id) {
+async function recuperarRecepcion(id){
 
-  try {
+try{
 
-    const res =
-      await llamarAPI({
+const res =
+await llamarAPI({
 
-        accion:
-          "CONSULTAR_RECEPCION",
+accion:
+"CONSULTAR_RECEPCION",
 
-        datos: {
+datos:{
 
-          token:
-            tokenSesion,
+token:
+tokenSesion,
 
-          idRecepcion:
-            id
+idRecepcion:
+id
 
-        }
+}
 
-      });
-
-
-    idRecepcionActual =
-      id;
+});
 
 
-    detalles =
-      res.detalles || [];
+idRecepcionActual =
+id;
 
 
-    const r =
-      res.resumen;
+detalles =
+res.detalles || [];
 
 
-    if (
-      r.fechaSalida
-    ) {
-
-      localStorage.removeItem(
-        "recepcionActiva"
-      );
-
-      return;
-
-    }
+const r =
+res.resumen;
 
 
-    document
-      .getElementById("idRuta")
-      .value =
-        r.idRuta || "";
+if(r.fechaSalida){
+
+localStorage.removeItem(
+"recepcionActiva"
+);
+
+return;
+
+}
 
 
-    document
-      .getElementById("placa")
-      .value =
-        r.placa || "";
+document
+.getElementById(
+"idRuta"
+)
+.value =
+r.idRuta || "";
 
 
-    document
-      .getElementById("dni")
-      .value =
-        r.dni || "";
+document
+.getElementById(
+"placa"
+)
+.value =
+r.placa || "";
 
 
-    document
-      .getElementById(
-        "idRecepcionVisible"
-      )
-      .textContent =
-        id;
+document
+.getElementById(
+"dni"
+)
+.value =
+r.dni || "";
 
 
-    document
-      .getElementById(
-        "boxIdRecepcion"
-      )
-      .classList
-      .remove("oculto");
+document
+.getElementById(
+"idRecepcionVisible"
+)
+.textContent =
+id;
 
 
-    renderizarDetalles();
+document
+.getElementById(
+"boxIdRecepcion"
+)
+.classList
+.remove("oculto");
 
-    abrirRegistro();
 
-    irPaso(2);
+renderizarDetalles();
+
+abrirRegistro();
+
+irPaso(2);
 
 
-    mostrarMensaje(
-      "mensajeGeneral",
-      "Se recuperó una recepción en proceso.",
-      true
-    );
+mostrarMensaje(
+"mensajeGeneral",
+"Se recuperó una recepción en proceso.",
+true
+);
 
-  }
+}
+catch(error){
 
-  catch (error) {
+console.error(error);
 
-    console.error(error);
+localStorage.removeItem(
+"recepcionActiva"
+);
 
-    localStorage.removeItem(
-      "recepcionActiva"
-    );
-
-  }
+}
 
 }
 
@@ -2650,157 +2432,144 @@ async function recuperarRecepcion(id) {
    PASOS
 ===================================================== */
 
-function irPaso(numero) {
+function irPaso(numero){
 
-  detenerScanner();
-
-
-  pasoActual =
-    numero;
+detenerScanner();
 
 
-  for (
-    let i = 1;
-    i <= 4;
-    i++
-  ) {
-
-    document
-      .getElementById(
-        "paso" + i
-      )
-      .classList
-      .toggle(
-        "oculto",
-        i !== numero
-      );
+pasoActual =
+numero;
 
 
-    const mini =
-      document
-        .getElementById(
-          "mini" + i
-        );
+for(
+let i=1;
+i<=4;
+i++
+){
+
+document
+.getElementById(
+"paso"+i
+)
+.classList
+.toggle(
+"oculto",
+i !== numero
+);
 
 
-    mini.className =
-      "paso-mini";
+const mini =
+document
+.getElementById(
+"mini"+i
+);
 
 
-    if (
-      i < numero
-    ) {
-
-      mini.classList.add(
-        "completo"
-      );
-
-    }
-
-    else if (
-      i === numero
-    ) {
-
-      mini.classList.add(
-        "activo"
-      );
-
-    }
-
-  }
+mini.className =
+"paso-mini";
 
 
-  if (
-    numero === 4
-  ) {
+if(i < numero){
 
-    actualizarResumenFinal();
+mini.classList.add(
+"completo"
+);
 
-    obtenerGPS();
+}
+else if(i === numero){
 
-  }
+mini.classList.add(
+"activo"
+);
 
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
+}
 
 }
 
 
-function irPaso3() {
+if(numero === 4){
 
-  const cantidad =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-        "RECEPCIÓN"
-    )
-    .length;
+actualizarResumenFinal();
 
-
-  if (
-    cantidad === 0 &&
-    !confirm(
-      "No existen bultos escaneados. ¿Desea continuar?"
-    )
-  ) {
-
-    return;
-
-  }
-
-
-  irPaso(3);
+obtenerGPS();
 
 }
 
 
-function irPaso4() {
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 
-  if (
-    tieneInversa
-  ) {
-
-    const cantidad =
-      detalles.filter(
-        x =>
-          x.tipoMovimiento ===
-          "LOGÍSTICA INVERSA"
-      )
-      .length;
+}
 
 
-    if (
-      cantidad === 0
-    ) {
+function irPaso3(){
 
-      mostrarError(
-        "Debe registrar al menos un bulto de logística inversa."
-      );
-
-      return;
-
-    }
+const cantidad =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"RECEPCIÓN"
+)
+.length;
 
 
-    if (
-      !fotos.fotoInversa
-    ) {
+if(
+cantidad === 0 &&
+!confirm(
+"No existen bultos escaneados. ¿Desea continuar?"
+)
+){
 
-      mostrarError(
-        "Debe registrar la foto de logística inversa."
-      );
+return;
 
-      return;
-
-    }
-
-  }
+}
 
 
-  irPaso(4);
+irPaso(3);
+
+}
+
+
+function irPaso4(){
+
+if(tieneInversa){
+
+const cantidad =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"LOGÍSTICA INVERSA"
+)
+.length;
+
+
+if(cantidad === 0){
+
+mostrarError(
+"Debe registrar al menos un bulto de logística inversa."
+);
+
+return;
+
+}
+
+
+if(!fotos.fotoInversa){
+
+mostrarError(
+"Debe registrar la foto de logística inversa."
+);
+
+return;
+
+}
+
+}
+
+
+irPaso(4);
 
 }
 
@@ -2809,41 +2578,41 @@ function irPaso4() {
    INVERSA
 ===================================================== */
 
-function seleccionarInversa(valor) {
+function seleccionarInversa(valor){
 
-  tieneInversa =
-    valor;
-
-
-  document
-    .getElementById(
-      "btnInversaSi"
-    )
-    .className =
-      valor
-        ? "activo-si"
-        : "";
+tieneInversa =
+valor;
 
 
-  document
-    .getElementById(
-      "btnInversaNo"
-    )
-    .className =
-      valor
-        ? ""
-        : "activo-no";
+document
+.getElementById(
+"btnInversaSi"
+)
+.className =
+valor
+? "activo-si"
+: "";
 
 
-  document
-    .getElementById(
-      "contenidoInversa"
-    )
-    .classList
-    .toggle(
-      "oculto",
-      !valor
-    );
+document
+.getElementById(
+"btnInversaNo"
+)
+.className =
+valor
+? ""
+: "activo-no";
+
+
+document
+.getElementById(
+"contenidoInversa"
+)
+.classList
+.toggle(
+"oculto",
+!valor
+);
 
 }
 
@@ -2852,62 +2621,62 @@ function seleccionarInversa(valor) {
    TIPOS
 ===================================================== */
 
-function seleccionarTipoBulto(tipo) {
+function seleccionarTipoBulto(tipo){
 
-  tipoBultoActual =
-    tipo;
-
-
-  document
-    .getElementById(
-      "btnTipoSaco"
-    )
-    .classList
-    .toggle(
-      "seleccionado",
-      tipo === "SACO"
-    );
+tipoBultoActual =
+tipo;
 
 
-  document
-    .getElementById(
-      "btnTipoBulto"
-    )
-    .classList
-    .toggle(
-      "seleccionado",
-      tipo === "BULTO SUELTO"
-    );
+document
+.getElementById(
+"btnTipoSaco"
+)
+.classList
+.toggle(
+"seleccionado",
+tipo === "SACO"
+);
+
+
+document
+.getElementById(
+"btnTipoBulto"
+)
+.classList
+.toggle(
+"seleccionado",
+tipo === "BULTO SUELTO"
+);
 
 }
 
 
-function seleccionarTipoInversa(tipo) {
+function seleccionarTipoInversa(tipo){
 
-  tipoInversaActual =
-    tipo;
-
-
-  document
-    .getElementById(
-      "btnInvSaco"
-    )
-    .classList
-    .toggle(
-      "seleccionado",
-      tipo === "SACO"
-    );
+tipoInversaActual =
+tipo;
 
 
-  document
-    .getElementById(
-      "btnInvBulto"
-    )
-    .classList
-    .toggle(
-      "seleccionado",
-      tipo === "BULTO SUELTO"
-    );
+document
+.getElementById(
+"btnInvSaco"
+)
+.classList
+.toggle(
+"seleccionado",
+tipo === "SACO"
+);
+
+
+document
+.getElementById(
+"btnInvBulto"
+)
+.classList
+.toggle(
+"seleccionado",
+tipo === "BULTO SUELTO"
+);
 
 }
 
@@ -2917,150 +2686,149 @@ function seleccionarTipoInversa(tipo) {
 ===================================================== */
 
 async function guardarCodigo(
-  codigo,
-  movimiento,
-  tipoBulto
-) {
+codigo,
+movimiento,
+tipoBulto
+){
 
-  codigo =
-    String(
-      codigo || ""
-    )
-      .trim()
-      .toUpperCase();
-
-
-  if (!codigo) {
-    return false;
-  }
+codigo =
+String(
+codigo || ""
+)
+.trim()
+.toUpperCase();
 
 
-  if (!idRecepcionActual) {
-
-    mostrarError(
-      "No existe recepción activa."
-    );
-
-    return false;
-
-  }
+if(!codigo){
+return false;
+}
 
 
-  const duplicado =
-    detalles.some(
-      item =>
-        String(
-          item.codigo || ""
-        )
-          .trim()
-          .toUpperCase() ===
-          codigo
-        &&
-        String(
-          item.tipoMovimiento || ""
-        )
-          .trim()
-          .toUpperCase() ===
-          movimiento
-            .trim()
-            .toUpperCase()
-    );
+if(!idRecepcionActual){
+
+mostrarError(
+"No existe recepción activa."
+);
+
+return false;
+
+}
 
 
-  if (duplicado) {
-
-    mostrarError(
-      "El código " +
-      codigo +
-      " ya fue registrado en " +
-      movimiento +
-      "."
-    );
-
-    vibrarError();
-
-    return false;
-
-  }
-
-
-  try {
-
-    const res =
-      await llamarAPI({
-
-        accion:
-          "REGISTRAR_DETALLE",
-
-        datos: {
-
-          token:
-            tokenSesion,
-
-          idRecepcion:
-            idRecepcionActual,
-
-          tipoMovimiento:
-            movimiento,
-
-          tipoBulto:
-            tipoBulto,
-
-          codigo:
-            codigo
-
-        }
-
-      });
+const duplicado =
+detalles.some(
+item =>
+String(
+item.codigo || ""
+)
+.trim()
+.toUpperCase() ===
+codigo
+&&
+String(
+item.tipoMovimiento || ""
+)
+.trim()
+.toUpperCase() ===
+movimiento
+.trim()
+.toUpperCase()
+);
 
 
-    detalles.push({
+if(duplicado){
 
-      fechaHora:
-        res.fechaHora ||
-        new Date().toISOString(),
+mostrarError(
+"El código "+
+codigo+
+" ya fue registrado en "+
+movimiento+
+"."
+);
 
-      tipoMovimiento:
-        res.tipoMovimiento ||
-        movimiento,
+vibrarError();
 
-      tipoBulto:
-        res.tipoBulto ||
-        tipoBulto,
+return false;
 
-      codigo:
-        res.codigo ||
-        codigo,
-
-      orden:
-        res.orden ||
-        detalles.length + 1,
-
-      usuario:
-        usuarioActual.usuario || ""
-
-    });
+}
 
 
-    renderizarDetalles();
+try{
 
-    vibrar();
+const res =
+await llamarAPI({
 
-    return true;
+accion:
+"REGISTRAR_DETALLE",
 
-  }
+datos:{
 
-  catch (error) {
+token:
+tokenSesion,
 
-    mostrarError(
-      obtenerError(error)
-    );
+idRecepcion:
+idRecepcionActual,
 
-    vibrarError();
+tipoMovimiento:
+movimiento,
 
-    return false;
+tipoBulto:
+tipoBulto,
 
-  }
+codigo:
+codigo
+
+}
+
+});
+
+
+detalles.push({
+
+fechaHora:
+res.fechaHora ||
+new Date().toISOString(),
+
+tipoMovimiento:
+res.tipoMovimiento ||
+movimiento,
+
+tipoBulto:
+res.tipoBulto ||
+tipoBulto,
+
+codigo:
+res.codigo ||
+codigo,
+
+orden:
+res.orden ||
+detalles.length + 1,
+
+usuario:
+usuarioActual.usuario || ""
+
+});
+
+
+renderizarDetalles();
+
+vibrar();
+
+return true;
+
+}
+catch(error){
+
+mostrarError(
+obtenerError(error)
+);
+
+vibrarError();
+
+return false;
+
+}
 
 }
 
@@ -3069,268 +2837,264 @@ async function guardarCodigo(
    ELIMINAR
 ===================================================== */
 
-async function eliminarDetalle(item) {
+async function eliminarDetalle(item){
 
-  if (
-    !confirm(
-      "¿Quitar el código " +
-      item.codigo +
-      "?"
-    )
-  ) {
+if(
+!confirm(
+"¿Quitar el código "+
+item.codigo+
+"?"
+)
+){
 
-    return;
+return;
 
-  }
-
-
-  mostrarCargando(
-    "Eliminando..."
-  );
+}
 
 
-  try {
-
-    await llamarAPI({
-
-      accion:
-        "ELIMINAR_DETALLE",
-
-      datos: {
-
-        token:
-          tokenSesion,
-
-        idRecepcion:
-          idRecepcionActual,
-
-        codigo:
-          item.codigo,
-
-        tipoMovimiento:
-          item.tipoMovimiento
-
-      }
-
-    });
+mostrarCargando(
+"Eliminando..."
+);
 
 
-    detalles =
-      detalles.filter(
-        d =>
-          !(
-            String(
-              d.codigo || ""
-            ).toUpperCase() ===
-            String(
-              item.codigo || ""
-            ).toUpperCase()
-            &&
-            String(
-              d.tipoMovimiento || ""
-            ).toUpperCase() ===
-            String(
-              item.tipoMovimiento || ""
-            ).toUpperCase()
-          )
-      );
+try{
+
+await llamarAPI({
+
+accion:
+"ELIMINAR_DETALLE",
+
+datos:{
+
+token:
+tokenSesion,
+
+idRecepcion:
+idRecepcionActual,
+
+codigo:
+item.codigo,
+
+tipoMovimiento:
+item.tipoMovimiento
+
+}
+
+});
 
 
-    renderizarDetalles();
+detalles =
+detalles.filter(
+d =>
+!(
+String(
+d.codigo || ""
+).toUpperCase() ===
+String(
+item.codigo || ""
+).toUpperCase()
+&&
+String(
+d.tipoMovimiento || ""
+).toUpperCase() ===
+String(
+item.tipoMovimiento || ""
+).toUpperCase()
+)
+);
 
-  }
 
-  catch (error) {
+renderizarDetalles();
 
-    mostrarError(
-      obtenerError(error)
-    );
+}
+catch(error){
 
-  }
+mostrarError(
+obtenerError(error)
+);
 
-  finally {
+}
+finally{
 
-    ocultarCargando();
+ocultarCargando();
 
-  }
+}
 
 }
 
 
 /* =====================================================
-   RENDER DETALLES
+   RENDER
 ===================================================== */
 
-function renderizarDetalles() {
+function renderizarDetalles(){
 
-  const recepcion =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-        "RECEPCIÓN"
-    );
-
-
-  const inversa =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-        "LOGÍSTICA INVERSA"
-    );
+const recepcion =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"RECEPCIÓN"
+);
 
 
-  const sacos =
-    recepcion.filter(
-      x =>
-        x.tipoBulto ===
-        "SACO"
-    )
-    .length;
+const inversa =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"LOGÍSTICA INVERSA"
+);
 
 
-  const bultos =
-    recepcion.filter(
-      x =>
-        x.tipoBulto ===
-        "BULTO SUELTO"
-    )
-    .length;
+const sacos =
+recepcion.filter(
+x =>
+x.tipoBulto ===
+"SACO"
+)
+.length;
 
 
-  document
-    .getElementById(
-      "contadorSacos"
-    )
-    .textContent =
-      sacos;
+const bultos =
+recepcion.filter(
+x =>
+x.tipoBulto ===
+"BULTO SUELTO"
+)
+.length;
 
 
-  document
-    .getElementById(
-      "contadorBultos"
-    )
-    .textContent =
-      bultos;
+document
+.getElementById(
+"contadorSacos"
+)
+.textContent =
+sacos;
 
 
-  document
-    .getElementById(
-      "contadorTotal"
-    )
-    .textContent =
-      sacos + bultos;
+document
+.getElementById(
+"contadorBultos"
+)
+.textContent =
+bultos;
 
 
-  document
-    .getElementById(
-      "contadorInversa"
-    )
-    .textContent =
-      inversa.length;
+document
+.getElementById(
+"contadorTotal"
+)
+.textContent =
+sacos+bultos;
 
 
-  renderLista(
-    "listaRecepcion",
-    recepcion
-  );
+document
+.getElementById(
+"contadorInversa"
+)
+.textContent =
+inversa.length;
 
 
-  renderLista(
-    "listaInversa",
-    inversa
-  );
+renderLista(
+"listaRecepcion",
+recepcion
+);
 
 
-  actualizarResumenFinal();
+renderLista(
+"listaInversa",
+inversa
+);
+
+
+actualizarResumenFinal();
 
 }
 
 
-function renderLista(
-  id,
-  datos
-) {
+function renderLista(id,datos){
 
-  const lista =
-    document.getElementById(id);
+const lista =
+document.getElementById(id);
 
 
-  lista.innerHTML = "";
+lista.innerHTML = "";
 
 
-  datos.forEach(
-    function(item) {
+datos.forEach(
+function(item){
 
-      const fila =
-        document.createElement(
-          "div"
-        );
-
-
-      fila.className =
-        "item";
+const fila =
+document.createElement(
+"div"
+);
 
 
-      const info =
-        document.createElement(
-          "div"
-        );
+fila.className =
+"item";
 
 
-      info.className =
-        "item-info";
+const info =
+document.createElement(
+"div"
+);
 
 
-      info.innerHTML =
-        `
-          <div class="item-tipo">
-            ${escaparHtml(item.tipoMovimiento)}
-            •
-            ${escaparHtml(item.tipoBulto)}
-          </div>
-
-          <div class="item-codigo">
-            ${escaparHtml(item.codigo)}
-          </div>
-
-          <div class="item-hora">
-            ${escaparHtml(item.fechaHora || "")}
-          </div>
-        `;
+info.className =
+"item-info";
 
 
-      const btn =
-        document.createElement(
-          "button"
-        );
+info.innerHTML = `
+
+<div class="item-tipo">
+${escaparHtml(item.tipoMovimiento)}
+•
+${escaparHtml(item.tipoBulto)}
+</div>
+
+<div class="item-codigo">
+${escaparHtml(item.codigo)}
+</div>
+
+<div class="item-hora">
+${escaparHtml(item.fechaHora || "")}
+</div>
+
+`;
 
 
-      btn.className =
-        "btn-eliminar";
+const btn =
+document.createElement(
+"button"
+);
 
 
-      btn.textContent =
-        "×";
+btn.className =
+"btn-eliminar";
 
 
-      btn.onclick =
-        function() {
-
-          eliminarDetalle(
-            item
-          );
-
-        };
+btn.textContent =
+"×";
 
 
-      fila.appendChild(info);
+btn.onclick =
+function(){
 
-      fila.appendChild(btn);
+eliminarDetalle(
+item
+);
 
-      lista.appendChild(fila);
+};
 
-    }
-  );
+
+fila.appendChild(info);
+
+fila.appendChild(btn);
+
+lista.appendChild(fila);
+
+}
+);
 
 }
 
@@ -3339,672 +3103,617 @@ function renderLista(
    MANUAL
 ===================================================== */
 
-async function agregarManual() {
+async function agregarManual(){
 
-  const input =
-    document
-      .getElementById(
-        "codigoManual"
-      );
-
-
-  const ok =
-    await guardarCodigo(
-
-      input.value,
-
-      "RECEPCIÓN",
-
-      tipoBultoActual
-
-    );
+const input =
+document.getElementById(
+"codigoManual"
+);
 
 
-  if (ok) {
-    input.value = "";
-  }
+const ok =
+await guardarCodigo(
+input.value,
+"RECEPCIÓN",
+tipoBultoActual
+);
+
+
+if(ok){
+input.value = "";
+}
 
 }
 
 
-async function agregarManualInversa() {
+async function agregarManualInversa(){
 
-  const input =
-    document
-      .getElementById(
-        "codigoManualInversa"
-      );
-
-
-  const ok =
-    await guardarCodigo(
-
-      input.value,
-
-      "LOGÍSTICA INVERSA",
-
-      tipoInversaActual
-
-    );
+const input =
+document.getElementById(
+"codigoManualInversa"
+);
 
 
-  if (ok) {
-    input.value = "";
-  }
+const ok =
+await guardarCodigo(
+input.value,
+"LOGÍSTICA INVERSA",
+tipoInversaActual
+);
+
+
+if(ok){
+input.value = "";
+}
 
 }
 
 
 /* =====================================================
-   SCANNER DESTINOS
+   SCANNER
 ===================================================== */
 
-function iniciarScannerRuta() {
+function iniciarScannerRuta(){
 
-  scannerDestino =
-    "RUTA";
-
-
-  campoDestinoScanner =
-    "idRuta";
+scannerDestino =
+"RUTA";
 
 
-  document
-    .getElementById(
-      "scannerTitulo"
-    )
-    .textContent =
-      "ESCANEAR ID RUTA";
+campoDestinoScanner =
+"idRuta";
 
 
-  activarScanner();
+document
+.getElementById(
+"scannerTitulo"
+)
+.textContent =
+"ESCANEAR ID RUTA";
+
+
+activarScanner();
 
 }
 
 
 function iniciarScannerPrecinto(
-  campo
-) {
+campo,
+tipo,
+numero
+){
 
-  scannerDestino =
-    "PRECINTO";
-
-
-  campoDestinoScanner =
-    campo;
+scannerDestino =
+"PRECINTO";
 
 
-  document
-    .getElementById(
-      "scannerTitulo"
-    )
-    .textContent =
-      "ESCANEAR CÓDIGO DE PRECINTO";
+campoDestinoScanner =
+campo;
 
 
-  activarScanner();
-
-}
-
-
-function iniciarScannerRecepcion() {
-
-  scannerDestino =
-    "DETALLE";
-
-
-  scannerMovimiento =
-    "RECEPCIÓN";
+document
+.getElementById(
+"scannerTitulo"
+)
+.textContent =
+"ESCANEAR PRECINTO DE "+
+tipo+
+" "+
+numero;
 
 
-  document
-    .getElementById(
-      "scannerTitulo"
-    )
-    .textContent =
-      "RECEPCIÓN - " +
-      tipoBultoActual;
-
-
-  activarScanner();
+activarScanner();
 
 }
 
 
-function iniciarScannerInversa() {
+function iniciarScannerRecepcion(){
 
-  scannerDestino =
-    "DETALLE";
-
-
-  scannerMovimiento =
-    "LOGÍSTICA INVERSA";
+scannerDestino =
+"DETALLE";
 
 
-  document
-    .getElementById(
-      "scannerTitulo"
-    )
-    .textContent =
-      "LOGÍSTICA INVERSA - " +
-      tipoInversaActual;
+scannerMovimiento =
+"RECEPCIÓN";
 
 
-  activarScanner();
-
-}
-
-
-/* =====================================================
-   ACTIVAR SCANNER
-===================================================== */
-
-async function activarScanner() {
-
-  detenerScanner(false);
+document
+.getElementById(
+"scannerTitulo"
+)
+.textContent =
+"RECEPCIÓN - "+
+tipoBultoActual;
 
 
-  if (
-    typeof ZXing ===
-    "undefined"
-  ) {
-
-    mostrarError(
-      "No se pudo cargar el lector."
-    );
-
-    return;
-
-  }
-
-
-  document
-    .getElementById(
-      "scannerModal"
-    )
-    .classList
-    .remove("oculto");
-
-
-  const estado =
-    document
-      .getElementById(
-        "estadoScanner"
-      );
-
-
-  estado.className =
-    "estado-scanner";
-
-
-  estado.textContent =
-    "Solicitando cámara...";
-
-
-  try {
-
-    lectorZXing =
-      new ZXing
-        .BrowserMultiFormatReader();
-
-
-    scannerActivo =
-      true;
-
-
-    await lectorZXing
-      .decodeFromConstraints(
-
-        {
-
-          audio: false,
-
-          video: {
-
-            facingMode: {
-              ideal: "environment"
-            },
-
-            width: {
-              ideal: 1280
-            },
-
-            height: {
-              ideal: 720
-            }
-
-          }
-
-        },
-
-        "videoScanner",
-
-        function(resultado) {
-
-          if (
-            resultado &&
-            scannerActivo
-          ) {
-
-            procesarLectura(
-              resultado
-            );
-
-          }
-
-        }
-
-      );
-
-
-    estado.className =
-      "estado-scanner ok";
-
-
-    estado.textContent =
-      "✅ Lector activo";
-
-
-    try {
-
-      dispositivosVideo =
-        await lectorZXing
-          .listVideoInputDevices();
-
-    }
-
-    catch (e) {
-      console.log(e);
-    }
-
-  }
-
-  catch (error) {
-
-    console.error(error);
-
-    detenerScanner();
-
-
-    mostrarError(
-      "No se pudo abrir la cámara. Revise los permisos de Chrome."
-    );
-
-  }
+activarScanner();
 
 }
 
 
-/* =====================================================
-   PROCESAR LECTURA
-===================================================== */
+function iniciarScannerInversa(){
 
-async function procesarLectura(
-  resultado
-) {
+scannerDestino =
+"DETALLE";
 
-  if (
-    bloqueoLectura
-  ) {
-    return;
-  }
 
+scannerMovimiento =
+"LOGÍSTICA INVERSA";
 
-  let codigo =
-    typeof resultado.getText ===
-    "function"
-      ? resultado.getText()
-      : resultado.text;
 
+document
+.getElementById(
+"scannerTitulo"
+)
+.textContent =
+"LOGÍSTICA INVERSA - "+
+tipoInversaActual;
 
-  codigo =
-    String(
-      codigo || ""
-    )
-      .trim()
-      .toUpperCase();
 
-
-  if (!codigo) {
-    return;
-  }
-
-
-  /*
-    ID RUTA
-  */
-
-  if (
-    scannerDestino ===
-    "RUTA"
-  ) {
-
-    document
-      .getElementById(
-        "idRuta"
-      )
-      .value =
-        codigo;
-
-
-    document
-      .getElementById(
-        "rutaEscaneada"
-      )
-      .classList
-      .remove("oculto");
-
-
-    vibrar();
-
-    detenerScanner();
-
-    return;
-
-  }
-
-
-  /*
-    PRECINTO
-  */
-
-  if (
-    scannerDestino ===
-    "PRECINTO"
-  ) {
-
-    const campo =
-      document
-        .getElementById(
-          campoDestinoScanner
-        );
-
-
-    if (campo) {
-
-      campo.value =
-        codigo;
-
-
-      const ok =
-        document
-          .getElementById(
-            "ok" +
-            capitalizarPrimera(
-              campoDestinoScanner
-            )
-          );
-
-
-      if (ok) {
-
-        ok.classList
-          .remove(
-            "oculto"
-          );
-
-      }
-
-    }
-
-
-    vibrar();
-
-    detenerScanner();
-
-    return;
-
-  }
-
-
-  /*
-    DETALLE
-  */
-
-  const ahora =
-    Date.now();
-
-
-  if (
-    codigo === ultimoCodigo &&
-    ahora - ultimaLectura <
-    2500
-  ) {
-
-    return;
-
-  }
-
-
-  ultimoCodigo =
-    codigo;
-
-
-  ultimaLectura =
-    ahora;
-
-
-  bloqueoLectura =
-    true;
-
-
-  const tipo =
-    scannerMovimiento ===
-    "RECEPCIÓN"
-      ? tipoBultoActual
-      : tipoInversaActual;
-
-
-  const ok =
-    await guardarCodigo(
-
-      codigo,
-
-      scannerMovimiento,
-
-      tipo
-
-    );
-
-
-  const estado =
-    document
-      .getElementById(
-        "estadoScanner"
-      );
-
-
-  if (ok) {
-
-    estado.className =
-      "estado-scanner ok";
-
-
-    estado.textContent =
-      "✅ " +
-      codigo;
-
-  }
-
-
-  setTimeout(
-    function() {
-
-      bloqueoLectura =
-        false;
-
-
-      if (
-        scannerActivo
-      ) {
-
-        estado.textContent =
-          "Apunte al siguiente código...";
-
-      }
-
-    },
-    700
-  );
+activarScanner();
 
 }
 
 
-/* =====================================================
-   DETENER SCANNER
-===================================================== */
+async function activarScanner(){
+
+detenerScanner(false);
+
+
+if(
+typeof ZXing ===
+"undefined"
+){
+
+mostrarError(
+"No se pudo cargar el lector."
+);
+
+return;
+
+}
+
+
+document
+.getElementById(
+"scannerModal"
+)
+.classList
+.remove("oculto");
+
+
+const estado =
+document
+.getElementById(
+"estadoScanner"
+);
+
+
+estado.className =
+"estado-scanner";
+
+
+estado.textContent =
+"Solicitando cámara...";
+
+
+try{
+
+lectorZXing =
+new ZXing
+.BrowserMultiFormatReader();
+
+
+scannerActivo =
+true;
+
+
+await lectorZXing
+.decodeFromConstraints(
+
+{
+
+audio:false,
+
+video:{
+
+facingMode:{
+ideal:"environment"
+},
+
+width:{
+ideal:1280
+},
+
+height:{
+ideal:720
+}
+
+}
+
+},
+
+"videoScanner",
+
+function(resultado){
+
+if(
+resultado &&
+scannerActivo
+){
+
+procesarLectura(
+resultado
+);
+
+}
+
+}
+
+);
+
+
+estado.className =
+"estado-scanner ok";
+
+
+estado.textContent =
+"✅ Lector activo";
+
+
+try{
+
+dispositivosVideo =
+await lectorZXing
+.listVideoInputDevices();
+
+}
+catch(e){
+console.log(e);
+}
+
+}
+catch(error){
+
+console.error(error);
+
+detenerScanner();
+
+
+mostrarError(
+"No se pudo abrir la cámara. Revise los permisos de Chrome."
+);
+
+}
+
+}
+
+
+async function procesarLectura(resultado){
+
+if(bloqueoLectura){
+return;
+}
+
+
+let codigo =
+typeof resultado.getText ===
+"function"
+? resultado.getText()
+: resultado.text;
+
+
+codigo =
+String(
+codigo || ""
+)
+.trim()
+.toUpperCase();
+
+
+if(!codigo){
+return;
+}
+
+
+if(
+scannerDestino ===
+"RUTA"
+){
+
+document
+.getElementById(
+"idRuta"
+)
+.value =
+codigo;
+
+
+document
+.getElementById(
+"rutaEscaneada"
+)
+.classList
+.remove("oculto");
+
+
+vibrar();
+
+detenerScanner();
+
+return;
+
+}
+
+
+if(
+scannerDestino ===
+"PRECINTO"
+){
+
+const campo =
+document.getElementById(
+campoDestinoScanner
+);
+
+
+if(campo){
+
+campo.value =
+codigo;
+
+
+const ok =
+document.getElementById(
+"ok"+
+capitalizarPrimera(
+campoDestinoScanner
+)
+);
+
+
+if(ok){
+
+ok.classList.remove(
+"oculto"
+);
+
+}
+
+}
+
+
+vibrar();
+
+detenerScanner();
+
+return;
+
+}
+
+
+const ahora =
+Date.now();
+
+
+if(
+codigo === ultimoCodigo &&
+ahora - ultimaLectura <
+2500
+){
+
+return;
+
+}
+
+
+ultimoCodigo =
+codigo;
+
+
+ultimaLectura =
+ahora;
+
+
+bloqueoLectura =
+true;
+
+
+const tipo =
+scannerMovimiento ===
+"RECEPCIÓN"
+? tipoBultoActual
+: tipoInversaActual;
+
+
+const ok =
+await guardarCodigo(
+codigo,
+scannerMovimiento,
+tipo
+);
+
+
+const estado =
+document.getElementById(
+"estadoScanner"
+);
+
+
+if(ok){
+
+estado.className =
+"estado-scanner ok";
+
+
+estado.textContent =
+"✅ "+codigo;
+
+}
+
+
+setTimeout(
+function(){
+
+bloqueoLectura =
+false;
+
+
+if(scannerActivo){
+
+estado.textContent =
+"Apunte al siguiente código...";
+
+}
+
+},
+700
+);
+
+}
+
 
 function detenerScanner(
-  ocultar = true
-) {
+ocultar=true
+){
 
-  scannerActivo =
-    false;
-
-
-  bloqueoLectura =
-    false;
+scannerActivo =
+false;
 
 
-  if (
-    lectorZXing
-  ) {
-
-    try {
-      lectorZXing.reset();
-    }
-    catch (e) {}
-
-  }
+bloqueoLectura =
+false;
 
 
-  lectorZXing =
-    null;
+if(lectorZXing){
 
-
-  const video =
-    document
-      .getElementById(
-        "videoScanner"
-      );
-
-
-  if (
-    video &&
-    video.srcObject
-  ) {
-
-    video
-      .srcObject
-      .getTracks()
-      .forEach(
-        track =>
-          track.stop()
-      );
-
-
-    video.srcObject =
-      null;
-
-  }
-
-
-  if (ocultar) {
-
-    document
-      .getElementById(
-        "scannerModal"
-      )
-      .classList
-      .add("oculto");
-
-  }
+try{
+lectorZXing.reset();
+}
+catch(e){}
 
 }
 
 
-/* =====================================================
-   CAMBIAR CÁMARA
-===================================================== */
-
-async function cambiarCamara() {
-
-  if (
-    dispositivosVideo.length <
-    2
-  ) {
-
-    mostrarError(
-      "No se detectó otra cámara."
-    );
-
-    return;
-
-  }
+lectorZXing =
+null;
 
 
-  detenerScanner(false);
+const video =
+document.getElementById(
+"videoScanner"
+);
 
 
-  indiceCamara++;
+if(
+video &&
+video.srcObject
+){
+
+video.srcObject
+.getTracks()
+.forEach(
+track =>
+track.stop()
+);
 
 
-  if (
-    indiceCamara >=
-    dispositivosVideo.length
-  ) {
+video.srcObject =
+null;
 
-    indiceCamara = 0;
-
-  }
+}
 
 
-  try {
+if(ocultar){
 
-    lectorZXing =
-      new ZXing
-        .BrowserMultiFormatReader();
+document
+.getElementById(
+"scannerModal"
+)
+.classList
+.add("oculto");
+
+}
+
+}
 
 
-    scannerActivo =
-      true;
+async function cambiarCamara(){
+
+if(
+dispositivosVideo.length <
+2
+){
+
+mostrarError(
+"No se detectó otra cámara."
+);
+
+return;
+
+}
 
 
-    await lectorZXing
-      .decodeFromVideoDevice(
+detenerScanner(false);
 
-        dispositivosVideo[
-          indiceCamara
-        ].deviceId,
 
-        "videoScanner",
+indiceCamara++;
 
-        function(resultado) {
 
-          if (
-            resultado &&
-            scannerActivo
-          ) {
+if(
+indiceCamara >=
+dispositivosVideo.length
+){
 
-            procesarLectura(
-              resultado
-            );
+indiceCamara = 0;
 
-          }
+}
 
-        }
 
-      );
+try{
 
-  }
+lectorZXing =
+new ZXing
+.BrowserMultiFormatReader();
 
-  catch (error) {
 
-    mostrarError(
-      "No se pudo cambiar de cámara."
-    );
+scannerActivo =
+true;
 
-  }
+
+await lectorZXing
+.decodeFromVideoDevice(
+
+dispositivosVideo[
+indiceCamara
+].deviceId,
+
+"videoScanner",
+
+function(resultado){
+
+if(
+resultado &&
+scannerActivo
+){
+
+procesarLectura(
+resultado
+);
+
+}
+
+}
+
+);
+
+}
+catch(error){
+
+mostrarError(
+"No se pudo cambiar de cámara."
+);
+
+}
 
 }
 
@@ -4014,217 +3723,200 @@ async function cambiarCamara() {
 ===================================================== */
 
 function procesarFotoInput(
-  input,
-  clave
-) {
+input,
+clave
+){
 
-  const archivo =
-    input.files &&
-    input.files[0];
-
-
-  if (!archivo) {
-    return;
-  }
+const archivo =
+input.files &&
+input.files[0];
 
 
-  mostrarCargando(
-    "Procesando fotografía..."
-  );
+if(!archivo){
+return;
+}
 
 
-  const reader =
-    new FileReader();
+mostrarCargando(
+"Procesando fotografía..."
+);
 
 
-  reader.onload =
-    function(event) {
-
-      const imagen =
-        new Image();
+const reader =
+new FileReader();
 
 
-      imagen.onload =
-        function() {
+reader.onload =
+function(event){
 
-          try {
-
-            const MAX =
-              1280;
+const imagen =
+new Image();
 
 
-            let ancho =
-              imagen.width;
+imagen.onload =
+function(){
+
+try{
+
+const MAX = 1280;
 
 
-            let alto =
-              imagen.height;
+let ancho =
+imagen.width;
 
 
-            if (
-              ancho > alto &&
-              ancho > MAX
-            ) {
-
-              alto =
-                Math.round(
-                  alto *
-                  MAX /
-                  ancho
-                );
+let alto =
+imagen.height;
 
 
-              ancho = MAX;
+if(
+ancho > alto &&
+ancho > MAX
+){
 
-            }
-
-            else if (
-              alto > MAX
-            ) {
-
-              ancho =
-                Math.round(
-                  ancho *
-                  MAX /
-                  alto
-                );
+alto =
+Math.round(
+alto *
+MAX /
+ancho
+);
 
 
-              alto = MAX;
+ancho = MAX;
 
-            }
+}
+else if(
+alto > MAX
+){
 
-
-            const canvas =
-              document
-                .createElement(
-                  "canvas"
-                );
-
-
-            canvas.width =
-              ancho;
-
-
-            canvas.height =
-              alto;
+ancho =
+Math.round(
+ancho *
+MAX /
+alto
+);
 
 
-            const ctx =
-              canvas
-                .getContext(
-                  "2d"
-                );
-
-
-            ctx.drawImage(
-              imagen,
-              0,
-              0,
-              ancho,
-              alto
-            );
-
-
-            fotos[clave] =
-              canvas.toDataURL(
-                "image/jpeg",
-                .67
-              );
-
-
-            mostrarPreview(
-              clave
-            );
-
-          }
-
-          finally {
-
-            ocultarCargando();
-
-          }
-
-        };
-
-
-      imagen.onerror =
-        function() {
-
-          ocultarCargando();
-
-          mostrarError(
-            "No se pudo procesar la fotografía."
-          );
-
-        };
-
-
-      imagen.src =
-        event.target.result;
-
-    };
-
-
-  reader.readAsDataURL(
-    archivo
-  );
+alto = MAX;
 
 }
 
 
-/* =====================================================
-   PREVIEW
-===================================================== */
-
-function mostrarPreview(
-  clave
-) {
-
-  const idClave =
-    capitalizarPrimera(
-      clave
-    );
+const canvas =
+document.createElement(
+"canvas"
+);
 
 
-  const img =
-    document
-      .getElementById(
-        "preview" +
-        idClave
-      );
+canvas.width =
+ancho;
 
 
-  const ok =
-    document
-      .getElementById(
-        "ok" +
-        idClave
-      );
+canvas.height =
+alto;
 
 
-  if (img) {
-
-    img.src =
-      fotos[clave];
-
-
-    img.classList
-      .remove(
-        "oculto"
-      );
-
-  }
+const ctx =
+canvas.getContext(
+"2d"
+);
 
 
-  if (ok) {
+ctx.drawImage(
+imagen,
+0,
+0,
+ancho,
+alto
+);
 
-    ok.classList
-      .remove(
-        "oculto"
-      );
 
-  }
+fotos[clave] =
+canvas.toDataURL(
+"image/jpeg",
+.67
+);
+
+
+mostrarPreview(
+clave
+);
+
+}
+finally{
+
+ocultarCargando();
+
+}
+
+};
+
+
+imagen.onerror =
+function(){
+
+ocultarCargando();
+
+mostrarError(
+"No se pudo procesar la fotografía."
+);
+
+};
+
+
+imagen.src =
+event.target.result;
+
+};
+
+
+reader.readAsDataURL(
+archivo
+);
+
+}
+
+
+function mostrarPreview(clave){
+
+const idClave =
+capitalizarPrimera(
+clave
+);
+
+
+const img =
+document.getElementById(
+"preview"+idClave
+);
+
+
+const ok =
+document.getElementById(
+"ok"+idClave
+);
+
+
+if(img){
+
+img.src =
+fotos[clave];
+
+
+img.classList.remove(
+"oculto"
+);
+
+}
+
+
+if(ok){
+
+ok.classList.remove(
+"oculto"
+);
+
+}
 
 }
 
@@ -4233,117 +3925,101 @@ function mostrarPreview(
    GPS
 ===================================================== */
 
-function obtenerGPS() {
+function obtenerGPS(){
 
-  const estado =
-    document
-      .getElementById(
-        "estadoGps"
-      );
-
-
-  if (!estado) {
-    return;
-  }
+const estado =
+document.getElementById(
+"estadoGps"
+);
 
 
-  estado.className =
-    "gps";
+if(!estado){
+return;
+}
 
 
-  estado.textContent =
-    "Obteniendo ubicación...";
+estado.className =
+"gps";
 
 
-  if (
-    !navigator.geolocation
-  ) {
-
-    estado.className =
-      "gps gps-error";
+estado.textContent =
+"Obteniendo ubicación...";
 
 
-    estado.textContent =
-      "GPS no disponible.";
+if(!navigator.geolocation){
 
-    return;
-
-  }
+estado.className =
+"gps gps-error";
 
 
-  navigator.geolocation
-    .getCurrentPosition(
+estado.textContent =
+"GPS no disponible.";
 
-      function(pos) {
+return;
 
-        latitudActual =
-          pos.coords.latitude;
-
-
-        longitudActual =
-          pos.coords.longitude;
+}
 
 
-        precisionActual =
-          pos.coords.accuracy;
+navigator.geolocation
+.getCurrentPosition(
+
+function(pos){
+
+latitudActual =
+pos.coords.latitude;
 
 
-        estado.className =
-          "gps gps-ok";
+longitudActual =
+pos.coords.longitude;
 
 
-        estado.innerHTML =
-
-          "✅ Ubicación obtenida" +
-
-          "<br>Lat: " +
-          latitudActual.toFixed(6) +
-
-          "<br>Lon: " +
-          longitudActual.toFixed(6) +
-
-          "<br>Precisión: " +
-          Math.round(
-            precisionActual
-          ) +
-          " m";
-
-      },
+precisionActual =
+pos.coords.accuracy;
 
 
-      function() {
-
-        latitudActual = null;
-
-        longitudActual = null;
-
-        precisionActual = null;
+estado.className =
+"gps gps-ok";
 
 
-        estado.className =
-          "gps gps-error";
+estado.innerHTML =
+"✅ Ubicación obtenida"+
+"<br>Lat: "+
+latitudActual.toFixed(6)+
+"<br>Lon: "+
+longitudActual.toFixed(6)+
+"<br>Precisión: "+
+Math.round(
+precisionActual
+)+
+" m";
+
+},
+
+function(){
+
+latitudActual = null;
+longitudActual = null;
+precisionActual = null;
 
 
-        estado.textContent =
-          "No se pudo obtener ubicación.";
-
-      },
+estado.className =
+"gps gps-error";
 
 
-      {
+estado.textContent =
+"No se pudo obtener ubicación.";
 
-        enableHighAccuracy:
-          true,
+},
 
-        timeout:
-          20000,
+{
 
-        maximumAge:
-          0
+enableHighAccuracy:true,
+timeout:20000,
+maximumAge:0
 
-      }
+}
 
-    );
+);
 
 }
 
@@ -4352,359 +4028,347 @@ function obtenerGPS() {
    FINALIZAR
 ===================================================== */
 
-async function finalizarRecepcion() {
+async function finalizarRecepcion(){
 
-  if (
-    !fotos.fotoCarga
-  ) {
+if(!fotos.fotoCarga){
 
-    mostrarError(
-      "Debe registrar la foto de sacos/bultos."
-    );
+mostrarError(
+"Debe registrar la foto de sacos/bultos."
+);
 
-    return;
+return;
 
-  }
+}
 
 
-  /*
-    CERRADO 1 ES OBLIGATORIO
-  */
+if(
+!valorCampo(
+"codigoPrecintoCerrado1"
+)
+){
 
-  if (
-    !valorCampo(
-      "codigoPrecintoCerrado1"
-    )
-  ) {
+mostrarError(
+"Debe escanear el código del Precinto de Salida 1."
+);
 
-    mostrarError(
-      "Debe escanear el código del Precinto Cerrado 1."
-    );
+return;
 
-    return;
+}
 
-  }
 
+if(
+!fotos.precintoCerrado1
+){
 
-  if (
-    !fotos.precintoCerrado1
-  ) {
+mostrarError(
+"Debe fotografiar el Precinto de Salida 1."
+);
 
-    mostrarError(
-      "Debe fotografiar el Precinto Cerrado 1."
-    );
+return;
 
-    return;
+}
 
-  }
 
+for(
+let i=1;
+i<=4;
+i++
+){
 
-  for (
-    let i = 1;
-    i <= 4;
-    i++
-  ) {
+const codigo =
+valorCampo(
+"codigoPrecintoCerrado"+i
+);
 
-    const codigo =
-      valorCampo(
-        "codigoPrecintoCerrado" + i
-      );
 
+const foto =
+fotos[
+"precintoCerrado"+i
+];
 
-    const foto =
-      fotos[
-        "precintoCerrado" + i
-      ];
 
+if(
+codigo &&
+!foto
+){
 
-    if (
-      codigo &&
-      !foto
-    ) {
+mostrarError(
+"Precinto de salida "+
+i+
+": falta la fotografía."
+);
 
-      mostrarError(
-        "Precinto cerrado " +
-        i +
-        ": falta la fotografía."
-      );
+return;
 
-      return;
+}
 
-    }
 
+if(
+!codigo &&
+foto
+){
 
-    if (
-      !codigo &&
-      foto
-    ) {
+mostrarError(
+"Precinto de salida "+
+i+
+": falta escanear el código."
+);
 
-      mostrarError(
-        "Precinto cerrado " +
-        i +
-        ": falta escanear el código."
-      );
+return;
 
-      return;
+}
 
-    }
+}
 
-  }
 
+if(
+latitudActual === null ||
+longitudActual === null
+){
 
-  if (
-    latitudActual === null ||
-    longitudActual === null
-  ) {
+mostrarError(
+"Debe obtener la ubicación GPS."
+);
 
-    mostrarError(
-      "Debe obtener la ubicación GPS."
-    );
+return;
 
-    return;
+}
 
-  }
 
+if(
+!confirm(
+"¿Finalizar la recepción "+
+idRecepcionActual+
+"?"
+)
+){
 
-  if (
-    !confirm(
-      "¿Finalizar la recepción " +
-      idRecepcionActual +
-      "?"
-    )
-  ) {
+return;
 
-    return;
+}
 
-  }
 
+mostrarCargando(
+"Finalizando recepción..."
+);
 
-  mostrarCargando(
-    "Finalizando recepción..."
-  );
 
+document
+.getElementById(
+"btnFinalizar"
+)
+.disabled =
+true;
 
-  document
-    .getElementById(
-      "btnFinalizar"
-    )
-    .disabled =
-      true;
 
+try{
 
-  try {
+const res =
+await llamarAPI({
 
-    const res =
-      await llamarAPI({
+accion:
+"FINALIZAR_RECEPCION",
 
-        accion:
-          "FINALIZAR_RECEPCION",
+datos:{
 
-        datos: {
+token:
+tokenSesion,
 
-          token:
-            tokenSesion,
+idRecepcion:
+idRecepcionActual,
 
-          idRecepcion:
-            idRecepcionActual,
+fotoCarga:
+fotos.fotoCarga,
 
-          fotoCarga:
-            fotos.fotoCarga,
+fotoLogisticaInversa:
+tieneInversa
+? fotos.fotoInversa
+: "",
 
-          fotoLogisticaInversa:
-            tieneInversa
-              ? fotos.fotoInversa
-              : "",
+codigoPrecintoCerrado1:
+valorCampo(
+"codigoPrecintoCerrado1"
+),
 
-          codigoPrecintoCerrado1:
-            valorCampo(
-              "codigoPrecintoCerrado1"
-            ),
+precintoCerrado1:
+fotos.precintoCerrado1,
 
-          precintoCerrado1:
-            fotos.precintoCerrado1,
+codigoPrecintoCerrado2:
+valorCampo(
+"codigoPrecintoCerrado2"
+),
 
-          codigoPrecintoCerrado2:
-            valorCampo(
-              "codigoPrecintoCerrado2"
-            ),
+precintoCerrado2:
+fotos.precintoCerrado2,
 
-          precintoCerrado2:
-            fotos.precintoCerrado2,
+codigoPrecintoCerrado3:
+valorCampo(
+"codigoPrecintoCerrado3"
+),
 
-          codigoPrecintoCerrado3:
-            valorCampo(
-              "codigoPrecintoCerrado3"
-            ),
+precintoCerrado3:
+fotos.precintoCerrado3,
 
-          precintoCerrado3:
-            fotos.precintoCerrado3,
+codigoPrecintoCerrado4:
+valorCampo(
+"codigoPrecintoCerrado4"
+),
 
-          codigoPrecintoCerrado4:
-            valorCampo(
-              "codigoPrecintoCerrado4"
-            ),
+precintoCerrado4:
+fotos.precintoCerrado4,
 
-          precintoCerrado4:
-            fotos.precintoCerrado4,
+observaciones:
+document
+.getElementById(
+"observaciones"
+)
+.value
+.trim(),
 
-          observaciones:
-            document
-              .getElementById(
-                "observaciones"
-              )
-              .value
-              .trim(),
+latitud:
+latitudActual,
 
-          latitud:
-            latitudActual,
+longitud:
+longitudActual,
 
-          longitud:
-            longitudActual,
+precision:
+precisionActual || 0
 
-          precision:
-            precisionActual || 0
+}
 
-        }
+});
 
-      });
 
+localStorage.removeItem(
+"recepcionActiva"
+);
 
-    localStorage.removeItem(
-      "recepcionActiva"
-    );
 
+alert(
 
-    alert(
+"✅ RECEPCIÓN FINALIZADA\n\n"+
 
-      "✅ RECEPCIÓN FINALIZADA\n\n" +
+"ID: "+
+res.idRecepcion+
 
-      "ID: " +
-      res.idRecepcion +
+"\nSacos: "+
+res.cantidadSacos+
 
-      "\nSacos: " +
-      res.cantidadSacos +
+"\nBultos: "+
+res.cantidadBultosSueltos+
 
-      "\nBultos: " +
-      res.cantidadBultosSueltos +
+"\nTotal: "+
+res.totalRecepcionado+
 
-      "\nTotal: " +
-      res.totalRecepcionado +
+"\nLogística inversa: "+
+res.cantidadLogisticaInversa
 
-      "\nLogística inversa: " +
-      res.cantidadLogisticaInversa
+);
 
-    );
 
+location.reload();
 
-    location.reload();
+}
+catch(error){
 
-  }
+mostrarError(
+obtenerError(error)
+);
 
-  catch (error) {
+}
+finally{
 
-    mostrarError(
-      obtenerError(error)
-    );
+ocultarCargando();
 
-  }
 
-  finally {
+document
+.getElementById(
+"btnFinalizar"
+)
+.disabled =
+false;
 
-    ocultarCargando();
-
-
-    document
-      .getElementById(
-        "btnFinalizar"
-      )
-      .disabled =
-        false;
-
-  }
+}
 
 }
 
 
 /* =====================================================
-   RESUMEN FINAL
+   RESUMEN
 ===================================================== */
 
-function actualizarResumenFinal() {
+function actualizarResumenFinal(){
 
-  const caja =
-    document
-      .getElementById(
-        "resumenFinal"
-      );
-
-
-  if (!caja) {
-    return;
-  }
+const caja =
+document.getElementById(
+"resumenFinal"
+);
 
 
-  const sacos =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-          "RECEPCIÓN"
-        &&
-        x.tipoBulto ===
-          "SACO"
-    )
-    .length;
+if(!caja){
+return;
+}
 
 
-  const bultos =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-          "RECEPCIÓN"
-        &&
-        x.tipoBulto ===
-          "BULTO SUELTO"
-    )
-    .length;
+const sacos =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"RECEPCIÓN"
+&&
+x.tipoBulto ===
+"SACO"
+)
+.length;
 
 
-  const inversa =
-    detalles.filter(
-      x =>
-        x.tipoMovimiento ===
-        "LOGÍSTICA INVERSA"
-    )
-    .length;
+const bultos =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"RECEPCIÓN"
+&&
+x.tipoBulto ===
+"BULTO SUELTO"
+)
+.length;
 
 
-  caja.innerHTML =
+const inversa =
+detalles.filter(
+x =>
+x.tipoMovimiento ===
+"LOGÍSTICA INVERSA"
+)
+.length;
 
-    "<strong>ID Recepción:</strong> " +
-    escaparHtml(
-      idRecepcionActual || "-"
-    ) +
 
-    "<br>" +
+caja.innerHTML =
 
-    "<strong>Sacos:</strong> " +
-    sacos +
+"<strong>ID Recepción:</strong> "+
+escaparHtml(
+idRecepcionActual || "-"
+)+
 
-    "<br>" +
+"<br>"+
 
-    "<strong>Bultos sueltos:</strong> " +
-    bultos +
+"<strong>Sacos:</strong> "+
+sacos+
 
-    "<br>" +
+"<br>"+
 
-    "<strong>Total:</strong> " +
-    (
-      sacos +
-      bultos
-    ) +
+"<strong>Bultos sueltos:</strong> "+
+bultos+
 
-    "<br>" +
+"<br>"+
 
-    "<strong>Logística inversa:</strong> " +
-    inversa;
+"<strong>Total:</strong> "+
+(sacos+bultos)+
+
+"<br>"+
+
+"<strong>Logística inversa:</strong> "+
+inversa;
 
 }
 
@@ -4713,304 +4377,301 @@ function actualizarResumenFinal() {
    GESTIONES
 ===================================================== */
 
-function abrirGestiones() {
+function abrirGestiones(){
 
-  detenerScanner();
-
-
-  document
-    .getElementById(
-      "contenedorRegistro"
-    )
-    .classList
-    .add("oculto");
+detenerScanner();
 
 
-  document
-    .getElementById(
-      "pantallaDetalleGestion"
-    )
-    .classList
-    .add("oculto");
+document
+.getElementById(
+"contenedorRegistro"
+)
+.classList
+.add("oculto");
 
 
-  document
-    .getElementById(
-      "pantallaGestiones"
-    )
-    .classList
-    .remove("oculto");
+document
+.getElementById(
+"pantallaDetalleGestion"
+)
+.classList
+.add("oculto");
 
 
-  buscarGestiones();
+document
+.getElementById(
+"pantallaGestiones"
+)
+.classList
+.remove("oculto");
 
 
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-}
+buscarGestiones();
 
 
-async function buscarGestiones() {
-
-  mostrarCargando(
-    "Consultando gestiones..."
-  );
-
-
-  try {
-
-    const res =
-      await llamarAPI({
-
-        accion:
-          "LISTAR_GESTIONES",
-
-        datos: {
-
-          token:
-            tokenSesion,
-
-          fechaDesde:
-            valorCampo(
-              "filtroFechaDesde"
-            ),
-
-          fechaHasta:
-            valorCampo(
-              "filtroFechaHasta"
-            ),
-
-          idRecepcion:
-            valorCampo(
-              "filtroIdRecepcion"
-            ),
-
-          idRuta:
-            valorCampo(
-              "filtroRuta"
-            ),
-
-          placa:
-            valorCampo(
-              "filtroPlaca"
-            ),
-
-          estado:
-            valorCampo(
-              "filtroEstado"
-            )
-
-        }
-
-      });
-
-
-    renderGestiones(
-      res
-    );
-
-  }
-
-  catch (error) {
-
-    mostrarError(
-      obtenerError(error)
-    );
-
-  }
-
-  finally {
-
-    ocultarCargando();
-
-  }
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 
 }
 
 
-function renderGestiones(res) {
+async function buscarGestiones(){
 
-  const contenedor =
-    document
-      .getElementById(
-        "resultadoGestiones"
-      );
+mostrarCargando(
+"Consultando gestiones..."
+);
 
 
-  contenedor.innerHTML = "";
+try{
 
+const res =
+await llamarAPI({
 
-  if (
-    !res.gestiones ||
-    res.gestiones.length === 0
-  ) {
+accion:
+"LISTAR_GESTIONES",
 
-    contenedor.innerHTML =
-      `
-      <div class="card">
-        No se encontraron gestiones.
-      </div>
-      `;
+datos:{
 
-    return;
+token:
+tokenSesion,
 
-  }
+fechaDesde:
+valorCampo(
+"filtroFechaDesde"
+),
 
+fechaHasta:
+valorCampo(
+"filtroFechaHasta"
+),
 
-  const info =
-    document.createElement(
-      "div"
-    );
+idRecepcion:
+valorCampo(
+"filtroIdRecepcion"
+),
 
+idRuta:
+valorCampo(
+"filtroRuta"
+),
 
-  info.className =
-    "card";
+placa:
+valorCampo(
+"filtroPlaca"
+),
 
+estado:
+valorCampo(
+"filtroEstado"
+)
 
-  info.innerHTML =
-    `
-      <strong>
-        ${res.total}
-      </strong>
-      gestión(es) encontrada(s)
-    `;
+}
 
+});
 
-  contenedor.appendChild(
-    info
-  );
 
+renderGestiones(
+res
+);
 
-  res.gestiones.forEach(
-    function(g) {
+}
+catch(error){
 
-      const card =
-        document.createElement(
-          "div"
-        );
+mostrarError(
+obtenerError(error)
+);
 
+}
+finally{
 
-      card.className =
-        "gestion-card";
+ocultarCargando();
 
+}
 
-      const claseEstado =
-        g.estado ===
-        "FINALIZADO"
-          ? "estado-finalizado"
-          : "estado-proceso";
+}
 
 
-      card.innerHTML =
-        `
+function renderGestiones(res){
 
-        <div class="gestion-cabecera">
+const contenedor =
+document.getElementById(
+"resultadoGestiones"
+);
 
-          <div>
 
-            <div class="gestion-id">
-              ${escaparHtml(g.idRecepcion)}
-            </div>
+contenedor.innerHTML = "";
 
-            <div class="gestion-fecha">
-              ${escaparHtml(g.fechaLlegada)}
-            </div>
 
-          </div>
+if(
+!res.gestiones ||
+res.gestiones.length === 0
+){
 
-          <div class="${claseEstado}">
-            ${escaparHtml(g.estado)}
-          </div>
+contenedor.innerHTML =
+`
+<div class="card">
+No se encontraron gestiones.
+</div>
+`;
 
-        </div>
+return;
 
+}
 
-        <div class="gestion-datos">
 
-          <strong>Ruta:</strong>
-          ${escaparHtml(g.idRuta || "-")}
-          <br>
+const info =
+document.createElement(
+"div"
+);
 
-          <strong>Placa:</strong>
-          ${escaparHtml(g.placa || "-")}
-          <br>
 
-          <strong>Usuario:</strong>
-          ${escaparHtml(g.usuario || "-")}
-          <br>
+info.className =
+"card";
 
-          <strong>Área:</strong>
-          ${escaparHtml(g.area || "-")}
-          <br>
 
-          <strong>Región:</strong>
-          ${escaparHtml(g.region || "-")}
+info.innerHTML =
+`
+<strong>
+${res.total}
+</strong>
+gestión(es) encontrada(s)
+`;
 
-        </div>
 
+contenedor.appendChild(
+info
+);
 
-        <div class="gestion-total">
 
-          Sacos:
-          ${Number(g.sacos || 0)}
+res.gestiones.forEach(
+function(g){
 
-          &nbsp; | &nbsp;
+const card =
+document.createElement(
+"div"
+);
 
-          Bultos:
-          ${Number(g.bultos || 0)}
 
-          <br>
+card.className =
+"gestion-card";
 
-          Total:
-          ${Number(g.total || 0)}
 
-        </div>
+const claseEstado =
+g.estado ===
+"FINALIZADO"
+? "estado-finalizado"
+: "estado-proceso";
 
-        `;
 
+card.innerHTML =
+`
 
-      const boton =
-        document.createElement(
-          "button"
-        );
+<div class="gestion-cabecera">
 
+<div>
 
-      boton.className =
-        "btn-azul";
+<div class="gestion-id">
+${escaparHtml(g.idRecepcion)}
+</div>
 
+<div class="gestion-fecha">
+${escaparHtml(g.fechaLlegada)}
+</div>
 
-      boton.style.marginTop =
-        "10px";
+</div>
 
+<div class="${claseEstado}">
+${escaparHtml(g.estado)}
+</div>
 
-      boton.textContent =
-        "VER DETALLE";
+</div>
 
 
-      boton.onclick =
-        function() {
+<div class="gestion-datos">
 
-          verDetalleGestion(
-            g.idRecepcion
-          );
+<strong>Ruta:</strong>
+${escaparHtml(g.idRuta || "-")}
+<br>
 
-        };
+<strong>Placa:</strong>
+${escaparHtml(g.placa || "-")}
+<br>
 
+<strong>Usuario:</strong>
+${escaparHtml(g.usuario || "-")}
+<br>
 
-      card.appendChild(
-        boton
-      );
+<strong>Área:</strong>
+${escaparHtml(g.area || "-")}
+<br>
 
+<strong>Región:</strong>
+${escaparHtml(g.region || "-")}
 
-      contenedor.appendChild(
-        card
-      );
+</div>
 
-    }
-  );
+
+<div class="gestion-total">
+
+Sacos:
+${Number(g.sacos || 0)}
+
+&nbsp; | &nbsp;
+
+Bultos:
+${Number(g.bultos || 0)}
+
+<br>
+
+Total:
+${Number(g.total || 0)}
+
+</div>
+
+`;
+
+
+const boton =
+document.createElement(
+"button"
+);
+
+
+boton.className =
+"btn-azul";
+
+
+boton.style.marginTop =
+"10px";
+
+
+boton.textContent =
+"VER DETALLE";
+
+
+boton.onclick =
+function(){
+
+verDetalleGestion(
+g.idRecepcion
+);
+
+};
+
+
+card.appendChild(
+boton
+);
+
+
+contenedor.appendChild(
+card
+);
+
+}
+);
 
 }
 
@@ -5020,76 +4681,74 @@ function renderGestiones(res) {
 ===================================================== */
 
 async function verDetalleGestion(
-  idRecepcion
-) {
+idRecepcion
+){
 
-  mostrarCargando(
-    "Cargando gestión..."
-  );
-
-
-  try {
-
-    const res =
-      await llamarAPI({
-
-        accion:
-          "VER_GESTION",
-
-        datos: {
-
-          token:
-            tokenSesion,
-
-          idRecepcion:
-            idRecepcion
-
-        }
-
-      });
+mostrarCargando(
+"Cargando gestión..."
+);
 
 
-    renderDetalleGestion(
-      res
-    );
+try{
+
+const res =
+await llamarAPI({
+
+accion:
+"VER_GESTION",
+
+datos:{
+
+token:
+tokenSesion,
+
+idRecepcion:
+idRecepcion
+
+}
+
+});
 
 
-    document
-      .getElementById(
-        "pantallaGestiones"
-      )
-      .classList
-      .add("oculto");
+renderDetalleGestion(
+res
+);
 
 
-    document
-      .getElementById(
-        "pantallaDetalleGestion"
-      )
-      .classList
-      .remove("oculto");
+document
+.getElementById(
+"pantallaGestiones"
+)
+.classList
+.add("oculto");
 
 
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth"
-    });
+document
+.getElementById(
+"pantallaDetalleGestion"
+)
+.classList
+.remove("oculto");
 
-  }
 
-  catch (error) {
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 
-    mostrarError(
-      obtenerError(error)
-    );
+}
+catch(error){
 
-  }
+mostrarError(
+obtenerError(error)
+);
 
-  finally {
+}
+finally{
 
-    ocultarCargando();
+ocultarCargando();
 
-  }
+}
 
 }
 
@@ -5098,532 +4757,525 @@ async function verDetalleGestion(
    RENDER DETALLE
 ===================================================== */
 
-function renderDetalleGestion(res) {
-
-  const r =
-    res.resumen;
-
-
-  const contenedor =
-    document
-      .getElementById(
-        "contenidoDetalleGestion"
-      );
-
-
-  let html =
-    `
-
-    <div class="card">
-
-      <div class="titulo-card">
-        ${escaparHtml(r.idRecepcion)}
-      </div>
-
-      <div class="detalle-grid">
-
-        ${datoDetalle("Estado",r.estado)}
-        ${datoDetalle("Llegada",r.fechaLlegada)}
-        ${datoDetalle("Salida",r.fechaSalida || "-")}
-        ${datoDetalle("Tiempo",r.tiempoRecepcion || "-")}
-        ${datoDetalle("ID Ruta",r.idRuta)}
-        ${datoDetalle("Placa",r.placa)}
-        ${datoDetalle("DNI / RUC",r.dni)}
-        ${datoDetalle("Usuario",r.usuario)}
-        ${datoDetalle("Área",r.area)}
-        ${datoDetalle("Región",r.region)}
-        ${datoDetalle("Sacos",r.cantidadSacos)}
-        ${datoDetalle("Bultos",r.cantidadBultos)}
-        ${datoDetalle("Total",r.totalRecepcionado)}
-        ${datoDetalle("Logística inversa",r.logisticaInversa)}
-        ${datoDetalle("Cantidad inversa",r.cantidadLogisticaInversa)}
+function renderDetalleGestion(res){
+
+const r =
+res.resumen;
 
-      </div>
+
+const contenedor =
+document.getElementById(
+"contenidoDetalleGestion"
+);
+
+
+let html = `
+
+<div class="card">
+
+<div class="titulo-card">
+${escaparHtml(r.idRecepcion)}
+</div>
+
+<div class="detalle-grid">
+
+${datoDetalle("Estado",r.estado)}
+${datoDetalle("Llegada",r.fechaLlegada)}
+${datoDetalle("Salida",r.fechaSalida || "-")}
+${datoDetalle("Tiempo",r.tiempoRecepcion || "-")}
+${datoDetalle("ID Ruta",r.idRuta)}
+${datoDetalle("Placa",r.placa)}
+${datoDetalle("DNI / RUC",r.dni)}
+${datoDetalle("Usuario",r.usuario)}
+${datoDetalle("Área",r.area)}
+${datoDetalle("Región",r.region)}
+${datoDetalle("Sacos",r.cantidadSacos)}
+${datoDetalle("Bultos",r.cantidadBultos)}
+${datoDetalle("Total",r.totalRecepcionado)}
+${datoDetalle("Logística inversa",r.logisticaInversa)}
+${datoDetalle("Cantidad inversa",r.cantidadLogisticaInversa)}
 
-    </div>
+</div>
 
-    `;
+</div>
 
+`;
 
-  html +=
-    `
-
-    <div class="card">
-
-      <div class="titulo-card">
-        📷 Evidencias
-      </div>
-
-      <div class="galeria">
-
-        ${fotoGestion(
-          "Llegada",
-          "",
-          r.fotoLlegada
-        )}
-
-        ${fotoGestion(
-          "Precinto abierto 1",
-          r.codigoPrecintoAbierto1,
-          r.precintoAbierto1
-        )}
-
-        ${fotoGestion(
-          "Precinto abierto 2",
-          r.codigoPrecintoAbierto2,
-          r.precintoAbierto2
-        )}
 
-        ${fotoGestion(
-          "Precinto abierto 3",
-          r.codigoPrecintoAbierto3,
-          r.precintoAbierto3
-        )}
+html += `
 
-        ${fotoGestion(
-          "Precinto abierto 4",
-          r.codigoPrecintoAbierto4,
-          r.precintoAbierto4
-        )}
+<div class="card">
 
-        ${fotoGestion(
-          "Sacos / Bultos",
-          "",
-          r.fotoCarga
-        )}
+<div class="titulo-card">
+📷 Evidencias
+</div>
 
-        ${fotoGestion(
-          "Logística inversa",
-          "",
-          r.fotoLogisticaInversa
-        )}
+<div class="galeria">
 
-        ${fotoGestion(
-          "Precinto cerrado 1",
-          r.codigoPrecintoCerrado1,
-          r.precintoCerrado1
-        )}
+${fotoGestion(
+"Llegada de unidad",
+"",
+r.fotoLlegada
+)}
 
-        ${fotoGestion(
-          "Precinto cerrado 2",
-          r.codigoPrecintoCerrado2,
-          r.precintoCerrado2
-        )}
+${fotoGestion(
+"Precinto de llegada 1",
+r.codigoPrecintoAbierto1,
+r.precintoAbierto1
+)}
 
-        ${fotoGestion(
-          "Precinto cerrado 3",
-          r.codigoPrecintoCerrado3,
-          r.precintoCerrado3
-        )}
+${fotoGestion(
+"Precinto de llegada 2",
+r.codigoPrecintoAbierto2,
+r.precintoAbierto2
+)}
 
-        ${fotoGestion(
-          "Precinto cerrado 4",
-          r.codigoPrecintoCerrado4,
-          r.precintoCerrado4
-        )}
+${fotoGestion(
+"Precinto de llegada 3",
+r.codigoPrecintoAbierto3,
+r.precintoAbierto3
+)}
 
-      </div>
+${fotoGestion(
+"Precinto de llegada 4",
+r.codigoPrecintoAbierto4,
+r.precintoAbierto4
+)}
 
-    </div>
+${fotoGestion(
+"Sacos / Bultos",
+"",
+r.fotoCarga
+)}
 
-    `;
+${fotoGestion(
+"Logística inversa",
+"",
+r.fotoLogisticaInversa
+)}
 
+${fotoGestion(
+"Precinto de salida 1",
+r.codigoPrecintoCerrado1,
+r.precintoCerrado1
+)}
 
-  html +=
-    `
+${fotoGestion(
+"Precinto de salida 2",
+r.codigoPrecintoCerrado2,
+r.precintoCerrado2
+)}
 
-    <div class="card">
+${fotoGestion(
+"Precinto de salida 3",
+r.codigoPrecintoCerrado3,
+r.precintoCerrado3
+)}
 
-      <div class="titulo-card">
-        Información adicional
-      </div>
+${fotoGestion(
+"Precinto de salida 4",
+r.codigoPrecintoCerrado4,
+r.precintoCerrado4
+)}
 
-      <strong>Observaciones</strong>
+</div>
 
-      <div style="
-        background:#f8fafc;
-        padding:10px;
-        margin-top:7px;
-        border-radius:8px;
-      ">
-        ${escaparHtml(
-          r.observaciones ||
-          "Sin observaciones"
-        )}
-      </div>
+</div>
 
-      <br>
+`;
 
-      <strong>GPS</strong>
 
-      <div style="
-        background:#f8fafc;
-        padding:10px;
-        margin-top:7px;
-        border-radius:8px;
-      ">
+html += `
 
-        Latitud:
-        ${escaparHtml(r.latitud)}
+<div class="card">
 
-        <br>
+<div class="titulo-card">
+Información adicional
+</div>
 
-        Longitud:
-        ${escaparHtml(r.longitud)}
+<strong>Observaciones</strong>
 
-        <br>
+<div style="
+background:#f8fafc;
+padding:10px;
+margin-top:7px;
+border-radius:8px;
+">
 
-        Precisión:
-        ${escaparHtml(r.precision)}
-        m
+${escaparHtml(
+r.observaciones ||
+"Sin observaciones"
+)}
 
-      </div>
+</div>
 
-    </div>
+<br>
 
-    `;
+<strong>GPS</strong>
 
+<div style="
+background:#f8fafc;
+padding:10px;
+margin-top:7px;
+border-radius:8px;
+">
 
-  html +=
-    `
+Latitud:
+${escaparHtml(r.latitud)}
 
-    <div class="card">
+<br>
 
-      <div class="titulo-card">
-        📦 Escaneos
-      </div>
+Longitud:
+${escaparHtml(r.longitud)}
 
-      <div class="tabla-contenedor">
+<br>
 
-      <table class="tabla-detalle">
+Precisión:
+${escaparHtml(r.precision)}
+m
 
-        <thead>
+</div>
 
-          <tr>
-            <th>#</th>
-            <th>Fecha/Hora</th>
-            <th>Movimiento</th>
-            <th>Tipo</th>
-            <th>Código</th>
-          </tr>
+</div>
 
-        </thead>
+`;
 
-        <tbody>
 
-    `;
+html += `
 
+<div class="card">
 
-  if (
-    !res.detalles ||
-    res.detalles.length === 0
-  ) {
+<div class="titulo-card">
+📦 Escaneos
+</div>
 
-    html +=
-      `
-      <tr>
-        <td colspan="5">
-          Sin escaneos
-        </td>
-      </tr>
-      `;
+<div class="tabla-contenedor">
 
-  }
+<table class="tabla-detalle">
 
-  else {
+<thead>
 
-    res.detalles.forEach(
-      function(d) {
+<tr>
+<th>#</th>
+<th>Fecha/Hora</th>
+<th>Movimiento</th>
+<th>Tipo</th>
+<th>Código</th>
+</tr>
 
-        html +=
-          `
+</thead>
 
-          <tr>
+<tbody>
 
-            <td>
-              ${Number(d.orden || 0)}
-            </td>
+`;
 
-            <td>
-              ${escaparHtml(d.fechaHora)}
-            </td>
 
-            <td>
-              ${escaparHtml(d.tipoMovimiento)}
-            </td>
+if(
+!res.detalles ||
+res.detalles.length === 0
+){
 
-            <td>
-              ${escaparHtml(d.tipoBulto)}
-            </td>
+html += `
+<tr>
+<td colspan="5">
+Sin escaneos
+</td>
+</tr>
+`;
 
-            <td>
-              <strong>
-                ${escaparHtml(d.codigo)}
-              </strong>
-            </td>
+}
+else{
 
-          </tr>
+res.detalles.forEach(
+function(d){
 
-          `;
+html += `
 
-      }
-    );
+<tr>
 
-  }
+<td>
+${Number(d.orden || 0)}
+</td>
 
+<td>
+${escaparHtml(d.fechaHora)}
+</td>
 
-  html +=
-    `
+<td>
+${escaparHtml(d.tipoMovimiento)}
+</td>
 
-        </tbody>
+<td>
+${escaparHtml(d.tipoBulto)}
+</td>
 
-      </table>
+<td>
+<strong>
+${escaparHtml(d.codigo)}
+</strong>
+</td>
 
-      </div>
+</tr>
 
-    </div>
+`;
 
-    `;
+}
+);
 
+}
 
-  contenedor.innerHTML =
-    html;
+
+html += `
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
+
+`;
+
+
+contenedor.innerHTML =
+html;
 
 }
 
 
 /* =====================================================
-   DRIVE MINIATURAS
+   DRIVE
 ===================================================== */
 
-function convertirUrlDrive(url) {
+function convertirUrlDrive(url){
 
-  if (!url) {
-    return "";
-  }
-
-
-  url =
-    String(url)
-      .trim();
+if(!url){
+return "";
+}
 
 
-  let id = "";
+url =
+String(url)
+.trim();
 
 
-  const m1 =
-    url.match(
-      /\/file\/d\/([^/]+)/
-    );
+let id = "";
 
 
-  if (m1) {
-    id = m1[1];
-  }
+const m1 =
+url.match(
+/\/file\/d\/([^/]+)/
+);
 
 
-  if (!id) {
-
-    const m2 =
-      url.match(
-        /[?&]id=([^&]+)/
-      );
+if(m1){
+id = m1[1];
+}
 
 
-    if (m2) {
-      id = m2[1];
-    }
+if(!id){
 
-  }
-
-
-  if (id) {
-
-    return (
-      "https://drive.google.com/thumbnail?id=" +
-      encodeURIComponent(id) +
-      "&sz=w1000"
-    );
-
-  }
+const m2 =
+url.match(
+/[?&]id=([^&]+)/
+);
 
 
-  return url;
+if(m2){
+id = m2[1];
+}
+
+}
+
+
+if(id){
+
+return (
+"https://drive.google.com/thumbnail?id="+
+encodeURIComponent(id)+
+"&sz=w1000"
+);
+
+}
+
+
+return url;
 
 }
 
 
 function fotoGestion(
-  titulo,
-  codigo,
-  url
-) {
+titulo,
+codigo,
+url
+){
 
-  if (!url) {
+if(!url){
 
-    return `
+return `
 
-      <div>
+<div>
 
-        <div class="foto-titulo">
-          ${escaparHtml(titulo)}
-        </div>
+<div class="foto-titulo">
+${escaparHtml(titulo)}
+</div>
 
-        ${
-          codigo
-            ? `
-              <div class="foto-codigo">
-                ${escaparHtml(codigo)}
-              </div>
-            `
-            : ""
-        }
+${
+codigo
+? `
+<div class="foto-codigo">
+Código:
+${escaparHtml(codigo)}
+</div>
+`
+: ""
+}
 
-        <div style="
-          min-height:110px;
-          display:flex;
-          align-items:center;
-          justify-content:center;
-          background:#f1f5f9;
-          border-radius:8px;
-          color:#94a3b8;
-          font-size:11px;
-        ">
-          Sin foto
-        </div>
+<div style="
+min-height:110px;
+display:flex;
+align-items:center;
+justify-content:center;
+background:#f1f5f9;
+border-radius:8px;
+color:#94a3b8;
+font-size:11px;
+">
+Sin foto
+</div>
 
-      </div>
+</div>
 
-    `;
+`;
 
-  }
-
-
-  const miniatura =
-    convertirUrlDrive(
-      url
-    );
+}
 
 
-  return `
+const miniatura =
+convertirUrlDrive(
+url
+);
 
-    <div>
 
-      <div class="foto-titulo">
-        ${escaparHtml(titulo)}
-      </div>
+return `
 
-      ${
-        codigo
-          ? `
-            <div class="foto-codigo">
-              Código:
-              ${escaparHtml(codigo)}
-            </div>
-          `
-          : ""
-      }
+<div>
 
-      <a
-        href="${escaparHtml(url)}"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
+<div class="foto-titulo">
+${escaparHtml(titulo)}
+</div>
 
-        <img
-          class="foto-gestion"
-          src="${escaparHtml(miniatura)}"
-          loading="lazy"
-          alt="${escaparHtml(titulo)}"
-        >
+${
+codigo
+? `
+<div class="foto-codigo">
+Código:
+${escaparHtml(codigo)}
+</div>
+`
+: ""
+}
 
-      </a>
+<a
+href="${escaparHtml(url)}"
+target="_blank"
+rel="noopener noreferrer"
+>
 
-    </div>
+<img
+class="foto-gestion"
+src="${escaparHtml(miniatura)}"
+loading="lazy"
+alt="${escaparHtml(titulo)}"
+>
 
-  `;
+</a>
+
+</div>
+
+`;
 
 }
 
 
 function datoDetalle(
-  titulo,
-  valor
-) {
+titulo,
+valor
+){
 
-  return `
+return `
 
-    <div class="detalle-dato">
+<div class="detalle-dato">
 
-      <div class="detalle-label">
-        ${escaparHtml(titulo)}
-      </div>
+<div class="detalle-label">
+${escaparHtml(titulo)}
+</div>
 
-      <div class="detalle-valor">
+<div class="detalle-valor">
 
-        ${escaparHtml(
-          valor === "" ||
-          valor == null
-            ? "-"
-            : valor
-        )}
+${escaparHtml(
+valor === "" ||
+valor == null
+? "-"
+: valor
+)}
 
-      </div>
+</div>
 
-    </div>
+</div>
 
-  `;
+`;
 
 }
 
 
 /* =====================================================
-   VOLVER / FILTROS
+   FILTROS
 ===================================================== */
 
-function volverListaGestiones() {
+function volverListaGestiones(){
 
-  document
-    .getElementById(
-      "pantallaDetalleGestion"
-    )
-    .classList
-    .add("oculto");
+document
+.getElementById(
+"pantallaDetalleGestion"
+)
+.classList
+.add("oculto");
 
 
-  document
-    .getElementById(
-      "pantallaGestiones"
-    )
-    .classList
-    .remove("oculto");
+document
+.getElementById(
+"pantallaGestiones"
+)
+.classList
+.remove("oculto");
 
 }
 
 
-function limpiarFiltrosGestiones() {
+function limpiarFiltrosGestiones(){
 
-  [
-    "filtroFechaDesde",
-    "filtroFechaHasta",
-    "filtroIdRecepcion",
-    "filtroRuta",
-    "filtroPlaca",
-    "filtroEstado"
-  ]
-  .forEach(
-    function(id) {
+[
+"filtroFechaDesde",
+"filtroFechaHasta",
+"filtroIdRecepcion",
+"filtroRuta",
+"filtroPlaca",
+"filtroEstado"
+]
+.forEach(
+function(id){
 
-      document
-        .getElementById(id)
-        .value =
-          "";
+document
+.getElementById(id)
+.value = "";
 
-    }
-  );
+}
+);
 
 
-  buscarGestiones();
+buscarGestiones();
 
 }
 
@@ -5632,217 +5284,193 @@ function limpiarFiltrosGestiones() {
    UTILIDADES
 ===================================================== */
 
-function soloNumeros(input) {
+function soloNumeros(input){
 
-  input.value =
-    input.value
-      .replace(/\D/g,"")
-      .substring(0,11);
-
-}
-
-
-function valorCampo(id) {
-
-  const el =
-    document.getElementById(id);
-
-
-  if (!el) {
-    return "";
-  }
-
-
-  return String(
-    el.value || ""
-  )
-    .trim()
-    .toUpperCase();
+input.value =
+input.value
+.replace(/\D/g,"")
+.substring(0,11);
 
 }
 
 
-function capitalizarPrimera(
-  texto
-) {
+function valorCampo(id){
 
-  if (!texto) {
-    return "";
-  }
+const el =
+document.getElementById(id);
 
 
-  return (
-    texto.charAt(0)
-      .toUpperCase() +
-    texto.slice(1)
-  );
+if(!el){
+return "";
+}
+
+
+return String(
+el.value || ""
+)
+.trim()
+.toUpperCase();
 
 }
 
 
-/* =====================================================
-   MENSAJES
-===================================================== */
+function capitalizarPrimera(texto){
+
+if(!texto){
+return "";
+}
+
+
+return (
+texto.charAt(0)
+.toUpperCase()+
+texto.slice(1)
+);
+
+}
+
 
 function mostrarMensaje(
-  id,
-  texto,
-  correcto
-) {
+id,
+texto,
+correcto
+){
 
-  const el =
-    document.getElementById(id);
-
-
-  if (!el) {
-    return;
-  }
+const el =
+document.getElementById(id);
 
 
-  el.textContent =
-    texto;
+if(!el){
+return;
+}
 
 
-  el.className =
-    correcto
-      ? "mensaje mensaje-ok"
-      : "mensaje mensaje-error";
+el.textContent =
+texto;
+
+
+el.className =
+correcto
+? "mensaje mensaje-ok"
+: "mensaje mensaje-error";
 
 }
 
 
-function mostrarError(texto) {
+function mostrarError(texto){
 
-  mostrarMensaje(
-    "mensajeGeneral",
-    texto,
-    false
-  );
-
-
-  window.scrollTo({
-    top: 0,
-    behavior: "smooth"
-  });
-
-}
+mostrarMensaje(
+"mensajeGeneral",
+texto,
+false
+);
 
 
-function ocultarMensaje(id) {
-
-  const el =
-    document.getElementById(id);
-
-
-  if (el) {
-    el.className = "oculto";
-  }
+window.scrollTo({
+top:0,
+behavior:"smooth"
+});
 
 }
 
 
-/* =====================================================
-   LOADING
-===================================================== */
+function ocultarMensaje(id){
 
-function mostrarCargando(texto) {
-
-  document
-    .getElementById(
-      "textoCargando"
-    )
-    .textContent =
-      texto;
+const el =
+document.getElementById(id);
 
 
-  document
-    .getElementById(
-      "cargando"
-    )
-    .classList
-    .remove("oculto");
+if(el){
+el.className = "oculto";
+}
 
 }
 
 
-function ocultarCargando() {
+function mostrarCargando(texto){
 
-  document
-    .getElementById(
-      "cargando"
-    )
-    .classList
-    .add("oculto");
-
-}
+document
+.getElementById(
+"textoCargando"
+)
+.textContent =
+texto;
 
 
-/* =====================================================
-   ESCAPE
-===================================================== */
-
-function obtenerError(error) {
-
-  if (
-    error &&
-    error.message
-  ) {
-
-    return error.message;
-
-  }
-
-
-  return String(
-    error ||
-    "Error inesperado."
-  );
+document
+.getElementById(
+"cargando"
+)
+.classList
+.remove("oculto");
 
 }
 
 
-function escaparHtml(valor) {
+function ocultarCargando(){
 
-  return String(
-    valor == null
-      ? ""
-      : valor
-  )
-    .replace(/&/g,"&amp;")
-    .replace(/</g,"&lt;")
-    .replace(/>/g,"&gt;")
-    .replace(/"/g,"&quot;")
-    .replace(/'/g,"&#039;");
+document
+.getElementById(
+"cargando"
+)
+.classList
+.add("oculto");
 
 }
 
 
-function vibrar() {
+function obtenerError(error){
 
-  if (
-    navigator.vibrate
-  ) {
+if(
+error &&
+error.message
+){
 
-    navigator.vibrate(
-      80
-    );
-
-  }
+return error.message;
 
 }
 
 
-function vibrarError() {
+return String(
+error ||
+"Error inesperado."
+);
 
-  if (
-    navigator.vibrate
-  ) {
+}
 
-    navigator.vibrate(
-      [100,80,100]
-    );
 
-  }
+function escaparHtml(valor){
+
+return String(
+valor == null
+? ""
+: valor
+)
+.replace(/&/g,"&amp;")
+.replace(/</g,"&lt;")
+.replace(/>/g,"&gt;")
+.replace(/"/g,"&quot;")
+.replace(/'/g,"&#039;");
+
+}
+
+
+function vibrar(){
+
+if(navigator.vibrate){
+navigator.vibrate(80);
+}
+
+}
+
+
+function vibrarError(){
+
+if(navigator.vibrate){
+navigator.vibrate(
+[100,80,100]
+);
+}
 
 }
 
@@ -5852,69 +5480,63 @@ function vibrarError() {
 ===================================================== */
 
 document
-  .getElementById(
-    "codigoManual"
-  )
-  .addEventListener(
-    "keydown",
-    function(e) {
+.getElementById(
+"codigoManual"
+)
+.addEventListener(
+"keydown",
+function(e){
 
-      if (
-        e.key === "Enter"
-      ) {
+if(e.key === "Enter"){
 
-        e.preventDefault();
+e.preventDefault();
 
-        agregarManual();
+agregarManual();
 
-      }
+}
 
-    }
-  );
+}
+);
 
 
 document
-  .getElementById(
-    "codigoManualInversa"
-  )
-  .addEventListener(
-    "keydown",
-    function(e) {
+.getElementById(
+"codigoManualInversa"
+)
+.addEventListener(
+"keydown",
+function(e){
 
-      if (
-        e.key === "Enter"
-      ) {
+if(e.key === "Enter"){
 
-        e.preventDefault();
+e.preventDefault();
 
-        agregarManualInversa();
+agregarManualInversa();
 
-      }
+}
 
-    }
-  );
+}
+);
 
 
 document
-  .getElementById(
-    "loginPassword"
-  )
-  .addEventListener(
-    "keydown",
-    function(e) {
+.getElementById(
+"loginPassword"
+)
+.addEventListener(
+"keydown",
+function(e){
 
-      if (
-        e.key === "Enter"
-      ) {
+if(e.key === "Enter"){
 
-        e.preventDefault();
+e.preventDefault();
 
-        login();
+login();
 
-      }
+}
 
-    }
-  );
+}
+);
 
 
 /* =====================================================
@@ -5922,24 +5544,24 @@ document
 ===================================================== */
 
 window.addEventListener(
-  "beforeunload",
-  function() {
+"beforeunload",
+function(){
 
-    detenerScanner();
+detenerScanner();
 
-  }
+}
 );
 
 
 window.addEventListener(
-  "load",
-  async function() {
+"load",
+async function(){
 
-    crearControlesPrecintos();
+crearControlesPrecintos();
 
-    await restaurarSesion();
+await restaurarSesion();
 
-  }
+}
 );
 
 </script>
