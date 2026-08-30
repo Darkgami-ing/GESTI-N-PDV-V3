@@ -35,14 +35,14 @@ body {
 }
 
 .contenedor {
-  width: min(100%, 760px);
+  width: min(100%, 780px);
   margin: auto;
   padding: 12px;
 }
 
 .logo {
   text-align: center;
-  font-size: 24px;
+  font-size: 23px;
   font-weight: 800;
   color: #174a7e;
   margin: 12px 0 4px;
@@ -68,6 +68,13 @@ body {
   font-weight: 700;
   color: #174a7e;
   margin-bottom: 15px;
+}
+
+.subtitulo-card {
+  font-size: 14px;
+  font-weight: 800;
+  color: #334155;
+  margin: 18px 0 10px;
 }
 
 label {
@@ -116,7 +123,10 @@ button {
 
 button:disabled {
   opacity: .55;
-  cursor: not-allowed;
+}
+
+.oculto {
+  display: none !important;
 }
 
 .btn-principal {
@@ -144,14 +154,8 @@ button:disabled {
   color: #334155;
 }
 
-.oculto {
-  display: none !important;
-}
 
-
-/* =====================================================
-   USUARIO
-===================================================== */
+/* USUARIO */
 
 .usuario-barra {
   display: flex;
@@ -186,9 +190,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   MENÚ
-===================================================== */
+/* MENÚ */
 
 .menu-principal {
   display: grid;
@@ -198,9 +200,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   PROGRESO
-===================================================== */
+/* PROGRESO */
 
 .progreso {
   display: grid;
@@ -230,9 +230,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   ID RECEPCIÓN
-===================================================== */
+/* ID RECEPCIÓN */
 
 .recepcion-id {
   background: #eff6ff;
@@ -256,17 +254,59 @@ button:disabled {
 }
 
 
-/* =====================================================
-   FOTOS
-===================================================== */
+/* ESCANEO */
+
+.campo-escanear {
+  display: grid;
+  grid-template-columns: minmax(0,1fr) 58px;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.campo-escanear input {
+  margin-bottom: 0;
+}
+
+.campo-escanear button {
+  min-height: 48px;
+  font-size: 20px;
+}
+
+
+/* PRECINTO */
+
+.precinto-box {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 11px;
+  padding: 12px;
+  margin-bottom: 13px;
+}
+
+.precinto-titulo {
+  font-weight: 800;
+  color: #174a7e;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.codigo-ok {
+  color: #047857;
+  font-size: 11px;
+  font-weight: 700;
+  margin: -5px 0 10px;
+}
+
+
+/* FOTO */
 
 .foto-bloque {
-  margin-bottom: 15px;
+  margin-bottom: 12px;
 }
 
 .preview {
   width: 100%;
-  max-height: 280px;
+  max-height: 270px;
   object-fit: contain;
   border-radius: 9px;
   background: #f1f5f9;
@@ -282,9 +322,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   CONTADORES
-===================================================== */
+/* CONTADORES */
 
 .contadores {
   display: grid;
@@ -328,9 +366,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   SELECTOR
-===================================================== */
+/* SELECTORES */
 
 .selector-tipo,
 .decision {
@@ -362,9 +398,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   MANUAL
-===================================================== */
+/* MANUAL */
 
 .manual {
   display: grid;
@@ -377,9 +411,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   LISTA
-===================================================== */
+/* LISTA */
 
 .lista {
   margin-top: 15px;
@@ -430,9 +462,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   BOTONES DOBLES
-===================================================== */
+/* BOTONES */
 
 .botones-doble {
   display: grid;
@@ -442,9 +472,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   GPS
-===================================================== */
+/* GPS */
 
 .gps {
   padding: 11px;
@@ -466,9 +494,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   MENSAJES
-===================================================== */
+/* MENSAJES */
 
 .mensaje {
   padding: 12px;
@@ -490,9 +516,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   LOADING
-===================================================== */
+/* CARGANDO */
 
 .cargando {
   position: fixed;
@@ -530,14 +554,12 @@ button:disabled {
 }
 
 
-/* =====================================================
-   MODAL SCANNER
-===================================================== */
+/* SCANNER */
 
 .scanner-modal {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,.92);
+  background: rgba(0,0,0,.94);
   z-index: 100000;
   display: flex;
   flex-direction: column;
@@ -590,13 +612,8 @@ button:disabled {
 }
 
 @keyframes scan {
-  from {
-    top: 0;
-  }
-
-  to {
-    top: calc(100% - 3px);
-  }
+  from { top: 0; }
+  to { top: calc(100% - 3px); }
 }
 
 .estado-scanner {
@@ -623,9 +640,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   RESUMEN
-===================================================== */
+/* RESUMEN */
 
 .resumen-final {
   background: #f8fafc;
@@ -640,9 +655,7 @@ button:disabled {
 }
 
 
-/* =====================================================
-   GESTIONES
-===================================================== */
+/* CONSULTA */
 
 .gestion-card {
   background: white;
@@ -655,7 +668,6 @@ button:disabled {
 .gestion-cabecera {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
   gap: 8px;
 }
 
@@ -751,6 +763,13 @@ button:disabled {
   margin-bottom: 4px;
 }
 
+.foto-codigo {
+  font-size: 9px;
+  color: #64748b;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
 .tabla-contenedor {
   overflow-x: auto;
 }
@@ -770,13 +789,10 @@ button:disabled {
 
 .tabla-detalle th {
   background: #f1f5f9;
-  color: #475569;
 }
 
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
+/* RESPONSIVE */
 
 @media(max-width:420px) {
 
@@ -806,14 +822,7 @@ button:disabled {
 <body>
 
 
-<!-- =====================================================
-     CARGANDO
-====================================================== -->
-
-<div
-  id="cargando"
-  class="cargando oculto"
->
+<div id="cargando" class="cargando oculto">
 
   <div class="cargando-box">
 
@@ -829,22 +838,13 @@ button:disabled {
 
 
 
-<!-- =====================================================
-     SCANNER GLOBAL
-====================================================== -->
+<!-- SCANNER GLOBAL -->
 
-<div
-  id="scannerModal"
-  class="scanner-modal oculto"
->
+<div id="scannerModal" class="scanner-modal oculto">
 
-  <div
-    id="scannerTitulo"
-    class="scanner-header"
-  >
+  <div id="scannerTitulo" class="scanner-header">
     Escanear código
   </div>
-
 
   <div class="video-box">
 
@@ -861,14 +861,9 @@ button:disabled {
 
   </div>
 
-
-  <div
-    id="estadoScanner"
-    class="estado-scanner"
-  >
+  <div id="estadoScanner" class="estado-scanner">
     Apunte al código.
   </div>
-
 
   <div class="scanner-botones">
 
@@ -895,9 +890,7 @@ button:disabled {
 <div class="contenedor">
 
 
-<!-- =====================================================
-     LOGIN
-====================================================== -->
+<!-- LOGIN -->
 
 <section id="pantallaLogin">
 
@@ -909,23 +902,15 @@ button:disabled {
     Control de recepción y logística inversa
   </div>
 
-
   <div class="card">
 
     <div class="titulo-card">
       Iniciar sesión
     </div>
 
+    <div id="mensajeLogin" class="oculto"></div>
 
-    <div
-      id="mensajeLogin"
-      class="oculto"
-    ></div>
-
-
-    <label>
-      Usuario
-    </label>
+    <label>Usuario</label>
 
     <input
       id="loginUsuario"
@@ -935,10 +920,7 @@ button:disabled {
       placeholder="Usuario"
     >
 
-
-    <label>
-      Contraseña
-    </label>
+    <label>Contraseña</label>
 
     <input
       id="loginPassword"
@@ -946,7 +928,6 @@ button:disabled {
       autocomplete="current-password"
       placeholder="Contraseña"
     >
-
 
     <button
       class="btn-principal"
@@ -961,32 +942,19 @@ button:disabled {
 
 
 
-<!-- =====================================================
-     APP
-====================================================== -->
+<!-- APP -->
 
-<section
-  id="pantallaApp"
-  class="oculto"
->
-
+<section id="pantallaApp" class="oculto">
 
 <div class="usuario-barra">
 
   <div>
 
-    <div
-      id="usuarioNombre"
-      class="usuario-nombre"
-    ></div>
+    <div id="usuarioNombre" class="usuario-nombre"></div>
 
-    <div
-      id="usuarioInfo"
-      class="usuario-info"
-    ></div>
+    <div id="usuarioInfo" class="usuario-info"></div>
 
   </div>
-
 
   <button
     class="btn-salir"
@@ -998,7 +966,6 @@ button:disabled {
 </div>
 
 
-
 <div class="menu-principal">
 
   <button
@@ -1007,7 +974,6 @@ button:disabled {
   >
     ➕ REGISTRO
   </button>
-
 
   <button
     id="btnVerGestiones"
@@ -1020,76 +986,48 @@ button:disabled {
 </div>
 
 
-
-<div
-  id="mensajeGeneral"
-  class="oculto"
-></div>
+<div id="mensajeGeneral" class="oculto"></div>
 
 
 
-<!-- =====================================================
-     REGISTRO
-====================================================== -->
+<!-- REGISTRO -->
 
 <section id="contenedorRegistro">
 
-
 <div class="progreso">
 
-  <div
-    id="mini1"
-    class="paso-mini activo"
-  >
+  <div id="mini1" class="paso-mini activo">
     1<br>LLEGADA
   </div>
 
-  <div
-    id="mini2"
-    class="paso-mini"
-  >
+  <div id="mini2" class="paso-mini">
     2<br>RECEPCIÓN
   </div>
 
-  <div
-    id="mini3"
-    class="paso-mini"
-  >
+  <div id="mini3" class="paso-mini">
     3<br>INVERSA
   </div>
 
-  <div
-    id="mini4"
-    class="paso-mini"
-  >
+  <div id="mini4" class="paso-mini">
     4<br>CIERRE
   </div>
 
 </div>
 
 
-
-<div
-  id="boxIdRecepcion"
-  class="recepcion-id oculto"
->
+<div id="boxIdRecepcion" class="recepcion-id oculto">
 
   <div class="recepcion-id-label">
     ID RECEPCIÓN
   </div>
 
-  <div
-    id="idRecepcionVisible"
-    class="recepcion-id-valor"
-  ></div>
+  <div id="idRecepcionVisible" class="recepcion-id-valor"></div>
 
 </div>
 
 
 
-<!-- =====================================================
-     PASO 1
-====================================================== -->
+<!-- PASO 1 -->
 
 <section id="paso1">
 
@@ -1100,17 +1038,35 @@ button:disabled {
 </div>
 
 
-<label>ID Ruta</label>
+<label>ID Ruta *</label>
 
-<input
-  id="idRuta"
-  type="text"
-  autocapitalize="characters"
-  placeholder="ID de ruta"
->
+<div class="campo-escanear">
+
+  <input
+    id="idRuta"
+    type="text"
+    autocapitalize="characters"
+    autocomplete="off"
+    placeholder="Escanee o ingrese ID Ruta"
+  >
+
+  <button
+    type="button"
+    class="btn-verde"
+    onclick="iniciarScannerRuta()"
+  >
+    📷
+  </button>
+
+</div>
 
 
-<label>Placa</label>
+<div id="rutaEscaneada" class="codigo-ok oculto">
+✅ ID Ruta escaneado
+</div>
+
+
+<label>Placa *</label>
 
 <input
   id="placa"
@@ -1120,7 +1076,7 @@ button:disabled {
 >
 
 
-<label>DNI / RUC del receptor</label>
+<label>DNI / RUC del receptor *</label>
 
 <input
   id="dni"
@@ -1134,82 +1090,30 @@ button:disabled {
 
 <div class="foto-bloque">
 
-<label>Foto llegada de unidad *</label>
+  <label>Foto llegada de unidad *</label>
 
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'fotoLlegada')"
->
+  <input
+    type="file"
+    accept="image/*"
+    capture="environment"
+    onchange="procesarFotoInput(this,'fotoLlegada')"
+  >
 
-<img
-  id="previewFotoLlegada"
-  class="preview oculto"
->
+  <img id="previewFotoLlegada" class="preview oculto">
 
-<div
-  id="okFotoLlegada"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
+  <div id="okFotoLlegada" class="foto-ok oculto">
+    ✅ Fotografía preparada
+  </div>
 
 </div>
 
 
-
-<div class="foto-bloque">
-
-<label>Precinto abierto 1</label>
-
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'precintoAbierto1')"
->
-
-<img
-  id="previewPrecintoAbierto1"
-  class="preview oculto"
->
-
-<div
-  id="okPrecintoAbierto1"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
-
+<div class="subtitulo-card">
+Precintos abiertos
 </div>
 
 
-
-<div class="foto-bloque">
-
-<label>Precinto abierto 2</label>
-
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'precintoAbierto2')"
->
-
-<img
-  id="previewPrecintoAbierto2"
-  class="preview oculto"
->
-
-<div
-  id="okPrecintoAbierto2"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
-
-</div>
+<div id="precintosAbiertos"></div>
 
 
 <button
@@ -1225,14 +1129,9 @@ button:disabled {
 
 
 
-<!-- =====================================================
-     PASO 2
-====================================================== -->
+<!-- PASO 2 -->
 
-<section
-  id="paso2"
-  class="oculto"
->
+<section id="paso2" class="oculto">
 
 <div class="card">
 
@@ -1243,136 +1142,113 @@ button:disabled {
 
 <div class="contadores">
 
-<div class="contador">
+  <div class="contador">
 
-<div class="contador-titulo">
-SACOS
-</div>
+    <div class="contador-titulo">
+      SACOS
+    </div>
 
-<div
-  id="contadorSacos"
-  class="contador-numero"
->
-0
-</div>
+    <div id="contadorSacos" class="contador-numero">
+      0
+    </div>
 
-</div>
+  </div>
 
 
-<div class="contador">
+  <div class="contador">
 
-<div class="contador-titulo">
-BULTOS SUELTOS
-</div>
+    <div class="contador-titulo">
+      BULTOS SUELTOS
+    </div>
 
-<div
-  id="contadorBultos"
-  class="contador-numero"
->
-0
-</div>
+    <div id="contadorBultos" class="contador-numero">
+      0
+    </div>
+
+  </div>
 
 </div>
-
-</div>
-
 
 
 <div class="total-box">
 
-<div class="contador-titulo">
-TOTAL RECEPCIONADO
-</div>
+  <div class="contador-titulo">
+    TOTAL RECEPCIONADO
+  </div>
 
-<div
-  id="contadorTotal"
-  class="total-numero"
->
-0
-</div>
+  <div id="contadorTotal" class="total-numero">
+    0
+  </div>
 
 </div>
 
 
-
-<label>
-¿Qué está escaneando?
-</label>
-
+<label>¿Qué está escaneando?</label>
 
 <div class="selector-tipo">
 
-<button
-  id="btnTipoSaco"
-  class="seleccionado"
-  onclick="seleccionarTipoBulto('SACO')"
->
-SACO
-</button>
+  <button
+    id="btnTipoSaco"
+    class="seleccionado"
+    onclick="seleccionarTipoBulto('SACO')"
+  >
+    SACO
+  </button>
 
-
-<button
-  id="btnTipoBulto"
-  onclick="seleccionarTipoBulto('BULTO SUELTO')"
->
-BULTO SUELTO
-</button>
+  <button
+    id="btnTipoBulto"
+    onclick="seleccionarTipoBulto('BULTO SUELTO')"
+  >
+    BULTO SUELTO
+  </button>
 
 </div>
-
 
 
 <button
   class="btn-verde"
   onclick="iniciarScannerRecepcion()"
 >
-📷 INICIAR LECTOR
+  📷 INICIAR LECTOR
 </button>
 
 
 <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
 
 
-<label>
-Ingreso manual
-</label>
-
+<label>Ingreso manual</label>
 
 <div class="manual">
 
-<input
-  id="codigoManual"
-  type="text"
-  autocapitalize="characters"
-  autocomplete="off"
-  placeholder="Código"
->
+  <input
+    id="codigoManual"
+    type="text"
+    autocapitalize="characters"
+    autocomplete="off"
+    placeholder="Código"
+  >
 
-<button
-  class="btn-azul"
-  onclick="agregarManual()"
->
-+
-</button>
+  <button
+    class="btn-azul"
+    onclick="agregarManual()"
+  >
+    +
+  </button>
 
 </div>
 
 
-
-<div
-  id="listaRecepcion"
-  class="lista"
-></div>
+<div id="listaRecepcion" class="lista"></div>
 
 
 <div style="margin-top:15px;">
 
-<button
-  class="btn-principal"
-  onclick="irPaso3()"
->
-CONTINUAR
-</button>
+  <button
+    class="btn-principal"
+    onclick="irPaso3()"
+  >
+    CONTINUAR
+  </button>
 
 </div>
 
@@ -1382,14 +1258,9 @@ CONTINUAR
 
 
 
-<!-- =====================================================
-     PASO 3
-====================================================== -->
+<!-- PASO 3 -->
 
-<section
-  id="paso3"
-  class="oculto"
->
+<section id="paso3" class="oculto">
 
 <div class="card">
 
@@ -1398,178 +1269,141 @@ CONTINUAR
 </div>
 
 
-<label>
-¿Se entrega logística inversa?
-</label>
-
+<label>¿Se entrega logística inversa?</label>
 
 <div class="decision">
 
-<button
-  id="btnInversaNo"
-  class="activo-no"
-  onclick="seleccionarInversa(false)"
->
-NO
-</button>
+  <button
+    id="btnInversaNo"
+    class="activo-no"
+    onclick="seleccionarInversa(false)"
+  >
+    NO
+  </button>
 
-
-<button
-  id="btnInversaSi"
-  onclick="seleccionarInversa(true)"
->
-SÍ
-</button>
-
-</div>
-
-
-
-<div
-  id="contenidoInversa"
-  class="oculto"
-  style="margin-top:18px;"
->
-
-
-<div class="contador">
-
-<div class="contador-titulo">
-BULTOS LOGÍSTICA INVERSA
-</div>
-
-<div
-  id="contadorInversa"
-  class="contador-numero"
->
-0
-</div>
+  <button
+    id="btnInversaSi"
+    onclick="seleccionarInversa(true)"
+  >
+    SÍ
+  </button>
 
 </div>
 
 
+<div id="contenidoInversa" class="oculto">
 
-<label style="margin-top:15px;">
-Tipo de bulto
-</label>
+  <div class="contador">
 
+    <div class="contador-titulo">
+      BULTOS LOGÍSTICA INVERSA
+    </div>
 
-<div class="selector-tipo">
+    <div id="contadorInversa" class="contador-numero">
+      0
+    </div>
 
-<button
-  id="btnInvSaco"
-  class="seleccionado"
-  onclick="seleccionarTipoInversa('SACO')"
->
-SACO
-</button>
+  </div>
 
 
-<button
-  id="btnInvBulto"
-  onclick="seleccionarTipoInversa('BULTO SUELTO')"
->
-BULTO SUELTO
-</button>
+  <label style="margin-top:15px;">
+    Tipo de bulto
+  </label>
 
-</div>
+  <div class="selector-tipo">
 
+    <button
+      id="btnInvSaco"
+      class="seleccionado"
+      onclick="seleccionarTipoInversa('SACO')"
+    >
+      SACO
+    </button>
 
+    <button
+      id="btnInvBulto"
+      onclick="seleccionarTipoInversa('BULTO SUELTO')"
+    >
+      BULTO SUELTO
+    </button>
 
-<button
-  class="btn-verde"
-  onclick="iniciarScannerInversa()"
->
-📷 INICIAR LECTOR
-</button>
-
-
-<div style="margin-top:15px;">
-
-<label>
-Ingreso manual
-</label>
+  </div>
 
 
-<div class="manual">
-
-<input
-  id="codigoManualInversa"
-  type="text"
-  autocapitalize="characters"
-  autocomplete="off"
-  placeholder="Código"
->
-
-<button
-  class="btn-azul"
-  onclick="agregarManualInversa()"
->
-+
-</button>
-
-</div>
-
-</div>
+  <button
+    class="btn-verde"
+    onclick="iniciarScannerInversa()"
+  >
+    📷 INICIAR LECTOR
+  </button>
 
 
+  <div style="margin-top:15px;">
 
-<div
-  id="listaInversa"
-  class="lista"
-></div>
+    <label>Ingreso manual</label>
+
+    <div class="manual">
+
+      <input
+        id="codigoManualInversa"
+        type="text"
+        autocapitalize="characters"
+        autocomplete="off"
+        placeholder="Código"
+      >
+
+      <button
+        class="btn-azul"
+        onclick="agregarManualInversa()"
+      >
+        +
+      </button>
+
+    </div>
+
+  </div>
 
 
+  <div id="listaInversa" class="lista"></div>
 
-<div
-  class="foto-bloque"
-  style="margin-top:15px;"
->
 
-<label>
-Foto logística inversa *
-</label>
+  <div class="foto-bloque" style="margin-top:15px;">
 
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'fotoInversa')"
->
+    <label>Foto logística inversa *</label>
 
-<img
-  id="previewFotoInversa"
-  class="preview oculto"
->
+    <input
+      type="file"
+      accept="image/*"
+      capture="environment"
+      onchange="procesarFotoInput(this,'fotoInversa')"
+    >
 
-<div
-  id="okFotoInversa"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
+    <img id="previewFotoInversa" class="preview oculto">
+
+    <div id="okFotoInversa" class="foto-ok oculto">
+      ✅ Fotografía preparada
+    </div>
+
+  </div>
 
 </div>
-
-</div>
-
 
 
 <div class="botones-doble">
 
-<button
-  class="btn-gris"
-  onclick="irPaso(2)"
->
-ATRÁS
-</button>
+  <button
+    class="btn-gris"
+    onclick="irPaso(2)"
+  >
+    ATRÁS
+  </button>
 
-<button
-  class="btn-principal"
-  onclick="irPaso4()"
->
-CONTINUAR
-</button>
+  <button
+    class="btn-principal"
+    onclick="irPaso4()"
+  >
+    CONTINUAR
+  </button>
 
 </div>
 
@@ -1579,14 +1413,9 @@ CONTINUAR
 
 
 
-<!-- =====================================================
-     PASO 4
-====================================================== -->
+<!-- PASO 4 -->
 
-<section
-  id="paso4"
-  class="oculto"
->
+<section id="paso4" class="oculto">
 
 <div class="card">
 
@@ -1595,97 +1424,35 @@ CONTINUAR
 </div>
 
 
-
 <div class="foto-bloque">
 
-<label>
-Foto sacos / bultos recibidos *
-</label>
+  <label>Foto sacos / bultos recibidos *</label>
 
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'fotoCarga')"
->
+  <input
+    type="file"
+    accept="image/*"
+    capture="environment"
+    onchange="procesarFotoInput(this,'fotoCarga')"
+  >
 
-<img
-  id="previewFotoCarga"
-  class="preview oculto"
->
+  <img id="previewFotoCarga" class="preview oculto">
 
-<div
-  id="okFotoCarga"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
+  <div id="okFotoCarga" class="foto-ok oculto">
+    ✅ Fotografía preparada
+  </div>
 
 </div>
 
 
-
-<div class="foto-bloque">
-
-<label>
-Precinto cerrado 1 *
-</label>
-
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'precintoCerrado1')"
->
-
-<img
-  id="previewPrecintoCerrado1"
-  class="preview oculto"
->
-
-<div
-  id="okPrecintoCerrado1"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
-
+<div class="subtitulo-card">
+Precintos cerrados
 </div>
 
 
-
-<div class="foto-bloque">
-
-<label>
-Precinto cerrado 2
-</label>
-
-<input
-  type="file"
-  accept="image/*"
-  capture="environment"
-  onchange="procesarFotoInput(this,'precintoCerrado2')"
->
-
-<img
-  id="previewPrecintoCerrado2"
-  class="preview oculto"
->
-
-<div
-  id="okPrecintoCerrado2"
-  class="foto-ok oculto"
->
-✅ Fotografía preparada
-</div>
-
-</div>
+<div id="precintosCerrados"></div>
 
 
-
-<label>
-Observaciones
-</label>
+<label>Observaciones</label>
 
 <textarea
   id="observaciones"
@@ -1693,15 +1460,9 @@ Observaciones
 ></textarea>
 
 
+<label>Ubicación GPS</label>
 
-<label>
-Ubicación GPS
-</label>
-
-<div
-  id="estadoGps"
-  class="gps"
->
+<div id="estadoGps" class="gps">
 Ubicación pendiente.
 </div>
 
@@ -1710,9 +1471,8 @@ Ubicación pendiente.
   class="btn-azul"
   onclick="obtenerGPS()"
 >
-📍 ACTUALIZAR UBICACIÓN
+  📍 ACTUALIZAR UBICACIÓN
 </button>
-
 
 
 <div
@@ -1722,23 +1482,22 @@ Ubicación pendiente.
 ></div>
 
 
-
 <div class="botones-doble">
 
-<button
-  class="btn-gris"
-  onclick="irPaso(3)"
->
-ATRÁS
-</button>
+  <button
+    class="btn-gris"
+    onclick="irPaso(3)"
+  >
+    ATRÁS
+  </button>
 
-<button
-  id="btnFinalizar"
-  class="btn-principal"
-  onclick="finalizarRecepcion()"
->
-FINALIZAR RECEPCIÓN
-</button>
+  <button
+    id="btnFinalizar"
+    class="btn-principal"
+    onclick="finalizarRecepcion()"
+  >
+    FINALIZAR RECEPCIÓN
+  </button>
 
 </div>
 
@@ -1746,20 +1505,13 @@ FINALIZAR RECEPCIÓN
 
 </section>
 
-
 </section>
 
 
 
-<!-- =====================================================
-     GESTIONES
-====================================================== -->
+<!-- CONSULTA -->
 
-<section
-  id="pantallaGestiones"
-  class="oculto"
->
-
+<section id="pantallaGestiones" class="oculto">
 
 <div class="card">
 
@@ -1767,137 +1519,79 @@ FINALIZAR RECEPCIÓN
 📋 Gestiones de recepción
 </div>
 
+<label>Fecha desde</label>
+<input id="filtroFechaDesde" type="date">
 
-<label>
-Fecha desde
-</label>
+<label>Fecha hasta</label>
+<input id="filtroFechaHasta" type="date">
 
-<input
-  id="filtroFechaDesde"
-  type="date"
->
+<label>ID Recepción</label>
+<input id="filtroIdRecepcion" type="text" placeholder="REC-...">
 
+<label>ID Ruta</label>
+<input id="filtroRuta" type="text" placeholder="Ruta">
 
-<label>
-Fecha hasta
-</label>
+<label>Placa</label>
+<input id="filtroPlaca" type="text" placeholder="Placa">
 
-<input
-  id="filtroFechaHasta"
-  type="date"
->
-
-
-<label>
-ID Recepción
-</label>
-
-<input
-  id="filtroIdRecepcion"
-  type="text"
-  placeholder="REC-..."
->
-
-
-<label>
-ID Ruta
-</label>
-
-<input
-  id="filtroRuta"
-  type="text"
-  placeholder="Ruta"
->
-
-
-<label>
-Placa
-</label>
-
-<input
-  id="filtroPlaca"
-  type="text"
-  placeholder="Placa"
->
-
-
-<label>
-Estado
-</label>
+<label>Estado</label>
 
 <select id="filtroEstado">
 
-<option value="">
-TODOS
-</option>
+  <option value="">TODOS</option>
 
-<option value="EN PROCESO">
-EN PROCESO
-</option>
+  <option value="EN PROCESO">
+    EN PROCESO
+  </option>
 
-<option value="FINALIZADO">
-FINALIZADO
-</option>
+  <option value="FINALIZADO">
+    FINALIZADO
+  </option>
 
 </select>
 
 
-
 <div class="botones-doble">
 
-<button
-  class="btn-gris"
-  onclick="limpiarFiltrosGestiones()"
->
-LIMPIAR
-</button>
+  <button
+    class="btn-gris"
+    onclick="limpiarFiltrosGestiones()"
+  >
+    LIMPIAR
+  </button>
 
-<button
-  class="btn-azul"
-  onclick="buscarGestiones()"
->
-🔎 BUSCAR
-</button>
-
-</div>
+  <button
+    class="btn-azul"
+    onclick="buscarGestiones()"
+  >
+    🔎 BUSCAR
+  </button>
 
 </div>
 
+</div>
 
 
-<div
-  id="resultadoGestiones"
-></div>
+<div id="resultadoGestiones"></div>
 
 </section>
 
 
 
-<!-- =====================================================
-     DETALLE GESTIÓN
-====================================================== -->
-
-<section
-  id="pantallaDetalleGestion"
-  class="oculto"
->
-
+<section id="pantallaDetalleGestion" class="oculto">
 
 <div class="card">
 
-<button
-  class="btn-gris"
-  onclick="volverListaGestiones()"
->
-← VOLVER A GESTIONES
-</button>
+  <button
+    class="btn-gris"
+    onclick="volverListaGestiones()"
+  >
+    ← VOLVER A GESTIONES
+  </button>
 
 </div>
 
-
-<div
-  id="contenidoDetalleGestion"
-></div>
+<div id="contenidoDetalleGestion"></div>
 
 </section>
 
@@ -1942,54 +1636,195 @@ const fotos = {
   fotoLlegada: "",
 
   precintoAbierto1: "",
-
   precintoAbierto2: "",
+  precintoAbierto3: "",
+  precintoAbierto4: "",
 
   fotoInversa: "",
 
   fotoCarga: "",
 
   precintoCerrado1: "",
-
-  precintoCerrado2: ""
+  precintoCerrado2: "",
+  precintoCerrado3: "",
+  precintoCerrado4: ""
 
 };
 
 
 let detalles = [];
 
-let tipoBultoActual =
-  "SACO";
+let tipoBultoActual = "SACO";
 
-let tipoInversaActual =
-  "SACO";
+let tipoInversaActual = "SACO";
 
-let tieneInversa =
-  false;
+let tieneInversa = false;
 
+
+/* SCANNER */
 
 let lectorZXing = null;
 
-let scannerActivo =
-  false;
+let scannerActivo = false;
 
-let scannerMovimiento =
-  "RECEPCIÓN";
+let scannerDestino = "DETALLE";
 
-let ultimoCodigo =
-  "";
+let scannerMovimiento = "RECEPCIÓN";
 
-let ultimaLectura =
-  0;
+let campoDestinoScanner = "";
 
-let bloqueoLectura =
-  false;
+let ultimoCodigo = "";
 
-let dispositivosVideo =
-  [];
+let ultimaLectura = 0;
 
-let indiceCamara =
-  0;
+let bloqueoLectura = false;
+
+let dispositivosVideo = [];
+
+let indiceCamara = 0;
+
+
+/* =====================================================
+   CREAR PRECINTOS
+===================================================== */
+
+function crearControlesPrecintos() {
+
+  const abiertos =
+    document.getElementById(
+      "precintosAbiertos"
+    );
+
+
+  const cerrados =
+    document.getElementById(
+      "precintosCerrados"
+    );
+
+
+  abiertos.innerHTML = "";
+
+  cerrados.innerHTML = "";
+
+
+  for (
+    let i = 1;
+    i <= 4;
+    i++
+  ) {
+
+    abiertos.innerHTML +=
+      generarHtmlPrecinto(
+        "ABIERTO",
+        i
+      );
+
+
+    cerrados.innerHTML +=
+      generarHtmlPrecinto(
+        "CERRADO",
+        i
+      );
+
+  }
+
+}
+
+
+function generarHtmlPrecinto(
+  tipo,
+  numero
+) {
+
+  const clave =
+    tipo === "ABIERTO"
+      ? "precintoAbierto" + numero
+      : "precintoCerrado" + numero;
+
+
+  const campoCodigo =
+    tipo === "ABIERTO"
+      ? "codigoPrecintoAbierto" + numero
+      : "codigoPrecintoCerrado" + numero;
+
+
+  const requerido =
+    (
+      tipo === "CERRADO" &&
+      numero === 1
+    )
+      ? " *"
+      : "";
+
+
+  return `
+
+    <div class="precinto-box">
+
+      <div class="precinto-titulo">
+        PRECINTO ${tipo} ${numero}${requerido}
+      </div>
+
+
+      <label>Código del precinto</label>
+
+      <div class="campo-escanear">
+
+        <input
+          id="${campoCodigo}"
+          type="text"
+          autocomplete="off"
+          autocapitalize="characters"
+          placeholder="Escanee o escriba código"
+        >
+
+        <button
+          type="button"
+          class="btn-verde"
+          onclick="iniciarScannerPrecinto('${campoCodigo}')"
+        >
+          📷
+        </button>
+
+      </div>
+
+
+      <div
+        id="ok${capitalizarPrimera(campoCodigo)}"
+        class="codigo-ok oculto"
+      >
+        ✅ Código escaneado
+      </div>
+
+
+      <label>Fotografía</label>
+
+      <input
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onchange="procesarFotoInput(this,'${clave}')"
+      >
+
+
+      <img
+        id="preview${capitalizarPrimera(clave)}"
+        class="preview oculto"
+      >
+
+
+      <div
+        id="ok${capitalizarPrimera(clave)}"
+        class="foto-ok oculto"
+      >
+        ✅ Fotografía preparada
+      </div>
+
+    </div>
+
+  `;
+
+}
 
 
 /* =====================================================
@@ -2150,7 +1985,6 @@ async function login() {
 
     mostrarAplicacion();
 
-
     obtenerGPS();
 
 
@@ -2190,7 +2024,7 @@ async function login() {
 
 
 /* =====================================================
-   MOSTRAR APLICACIÓN
+   APLICACIÓN
 ===================================================== */
 
 function mostrarAplicacion() {
@@ -2223,29 +2057,17 @@ function mostrarAplicacion() {
 
 
   if (usuarioActual.rol) {
-
-    datos.push(
-      usuarioActual.rol
-    );
-
+    datos.push(usuarioActual.rol);
   }
 
 
   if (usuarioActual.area) {
-
-    datos.push(
-      usuarioActual.area
-    );
-
+    datos.push(usuarioActual.area);
   }
 
 
   if (usuarioActual.region) {
-
-    datos.push(
-      usuarioActual.region
-    );
-
+    datos.push(usuarioActual.region);
   }
 
 
@@ -2257,14 +2079,13 @@ function mostrarAplicacion() {
       datos.join(" | ");
 
 
-  // HABILITAR CONSULTA SEGÚN ROL
   configurarModuloConsulta();
 
 }
 
 
 /* =====================================================
-   CONSULTA SEGÚN ROL
+   CONSULTA
 ===================================================== */
 
 function configurarModuloConsulta() {
@@ -2317,9 +2138,7 @@ async function restaurarSesion() {
 
 
   if (!token) {
-
     return;
-
   }
 
 
@@ -2346,7 +2165,6 @@ async function restaurarSesion() {
 
 
     mostrarAplicacion();
-
 
     obtenerGPS();
 
@@ -2396,8 +2214,7 @@ async function logout() {
   );
 
 
-  tokenSesion =
-    "";
+  tokenSesion = "";
 
 
   try {
@@ -2406,11 +2223,9 @@ async function logout() {
 
       await llamarAPI({
 
-        accion:
-          "LOGOUT",
+        accion: "LOGOUT",
 
-        token:
-          token
+        token: token
 
       });
 
@@ -2475,9 +2290,7 @@ async function iniciarRecepcion() {
 
   const idRuta =
     document
-      .getElementById(
-        "idRuta"
-      )
+      .getElementById("idRuta")
       .value
       .trim()
       .toUpperCase();
@@ -2485,9 +2298,7 @@ async function iniciarRecepcion() {
 
   const placa =
     document
-      .getElementById(
-        "placa"
-      )
+      .getElementById("placa")
       .value
       .trim()
       .toUpperCase();
@@ -2495,9 +2306,7 @@ async function iniciarRecepcion() {
 
   const dni =
     document
-      .getElementById(
-        "dni"
-      )
+      .getElementById("dni")
       .value
       .trim();
 
@@ -2505,7 +2314,7 @@ async function iniciarRecepcion() {
   if (!idRuta) {
 
     mostrarError(
-      "Ingrese el ID de ruta."
+      "Ingrese o escanee el ID Ruta."
     );
 
     return;
@@ -2549,6 +2358,58 @@ async function iniciarRecepcion() {
   }
 
 
+  for (
+    let i = 1;
+    i <= 4;
+    i++
+  ) {
+
+    const codigo =
+      valorCampo(
+        "codigoPrecintoAbierto" + i
+      );
+
+
+    const foto =
+      fotos[
+        "precintoAbierto" + i
+      ];
+
+
+    if (
+      codigo &&
+      !foto
+    ) {
+
+      mostrarError(
+        "Precinto abierto " +
+        i +
+        ": falta la fotografía."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !codigo &&
+      foto
+    ) {
+
+      mostrarError(
+        "Precinto abierto " +
+        i +
+        ": falta escanear el código."
+      );
+
+      return;
+
+    }
+
+  }
+
+
   mostrarCargando(
     "Iniciando recepción..."
   );
@@ -2579,11 +2440,37 @@ async function iniciarRecepcion() {
           fotoLlegada:
             fotos.fotoLlegada,
 
+          codigoPrecintoAbierto1:
+            valorCampo(
+              "codigoPrecintoAbierto1"
+            ),
+
           precintoAbierto1:
             fotos.precintoAbierto1,
 
+          codigoPrecintoAbierto2:
+            valorCampo(
+              "codigoPrecintoAbierto2"
+            ),
+
           precintoAbierto2:
-            fotos.precintoAbierto2
+            fotos.precintoAbierto2,
+
+          codigoPrecintoAbierto3:
+            valorCampo(
+              "codigoPrecintoAbierto3"
+            ),
+
+          precintoAbierto3:
+            fotos.precintoAbierto3,
+
+          codigoPrecintoAbierto4:
+            valorCampo(
+              "codigoPrecintoAbierto4"
+            ),
+
+          precintoAbierto4:
+            fotos.precintoAbierto4
 
         }
 
@@ -2646,7 +2533,7 @@ async function iniciarRecepcion() {
 
 
 /* =====================================================
-   RECUPERAR RECEPCIÓN
+   RECUPERAR
 ===================================================== */
 
 async function recuperarRecepcion(id) {
@@ -2659,11 +2546,15 @@ async function recuperarRecepcion(id) {
         accion:
           "CONSULTAR_RECEPCION",
 
-        token:
-          tokenSesion,
+        datos: {
 
-        idRecepcion:
-          id
+          token:
+            tokenSesion,
+
+          idRecepcion:
+            id
+
+        }
 
       });
 
@@ -2674,6 +2565,41 @@ async function recuperarRecepcion(id) {
 
     detalles =
       res.detalles || [];
+
+
+    const r =
+      res.resumen;
+
+
+    if (
+      r.fechaSalida
+    ) {
+
+      localStorage.removeItem(
+        "recepcionActiva"
+      );
+
+      return;
+
+    }
+
+
+    document
+      .getElementById("idRuta")
+      .value =
+        r.idRuta || "";
+
+
+    document
+      .getElementById("placa")
+      .value =
+        r.placa || "";
+
+
+    document
+      .getElementById("dni")
+      .value =
+        r.dni || "";
 
 
     document
@@ -2692,105 +2618,9 @@ async function recuperarRecepcion(id) {
       .remove("oculto");
 
 
-    /*
-      SOPORTA DOS FORMATOS DEL BACKEND:
-      resumen como array o como objeto
-    */
-
-    if (
-      Array.isArray(
-        res.resumen
-      )
-    ) {
-
-      if (
-        res.resumen[2]
-      ) {
-
-        localStorage.removeItem(
-          "recepcionActiva"
-        );
-
-        return;
-
-      }
-
-
-      document
-        .getElementById(
-          "idRuta"
-        )
-        .value =
-          res.resumen[4] || "";
-
-
-      document
-        .getElementById(
-          "placa"
-        )
-        .value =
-          res.resumen[5] || "";
-
-
-      document
-        .getElementById(
-          "dni"
-        )
-        .value =
-          res.resumen[6] || "";
-
-    }
-
-    else if (
-      res.resumen &&
-      typeof res.resumen ===
-      "object"
-    ) {
-
-      if (
-        res.resumen.fechaSalida
-      ) {
-
-        localStorage.removeItem(
-          "recepcionActiva"
-        );
-
-        return;
-
-      }
-
-
-      document
-        .getElementById(
-          "idRuta"
-        )
-        .value =
-          res.resumen.idRuta || "";
-
-
-      document
-        .getElementById(
-          "placa"
-        )
-        .value =
-          res.resumen.placa || "";
-
-
-      document
-        .getElementById(
-          "dni"
-        )
-        .value =
-          res.resumen.dni || "";
-
-    }
-
-
     renderizarDetalles();
 
-
     abrirRegistro();
-
 
     irPaso(2);
 
@@ -2911,18 +2741,13 @@ function irPaso3() {
 
 
   if (
-    cantidad === 0
+    cantidad === 0 &&
+    !confirm(
+      "No existen bultos escaneados. ¿Desea continuar?"
+    )
   ) {
 
-    if (
-      !confirm(
-        "No existen bultos escaneados. ¿Desea continuar?"
-      )
-    ) {
-
-      return;
-
-    }
+    return;
 
   }
 
@@ -3024,7 +2849,7 @@ function seleccionarInversa(valor) {
 
 
 /* =====================================================
-   TIPO BULTO
+   TIPOS
 ===================================================== */
 
 function seleccionarTipoBulto(tipo) {
@@ -3051,8 +2876,7 @@ function seleccionarTipoBulto(tipo) {
     .classList
     .toggle(
       "seleccionado",
-      tipo ===
-      "BULTO SUELTO"
+      tipo === "BULTO SUELTO"
     );
 
 }
@@ -3082,8 +2906,7 @@ function seleccionarTipoInversa(tipo) {
     .classList
     .toggle(
       "seleccionado",
-      tipo ===
-      "BULTO SUELTO"
+      tipo === "BULTO SUELTO"
     );
 
 }
@@ -3108,9 +2931,7 @@ async function guardarCodigo(
 
 
   if (!codigo) {
-
     return false;
-
   }
 
 
@@ -3124,13 +2945,6 @@ async function guardarCodigo(
 
   }
 
-
-  /*
-    DUPLICADO POR MOVIMIENTO.
-
-    Esto permite que el mismo código pueda existir
-    una vez en RECEPCIÓN y una vez en LOGÍSTICA INVERSA.
-  */
 
   const duplicado =
     detalles.some(
@@ -3153,9 +2967,7 @@ async function guardarCodigo(
     );
 
 
-  if (
-    duplicado
-  ) {
+  if (duplicado) {
 
     mostrarError(
       "El código " +
@@ -3204,13 +3016,9 @@ async function guardarCodigo(
 
     detalles.push({
 
-      idRecepcion:
-        idRecepcionActual,
-
       fechaHora:
         res.fechaHora ||
-        new Date()
-          .toISOString(),
+        new Date().toISOString(),
 
       tipoMovimiento:
         res.tipoMovimiento ||
@@ -3313,21 +3121,17 @@ async function eliminarDetalle(item) {
           !(
             String(
               d.codigo || ""
-            )
-              .toUpperCase() ===
-              String(
-                item.codigo || ""
-              )
-                .toUpperCase()
+            ).toUpperCase() ===
+            String(
+              item.codigo || ""
+            ).toUpperCase()
             &&
             String(
               d.tipoMovimiento || ""
-            )
-              .toUpperCase() ===
-              String(
-                item.tipoMovimiento || ""
-              )
-                .toUpperCase()
+            ).toUpperCase() ===
+            String(
+              item.tipoMovimiento || ""
+            ).toUpperCase()
           )
       );
 
@@ -3354,7 +3158,7 @@ async function eliminarDetalle(item) {
 
 
 /* =====================================================
-   RENDER LISTAS
+   RENDER DETALLES
 ===================================================== */
 
 function renderizarDetalles() {
@@ -3448,22 +3252,19 @@ function renderLista(
 ) {
 
   const lista =
-    document
-      .getElementById(id);
+    document.getElementById(id);
 
 
-  lista.innerHTML =
-    "";
+  lista.innerHTML = "";
 
 
   datos.forEach(
     function(item) {
 
       const fila =
-        document
-          .createElement(
-            "div"
-          );
+        document.createElement(
+          "div"
+        );
 
 
       fila.className =
@@ -3471,90 +3272,37 @@ function renderLista(
 
 
       const info =
-        document
-          .createElement(
-            "div"
-          );
+        document.createElement(
+          "div"
+        );
 
 
       info.className =
         "item-info";
 
 
-      const tipo =
-        document
-          .createElement(
-            "div"
-          );
+      info.innerHTML =
+        `
+          <div class="item-tipo">
+            ${escaparHtml(item.tipoMovimiento)}
+            •
+            ${escaparHtml(item.tipoBulto)}
+          </div>
 
+          <div class="item-codigo">
+            ${escaparHtml(item.codigo)}
+          </div>
 
-      tipo.className =
-        "item-tipo";
-
-
-      tipo.textContent =
-        item.tipoMovimiento +
-        " • " +
-        item.tipoBulto;
-
-
-      const codigo =
-        document
-          .createElement(
-            "div"
-          );
-
-
-      codigo.className =
-        "item-codigo";
-
-
-      codigo.textContent =
-        item.codigo;
-
-
-      const hora =
-        document
-          .createElement(
-            "div"
-          );
-
-
-      hora.className =
-        "item-hora";
-
-
-      if (
-        item.fechaHora
-      ) {
-
-        const f =
-          new Date(
-            item.fechaHora
-          );
-
-
-        if (
-          !isNaN(
-            f.getTime()
-          )
-        ) {
-
-          hora.textContent =
-            f.toLocaleString(
-              "es-PE"
-            );
-
-        }
-
-      }
+          <div class="item-hora">
+            ${escaparHtml(item.fechaHora || "")}
+          </div>
+        `;
 
 
       const btn =
-        document
-          .createElement(
-            "button"
-          );
+        document.createElement(
+          "button"
+        );
 
 
       btn.className =
@@ -3574,12 +3322,6 @@ function renderLista(
 
         };
 
-
-      info.appendChild(tipo);
-
-      info.appendChild(codigo);
-
-      info.appendChild(hora);
 
       fila.appendChild(info);
 
@@ -3619,9 +3361,7 @@ async function agregarManual() {
 
 
   if (ok) {
-
     input.value = "";
-
   }
 
 }
@@ -3649,19 +3389,69 @@ async function agregarManualInversa() {
 
 
   if (ok) {
-
     input.value = "";
-
   }
 
 }
 
 
 /* =====================================================
-   SCANNER
+   SCANNER DESTINOS
 ===================================================== */
 
+function iniciarScannerRuta() {
+
+  scannerDestino =
+    "RUTA";
+
+
+  campoDestinoScanner =
+    "idRuta";
+
+
+  document
+    .getElementById(
+      "scannerTitulo"
+    )
+    .textContent =
+      "ESCANEAR ID RUTA";
+
+
+  activarScanner();
+
+}
+
+
+function iniciarScannerPrecinto(
+  campo
+) {
+
+  scannerDestino =
+    "PRECINTO";
+
+
+  campoDestinoScanner =
+    campo;
+
+
+  document
+    .getElementById(
+      "scannerTitulo"
+    )
+    .textContent =
+      "ESCANEAR CÓDIGO DE PRECINTO";
+
+
+  activarScanner();
+
+}
+
+
 function iniciarScannerRecepcion() {
+
+  scannerDestino =
+    "DETALLE";
+
 
   scannerMovimiento =
     "RECEPCIÓN";
@@ -3683,6 +3473,10 @@ function iniciarScannerRecepcion() {
 
 function iniciarScannerInversa() {
 
+  scannerDestino =
+    "DETALLE";
+
+
   scannerMovimiento =
     "LOGÍSTICA INVERSA";
 
@@ -3701,6 +3495,10 @@ function iniciarScannerInversa() {
 }
 
 
+/* =====================================================
+   ACTIVAR SCANNER
+===================================================== */
+
 async function activarScanner() {
 
   detenerScanner(false);
@@ -3712,7 +3510,7 @@ async function activarScanner() {
   ) {
 
     mostrarError(
-      "No se pudo cargar ZXing."
+      "No se pudo cargar el lector."
     );
 
     return;
@@ -3759,24 +3557,20 @@ async function activarScanner() {
 
         {
 
-          audio:
-            false,
+          audio: false,
 
           video: {
 
             facingMode: {
-              ideal:
-                "environment"
+              ideal: "environment"
             },
 
             width: {
-              ideal:
-                1280
+              ideal: 1280
             },
 
             height: {
-              ideal:
-                720
+              ideal: 720
             }
 
           }
@@ -3820,9 +3614,7 @@ async function activarScanner() {
     }
 
     catch (e) {
-
       console.log(e);
-
     }
 
   }
@@ -3833,6 +3625,7 @@ async function activarScanner() {
 
     detenerScanner();
 
+
     mostrarError(
       "No se pudo abrir la cámara. Revise los permisos de Chrome."
     );
@@ -3842,6 +3635,10 @@ async function activarScanner() {
 }
 
 
+/* =====================================================
+   PROCESAR LECTURA
+===================================================== */
+
 async function procesarLectura(
   resultado
 ) {
@@ -3849,9 +3646,7 @@ async function procesarLectura(
   if (
     bloqueoLectura
   ) {
-
     return;
-
   }
 
 
@@ -3871,11 +3666,100 @@ async function procesarLectura(
 
 
   if (!codigo) {
+    return;
+  }
+
+
+  /*
+    ID RUTA
+  */
+
+  if (
+    scannerDestino ===
+    "RUTA"
+  ) {
+
+    document
+      .getElementById(
+        "idRuta"
+      )
+      .value =
+        codigo;
+
+
+    document
+      .getElementById(
+        "rutaEscaneada"
+      )
+      .classList
+      .remove("oculto");
+
+
+    vibrar();
+
+    detenerScanner();
 
     return;
 
   }
 
+
+  /*
+    PRECINTO
+  */
+
+  if (
+    scannerDestino ===
+    "PRECINTO"
+  ) {
+
+    const campo =
+      document
+        .getElementById(
+          campoDestinoScanner
+        );
+
+
+    if (campo) {
+
+      campo.value =
+        codigo;
+
+
+      const ok =
+        document
+          .getElementById(
+            "ok" +
+            capitalizarPrimera(
+              campoDestinoScanner
+            )
+          );
+
+
+      if (ok) {
+
+        ok.classList
+          .remove(
+            "oculto"
+          );
+
+      }
+
+    }
+
+
+    vibrar();
+
+    detenerScanner();
+
+    return;
+
+  }
+
+
+  /*
+    DETALLE
+  */
 
   const ahora =
     Date.now();
@@ -3937,7 +3821,8 @@ async function procesarLectura(
 
 
     estado.textContent =
-      "✅ " + codigo;
+      "✅ " +
+      codigo;
 
   }
 
@@ -3965,6 +3850,10 @@ async function procesarLectura(
 }
 
 
+/* =====================================================
+   DETENER SCANNER
+===================================================== */
+
 function detenerScanner(
   ocultar = true
 ) {
@@ -3982,11 +3871,8 @@ function detenerScanner(
   ) {
 
     try {
-
       lectorZXing.reset();
-
     }
-
     catch (e) {}
 
   }
@@ -4037,6 +3923,10 @@ function detenerScanner(
 }
 
 
+/* =====================================================
+   CAMBIAR CÁMARA
+===================================================== */
+
 async function cambiarCamara() {
 
   if (
@@ -4064,8 +3954,7 @@ async function cambiarCamara() {
     dispositivosVideo.length
   ) {
 
-    indiceCamara =
-      0;
+    indiceCamara = 0;
 
   }
 
@@ -4135,9 +4024,7 @@ function procesarFotoInput(
 
 
   if (!archivo) {
-
     return;
-
   }
 
 
@@ -4187,8 +4074,7 @@ function procesarFotoInput(
                 );
 
 
-              ancho =
-                MAX;
+              ancho = MAX;
 
             }
 
@@ -4204,8 +4090,7 @@ function procesarFotoInput(
                 );
 
 
-              alto =
-                MAX;
+              alto = MAX;
 
             }
 
@@ -4288,90 +4173,58 @@ function procesarFotoInput(
 }
 
 
+/* =====================================================
+   PREVIEW
+===================================================== */
+
 function mostrarPreview(
   clave
 ) {
 
-  const mapa = {
-
-    fotoLlegada:
-      [
-        "previewFotoLlegada",
-        "okFotoLlegada"
-      ],
-
-    precintoAbierto1:
-      [
-        "previewPrecintoAbierto1",
-        "okPrecintoAbierto1"
-      ],
-
-    precintoAbierto2:
-      [
-        "previewPrecintoAbierto2",
-        "okPrecintoAbierto2"
-      ],
-
-    fotoInversa:
-      [
-        "previewFotoInversa",
-        "okFotoInversa"
-      ],
-
-    fotoCarga:
-      [
-        "previewFotoCarga",
-        "okFotoCarga"
-      ],
-
-    precintoCerrado1:
-      [
-        "previewPrecintoCerrado1",
-        "okPrecintoCerrado1"
-      ],
-
-    precintoCerrado2:
-      [
-        "previewPrecintoCerrado2",
-        "okPrecintoCerrado2"
-      ]
-
-  };
-
-
-  const ids =
-    mapa[clave];
-
-
-  if (!ids) {
-
-    return;
-
-  }
+  const idClave =
+    capitalizarPrimera(
+      clave
+    );
 
 
   const img =
     document
       .getElementById(
-        ids[0]
+        "preview" +
+        idClave
       );
 
 
-  img.src =
-    fotos[clave];
+  const ok =
+    document
+      .getElementById(
+        "ok" +
+        idClave
+      );
 
 
-  img
-    .classList
-    .remove("oculto");
+  if (img) {
+
+    img.src =
+      fotos[clave];
 
 
-  document
-    .getElementById(
-      ids[1]
-    )
-    .classList
-    .remove("oculto");
+    img.classList
+      .remove(
+        "oculto"
+      );
+
+  }
+
+
+  if (ok) {
+
+    ok.classList
+      .remove(
+        "oculto"
+      );
+
+  }
 
 }
 
@@ -4390,9 +4243,7 @@ function obtenerGPS() {
 
 
   if (!estado) {
-
     return;
-
   }
 
 
@@ -4462,16 +4313,11 @@ function obtenerGPS() {
 
       function() {
 
-        latitudActual =
-          null;
+        latitudActual = null;
 
+        longitudActual = null;
 
-        longitudActual =
-          null;
-
-
-        precisionActual =
-          null;
+        precisionActual = null;
 
 
         estado.className =
@@ -4521,15 +4367,86 @@ async function finalizarRecepcion() {
   }
 
 
+  /*
+    CERRADO 1 ES OBLIGATORIO
+  */
+
+  if (
+    !valorCampo(
+      "codigoPrecintoCerrado1"
+    )
+  ) {
+
+    mostrarError(
+      "Debe escanear el código del Precinto Cerrado 1."
+    );
+
+    return;
+
+  }
+
+
   if (
     !fotos.precintoCerrado1
   ) {
 
     mostrarError(
-      "Debe registrar el precinto cerrado 1."
+      "Debe fotografiar el Precinto Cerrado 1."
     );
 
     return;
+
+  }
+
+
+  for (
+    let i = 1;
+    i <= 4;
+    i++
+  ) {
+
+    const codigo =
+      valorCampo(
+        "codigoPrecintoCerrado" + i
+      );
+
+
+    const foto =
+      fotos[
+        "precintoCerrado" + i
+      ];
+
+
+    if (
+      codigo &&
+      !foto
+    ) {
+
+      mostrarError(
+        "Precinto cerrado " +
+        i +
+        ": falta la fotografía."
+      );
+
+      return;
+
+    }
+
+
+    if (
+      !codigo &&
+      foto
+    ) {
+
+      mostrarError(
+        "Precinto cerrado " +
+        i +
+        ": falta escanear el código."
+      );
+
+      return;
+
+    }
 
   }
 
@@ -4598,11 +4515,37 @@ async function finalizarRecepcion() {
               ? fotos.fotoInversa
               : "",
 
+          codigoPrecintoCerrado1:
+            valorCampo(
+              "codigoPrecintoCerrado1"
+            ),
+
           precintoCerrado1:
             fotos.precintoCerrado1,
 
+          codigoPrecintoCerrado2:
+            valorCampo(
+              "codigoPrecintoCerrado2"
+            ),
+
           precintoCerrado2:
             fotos.precintoCerrado2,
+
+          codigoPrecintoCerrado3:
+            valorCampo(
+              "codigoPrecintoCerrado3"
+            ),
+
+          precintoCerrado3:
+            fotos.precintoCerrado3,
+
+          codigoPrecintoCerrado4:
+            valorCampo(
+              "codigoPrecintoCerrado4"
+            ),
+
+          precintoCerrado4:
+            fotos.precintoCerrado4,
 
           observaciones:
             document
@@ -4696,9 +4639,7 @@ function actualizarResumenFinal() {
 
 
   if (!caja) {
-
     return;
-
   }
 
 
@@ -4769,7 +4710,7 @@ function actualizarResumenFinal() {
 
 
 /* =====================================================
-   ABRIR GESTIONES
+   GESTIONES
 ===================================================== */
 
 function abrirGestiones() {
@@ -4812,10 +4753,6 @@ function abrirGestiones() {
 }
 
 
-/* =====================================================
-   BUSCAR GESTIONES
-===================================================== */
-
 async function buscarGestiones() {
 
   mostrarCargando(
@@ -4837,46 +4774,34 @@ async function buscarGestiones() {
             tokenSesion,
 
           fechaDesde:
-            document
-              .getElementById(
-                "filtroFechaDesde"
-              )
-              .value,
+            valorCampo(
+              "filtroFechaDesde"
+            ),
 
           fechaHasta:
-            document
-              .getElementById(
-                "filtroFechaHasta"
-              )
-              .value,
+            valorCampo(
+              "filtroFechaHasta"
+            ),
 
           idRecepcion:
-            document
-              .getElementById(
-                "filtroIdRecepcion"
-              )
-              .value,
+            valorCampo(
+              "filtroIdRecepcion"
+            ),
 
           idRuta:
-            document
-              .getElementById(
-                "filtroRuta"
-              )
-              .value,
+            valorCampo(
+              "filtroRuta"
+            ),
 
           placa:
-            document
-              .getElementById(
-                "filtroPlaca"
-              )
-              .value,
+            valorCampo(
+              "filtroPlaca"
+            ),
 
           estado:
-            document
-              .getElementById(
-                "filtroEstado"
-              )
-              .value
+            valorCampo(
+              "filtroEstado"
+            )
 
         }
 
@@ -4906,10 +4831,6 @@ async function buscarGestiones() {
 }
 
 
-/* =====================================================
-   RENDER GESTIONES
-===================================================== */
-
 function renderGestiones(res) {
 
   const contenedor =
@@ -4919,14 +4840,12 @@ function renderGestiones(res) {
       );
 
 
-  contenedor.innerHTML =
-    "";
+  contenedor.innerHTML = "";
 
 
   if (
     !res.gestiones ||
-    res.gestiones.length ===
-    0
+    res.gestiones.length === 0
   ) {
 
     contenedor.innerHTML =
@@ -4942,10 +4861,9 @@ function renderGestiones(res) {
 
 
   const info =
-    document
-      .createElement(
-        "div"
-      );
+    document.createElement(
+      "div"
+    );
 
 
   info.className =
@@ -4954,7 +4872,9 @@ function renderGestiones(res) {
 
   info.innerHTML =
     `
-      <strong>${res.total}</strong>
+      <strong>
+        ${res.total}
+      </strong>
       gestión(es) encontrada(s)
     `;
 
@@ -4968,10 +4888,9 @@ function renderGestiones(res) {
     function(g) {
 
       const card =
-        document
-          .createElement(
-            "div"
-          );
+        document.createElement(
+          "div"
+        );
 
 
       card.className =
@@ -5054,10 +4973,9 @@ function renderGestiones(res) {
 
 
       const boton =
-        document
-          .createElement(
-            "button"
-          );
+        document.createElement(
+          "button"
+        );
 
 
       boton.className =
@@ -5204,80 +5122,21 @@ function renderDetalleGestion(res) {
 
       <div class="detalle-grid">
 
-        ${datoDetalle(
-          "Estado",
-          r.estado
-        )}
-
-        ${datoDetalle(
-          "Llegada",
-          r.fechaLlegada
-        )}
-
-        ${datoDetalle(
-          "Salida",
-          r.fechaSalida || "-"
-        )}
-
-        ${datoDetalle(
-          "Tiempo",
-          r.tiempoRecepcion || "-"
-        )}
-
-        ${datoDetalle(
-          "ID Ruta",
-          r.idRuta
-        )}
-
-        ${datoDetalle(
-          "Placa",
-          r.placa
-        )}
-
-        ${datoDetalle(
-          "DNI / RUC",
-          r.dni
-        )}
-
-        ${datoDetalle(
-          "Usuario",
-          r.usuario
-        )}
-
-        ${datoDetalle(
-          "Área",
-          r.area
-        )}
-
-        ${datoDetalle(
-          "Región",
-          r.region
-        )}
-
-        ${datoDetalle(
-          "Sacos",
-          r.cantidadSacos
-        )}
-
-        ${datoDetalle(
-          "Bultos",
-          r.cantidadBultos
-        )}
-
-        ${datoDetalle(
-          "Total",
-          r.totalRecepcionado
-        )}
-
-        ${datoDetalle(
-          "Logística inversa",
-          r.logisticaInversa
-        )}
-
-        ${datoDetalle(
-          "Cantidad inversa",
-          r.cantidadLogisticaInversa
-        )}
+        ${datoDetalle("Estado",r.estado)}
+        ${datoDetalle("Llegada",r.fechaLlegada)}
+        ${datoDetalle("Salida",r.fechaSalida || "-")}
+        ${datoDetalle("Tiempo",r.tiempoRecepcion || "-")}
+        ${datoDetalle("ID Ruta",r.idRuta)}
+        ${datoDetalle("Placa",r.placa)}
+        ${datoDetalle("DNI / RUC",r.dni)}
+        ${datoDetalle("Usuario",r.usuario)}
+        ${datoDetalle("Área",r.area)}
+        ${datoDetalle("Región",r.region)}
+        ${datoDetalle("Sacos",r.cantidadSacos)}
+        ${datoDetalle("Bultos",r.cantidadBultos)}
+        ${datoDetalle("Total",r.totalRecepcionado)}
+        ${datoDetalle("Logística inversa",r.logisticaInversa)}
+        ${datoDetalle("Cantidad inversa",r.cantidadLogisticaInversa)}
 
       </div>
 
@@ -5299,37 +5158,68 @@ function renderDetalleGestion(res) {
 
         ${fotoGestion(
           "Llegada",
+          "",
           r.fotoLlegada
         )}
 
         ${fotoGestion(
           "Precinto abierto 1",
+          r.codigoPrecintoAbierto1,
           r.precintoAbierto1
         )}
 
         ${fotoGestion(
           "Precinto abierto 2",
+          r.codigoPrecintoAbierto2,
           r.precintoAbierto2
         )}
 
         ${fotoGestion(
+          "Precinto abierto 3",
+          r.codigoPrecintoAbierto3,
+          r.precintoAbierto3
+        )}
+
+        ${fotoGestion(
+          "Precinto abierto 4",
+          r.codigoPrecintoAbierto4,
+          r.precintoAbierto4
+        )}
+
+        ${fotoGestion(
           "Sacos / Bultos",
+          "",
           r.fotoCarga
         )}
 
         ${fotoGestion(
           "Logística inversa",
+          "",
           r.fotoLogisticaInversa
         )}
 
         ${fotoGestion(
           "Precinto cerrado 1",
+          r.codigoPrecintoCerrado1,
           r.precintoCerrado1
         )}
 
         ${fotoGestion(
           "Precinto cerrado 2",
+          r.codigoPrecintoCerrado2,
           r.precintoCerrado2
+        )}
+
+        ${fotoGestion(
+          "Precinto cerrado 3",
+          r.codigoPrecintoCerrado3,
+          r.precintoCerrado3
+        )}
+
+        ${fotoGestion(
+          "Precinto cerrado 4",
+          r.codigoPrecintoCerrado4,
+          r.precintoCerrado4
         )}
 
       </div>
@@ -5348,9 +5238,7 @@ function renderDetalleGestion(res) {
         Información adicional
       </div>
 
-      <strong>
-        Observaciones
-      </strong>
+      <strong>Observaciones</strong>
 
       <div style="
         background:#f8fafc;
@@ -5366,9 +5254,7 @@ function renderDetalleGestion(res) {
 
       <br>
 
-      <strong>
-        GPS
-      </strong>
+      <strong>GPS</strong>
 
       <div style="
         background:#f8fafc;
@@ -5435,15 +5321,11 @@ function renderDetalleGestion(res) {
 
     html +=
       `
-
       <tr>
-
         <td colspan="5">
           Sin escaneos
         </td>
-
       </tr>
-
       `;
 
   }
@@ -5511,11 +5393,7 @@ function renderDetalleGestion(res) {
 
 
 /* =====================================================
-   FOTO CONSULTA
-===================================================== */
-
-/* =====================================================
-   CONVERTIR LINK GOOGLE DRIVE A MINIATURA
+   DRIVE MINIATURAS
 ===================================================== */
 
 function convertirUrlDrive(url) {
@@ -5524,37 +5402,41 @@ function convertirUrlDrive(url) {
     return "";
   }
 
-  url = String(url).trim();
+
+  url =
+    String(url)
+      .trim();
+
 
   let id = "";
 
 
-  // Formato:
-  // https://drive.google.com/file/d/ID/view
-  const coincidencia1 =
-    url.match(/\/file\/d\/([^/]+)/);
+  const m1 =
+    url.match(
+      /\/file\/d\/([^/]+)/
+    );
 
-  if (coincidencia1) {
-    id = coincidencia1[1];
+
+  if (m1) {
+    id = m1[1];
   }
 
 
-  // Formato:
-  // https://drive.google.com/open?id=ID
-  // https://drive.google.com/uc?id=ID
   if (!id) {
 
-    const coincidencia2 =
-      url.match(/[?&]id=([^&]+)/);
+    const m2 =
+      url.match(
+        /[?&]id=([^&]+)/
+      );
 
-    if (coincidencia2) {
-      id = coincidencia2[1];
+
+    if (m2) {
+      id = m2[1];
     }
 
   }
 
 
-  // Si encontramos ID de Drive
   if (id) {
 
     return (
@@ -5566,19 +5448,14 @@ function convertirUrlDrive(url) {
   }
 
 
-  // Si ya es una URL directa
   return url;
 
 }
 
 
-
-/* =====================================================
-   FOTO EN CONSULTA
-===================================================== */
-
 function fotoGestion(
   titulo,
+  codigo,
   url
 ) {
 
@@ -5591,6 +5468,16 @@ function fotoGestion(
         <div class="foto-titulo">
           ${escaparHtml(titulo)}
         </div>
+
+        ${
+          codigo
+            ? `
+              <div class="foto-codigo">
+                ${escaparHtml(codigo)}
+              </div>
+            `
+            : ""
+        }
 
         <div style="
           min-height:110px;
@@ -5613,7 +5500,9 @@ function fotoGestion(
 
 
   const miniatura =
-    convertirUrlDrive(url);
+    convertirUrlDrive(
+      url
+    );
 
 
   return `
@@ -5623,6 +5512,17 @@ function fotoGestion(
       <div class="foto-titulo">
         ${escaparHtml(titulo)}
       </div>
+
+      ${
+        codigo
+          ? `
+            <div class="foto-codigo">
+              Código:
+              ${escaparHtml(codigo)}
+            </div>
+          `
+          : ""
+      }
 
       <a
         href="${escaparHtml(url)}"
@@ -5635,29 +5535,7 @@ function fotoGestion(
           src="${escaparHtml(miniatura)}"
           loading="lazy"
           alt="${escaparHtml(titulo)}"
-
-          onerror="
-            this.style.display='none';
-            this.nextElementSibling.style.display='flex';
-          "
         >
-
-        <div
-          style="
-            display:none;
-            min-height:110px;
-            background:#f1f5f9;
-            align-items:center;
-            justify-content:center;
-            border-radius:8px;
-            color:#64748b;
-            font-size:11px;
-            text-align:center;
-            padding:10px;
-          "
-        >
-          📷 TOCAR PARA VER FOTO
-        </div>
 
       </a>
 
@@ -5700,7 +5578,7 @@ function datoDetalle(
 
 
 /* =====================================================
-   VOLVER GESTIONES
+   VOLVER / FILTROS
 ===================================================== */
 
 function volverListaGestiones() {
@@ -5722,10 +5600,6 @@ function volverListaGestiones() {
 
 }
 
-
-/* =====================================================
-   LIMPIAR FILTROS
-===================================================== */
 
 function limpiarFiltrosGestiones() {
 
@@ -5755,7 +5629,7 @@ function limpiarFiltrosGestiones() {
 
 
 /* =====================================================
-   SOLO NÚMEROS
+   UTILIDADES
 ===================================================== */
 
 function soloNumeros(input) {
@@ -5764,6 +5638,44 @@ function soloNumeros(input) {
     input.value
       .replace(/\D/g,"")
       .substring(0,11);
+
+}
+
+
+function valorCampo(id) {
+
+  const el =
+    document.getElementById(id);
+
+
+  if (!el) {
+    return "";
+  }
+
+
+  return String(
+    el.value || ""
+  )
+    .trim()
+    .toUpperCase();
+
+}
+
+
+function capitalizarPrimera(
+  texto
+) {
+
+  if (!texto) {
+    return "";
+  }
+
+
+  return (
+    texto.charAt(0)
+      .toUpperCase() +
+    texto.slice(1)
+  );
 
 }
 
@@ -5779,14 +5691,11 @@ function mostrarMensaje(
 ) {
 
   const el =
-    document
-      .getElementById(id);
+    document.getElementById(id);
 
 
   if (!el) {
-
     return;
-
   }
 
 
@@ -5822,15 +5731,11 @@ function mostrarError(texto) {
 function ocultarMensaje(id) {
 
   const el =
-    document
-      .getElementById(id);
+    document.getElementById(id);
 
 
   if (el) {
-
-    el.className =
-      "oculto";
-
+    el.className = "oculto";
   }
 
 }
@@ -5873,7 +5778,7 @@ function ocultarCargando() {
 
 
 /* =====================================================
-   UTILIDADES
+   ESCAPE
 ===================================================== */
 
 function obtenerError(error) {
@@ -5918,7 +5823,9 @@ function vibrar() {
     navigator.vibrate
   ) {
 
-    navigator.vibrate(80);
+    navigator.vibrate(
+      80
+    );
 
   }
 
@@ -5953,8 +5860,7 @@ document
     function(e) {
 
       if (
-        e.key ===
-        "Enter"
+        e.key === "Enter"
       ) {
 
         e.preventDefault();
@@ -5976,8 +5882,7 @@ document
     function(e) {
 
       if (
-        e.key ===
-        "Enter"
+        e.key === "Enter"
       ) {
 
         e.preventDefault();
@@ -5999,8 +5904,7 @@ document
     function(e) {
 
       if (
-        e.key ===
-        "Enter"
+        e.key === "Enter"
       ) {
 
         e.preventDefault();
@@ -6030,6 +5934,8 @@ window.addEventListener(
 window.addEventListener(
   "load",
   async function() {
+
+    crearControlesPrecintos();
 
     await restaurarSesion();
 
