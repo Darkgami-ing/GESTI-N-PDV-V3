@@ -68,7 +68,16 @@
       <button class="btn-verde" onclick="iniciarScannerRecepcion()">📷 INICIAR LECTOR</button>
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
       <label>Ingreso manual</label><div class="manual"><input id="codigoManual" type="text" autocapitalize="characters" autocomplete="off" placeholder="Código"><button class="btn-azul" onclick="agregarManual()">+</button></div>
-      <div id="listaRecepcion" class="lista"></div><div style="margin-top:15px"><button class="btn-principal" onclick="irPaso3()">CONTINUAR</button></div>
+      <div id="listaRecepcion" class="lista"></div>
+
+      <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
+      <div class="subtitulo-card">EVIDENCIA DE CARGA RECIBIDA</div>
+      <label>Foto de sacos / bultos recibidos *</label>
+      <input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoCarga')">
+      <img id="previewFotoCarga" class="preview oculto">
+      <div id="okFotoCarga" class="foto-ok oculto">✅ Fotografía preparada</div>
+
+      <div style="margin-top:15px"><button class="btn-principal" onclick="irPaso3()">CONTINUAR</button></div>
     </div></section>
 
     <section id="paso3" class="oculto"><div class="card">
@@ -87,7 +96,6 @@
 
     <section id="paso4" class="oculto"><div class="card">
       <div class="titulo-card">4. Salida de la unidad</div>
-      <label>Foto sacos / bultos recibidos *</label><input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoCarga')"><img id="previewFotoCarga" class="preview oculto"><div id="okFotoCarga" class="foto-ok oculto">✅ Fotografía preparada</div>
       <div class="subtitulo-card">PRECINTOS DE SALIDA</div><div id="precintosSalida"></div>
       <label>Observaciones</label><textarea id="observaciones" placeholder="Observaciones"></textarea>
       <label>Ubicación GPS</label><div id="estadoGps" class="gps">Ubicación pendiente.</div><button class="btn-azul" onclick="obtenerGPS()">📍 ACTUALIZAR UBICACIÓN</button>
@@ -220,7 +228,7 @@ function irPaso(numero){
   for(let i=1;i<=4;i++){document.getElementById("paso"+i).classList.toggle("oculto",i!==numero);const mini=document.getElementById("mini"+i);mini.className="paso-mini";if(i<numero)mini.classList.add("completo");else if(i===numero)mini.classList.add("activo");}
   if(numero===4){actualizarResumenFinal();obtenerGPS();}window.scrollTo({top:0,behavior:"smooth"});
 }
-function irPaso3(){const cantidad=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN").length;if(cantidad===0&&!confirm("No existen bultos escaneados. ¿Desea continuar?"))return;irPaso(3);}
+function irPaso3(){const cantidad=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN").length;if(cantidad===0&&!confirm("No existen sacos/bultos escaneados. ¿Desea continuar?"))return;if(!fotos.fotoCarga){mostrarError("Debe registrar la foto de los sacos/bultos recibidos antes de continuar.");return;}irPaso(3);}
 function irPaso4(){if(tieneInversa){const cantidad=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA").length;if(cantidad===0){mostrarError("Debe registrar al menos un bulto de logística inversa.");return;}if(!fotos.fotoInversa){mostrarError("Debe registrar la foto de logística inversa.");return;}}irPaso(4);}
 function seleccionarInversa(valor){tieneInversa=valor;document.getElementById("btnInversaSi").className=valor?"activo-si":"";document.getElementById("btnInversaNo").className=valor?"":"activo-no";document.getElementById("contenidoInversa").classList.toggle("oculto",!valor);}
 function seleccionarTipoBulto(tipo){tipoBultoActual=tipo;document.getElementById("btnTipoSaco").classList.toggle("seleccionado",tipo==="SACO");document.getElementById("btnTipoBulto").classList.toggle("seleccionado",tipo==="BULTO SUELTO");}
