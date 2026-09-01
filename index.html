@@ -5,9 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <meta name="theme-color" content="#174a7e">
 <title>Recepción de Unidades</title>
+<link rel="preconnect" href="https://script.google.com">
+<link rel="preconnect" href="https://script.googleusercontent.com">
+<link rel="preconnect" href="https://unpkg.com" crossorigin>
 <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
 <style>
 *{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fa;color:#1f2937}.contenedor{width:min(100%,780px);margin:auto;padding:12px}.logo{text-align:center;font-size:23px;font-weight:800;color:#174a7e;margin:12px 0 4px}.subtitulo{text-align:center;color:#64748b;font-size:13px;margin-bottom:18px}.card{background:#fff;border-radius:14px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,.08)}.titulo-card{font-size:17px;font-weight:700;color:#174a7e;margin-bottom:15px}.subtitulo-card{font-size:14px;font-weight:800;color:#334155;margin:18px 0 10px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,select,textarea{width:100%;min-height:48px;border:1px solid #cbd5e1;border-radius:9px;padding:10px 12px;font-size:16px;background:#fff;margin-bottom:14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.10)}textarea{min-height:90px;resize:vertical}button{width:100%;min-height:49px;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.55}.oculto{display:none!important}.btn-principal{background:#174a7e;color:#fff}.btn-azul{background:#2563eb;color:#fff}.btn-verde{background:#059669;color:#fff}.btn-rojo{background:#dc2626;color:#fff}.btn-gris{background:#e2e8f0;color:#334155}.usuario-barra{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#174a7e;color:#fff;border-radius:11px;padding:12px 14px;margin-bottom:12px}.usuario-nombre{font-weight:800;font-size:14px}.usuario-info{font-size:11px;margin-top:4px;opacity:.9}.btn-salir{width:auto;min-width:70px;min-height:36px;padding:5px 10px;background:rgba(255,255,255,.17);color:#fff}.menu-principal{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px}.paso-mini{text-align:center;padding:9px 2px;border-radius:8px;background:#e2e8f0;color:#64748b;font-size:10px;font-weight:700}.paso-mini.activo{background:#174a7e;color:#fff}.paso-mini.completo{background:#dcfce7;color:#047857}.recepcion-id{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:14px;text-align:center}.recepcion-id-label{font-size:11px;color:#64748b}.recepcion-id-valor{font-size:18px;color:#174a7e;font-weight:800;margin-top:4px}.campo-escanear{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:7px;margin-bottom:14px}.campo-escanear input{margin-bottom:0}.campo-escanear button{min-height:48px;font-size:20px}.precinto-box{border:1px solid #e2e8f0;background:#f8fafc;border-radius:11px;padding:12px;margin-bottom:13px}.precinto-titulo{font-weight:800;color:#174a7e;font-size:13px;margin-bottom:10px}.codigo-ok{color:#047857;font-size:11px;font-weight:700;margin:-5px 0 10px}.preview{width:100%;max-height:270px;object-fit:contain;border-radius:9px;background:#f1f5f9;margin-top:-5px;margin-bottom:10px}.foto-ok{font-size:12px;color:#047857;font-weight:700;margin-bottom:10px}.contadores{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}.contador{padding:12px;border-radius:10px;background:#eff6ff;text-align:center}.contador-titulo{font-size:11px;font-weight:700;color:#64748b}.contador-numero{font-size:28px;font-weight:800;color:#174a7e;margin-top:4px}.total-box{background:#ecfdf5;border-radius:10px;padding:12px;text-align:center;margin-bottom:15px}.total-numero{font-size:29px;font-weight:800;color:#047857}.selector-tipo,.decision{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}.selector-tipo button,.decision button{background:#e2e8f0;color:#475569}.selector-tipo button.seleccionado{background:#174a7e;color:#fff}.decision button.activo-si{background:#059669;color:#fff}.decision button.activo-no{background:#64748b;color:#fff}.manual{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:8px}.manual input{margin:0}.lista{margin-top:15px}.item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e2e8f0;border-radius:9px;padding:10px;margin-bottom:7px}.item-info{flex:1;min-width:0}.item-tipo{font-size:10px;color:#64748b}.item-codigo{font-size:14px;font-weight:700;overflow-wrap:anywhere;margin-top:2px}.item-hora{font-size:10px;color:#94a3b8;margin-top:3px}.btn-eliminar{width:38px;min-width:38px;min-height:38px;border-radius:50%;background:#fee2e2;color:#b91c1c;font-size:19px}.botones-doble{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gps{padding:11px;border-radius:9px;background:#f1f5f9;font-size:12px;line-height:1.5;margin-bottom:12px}.gps-ok{background:#ecfdf5;color:#047857}.gps-error{background:#fef2f2;color:#b91c1c}.mensaje{padding:12px;margin-bottom:13px;border-radius:9px;font-size:13px}.mensaje-ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}.mensaje-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c}.cargando{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.72)}.cargando-box{width:min(85%,300px);background:#fff;border-radius:14px;padding:25px;text-align:center;font-weight:700}.spinner{width:42px;height:42px;border-radius:50%;border:4px solid #e2e8f0;border-top-color:#174a7e;margin:0 auto 14px;animation:giro .8s linear infinite}@keyframes giro{to{transform:rotate(360deg)}}.scanner-modal{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:100000;display:flex;flex-direction:column;padding:12px}.scanner-header{color:#fff;text-align:center;font-size:16px;font-weight:800;padding:8px}.video-box{position:relative;width:100%;max-width:650px;margin:auto;overflow:hidden;border-radius:14px;background:#000}#videoScanner{display:block;width:100%;height:min(65vh,540px);object-fit:cover}.zona-lectura{position:absolute;left:7%;top:30%;width:86%;height:38%;border:3px solid #22c55e;border-radius:12px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.22)}.linea{position:absolute;width:100%;height:3px;background:#22c55e;animation:scan 1.7s linear infinite}@keyframes scan{from{top:0}to{top:calc(100% - 3px)}}.estado-scanner{width:min(100%,650px);margin:10px auto;border-radius:8px;padding:10px;background:#f1f5f9;text-align:center;font-size:12px}.estado-scanner.ok{background:#dcfce7;color:#047857}.scanner-botones{width:min(100%,650px);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.resumen-final{background:#f8fafc;border-radius:10px;padding:12px;font-size:13px;line-height:1.8}.resumen-final strong{color:#174a7e}.gestion-card{background:#fff;border-radius:13px;padding:15px;margin-bottom:10px;box-shadow:0 2px 8px rgba(15,23,42,.08)}.gestion-cabecera{display:flex;justify-content:space-between;gap:8px}.gestion-id{font-size:16px;font-weight:800;color:#174a7e}.gestion-fecha{font-size:11px;color:#64748b;margin-top:4px}.estado-finalizado,.estado-proceso{padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap}.estado-finalizado{background:#dcfce7;color:#047857}.estado-proceso{background:#fef3c7;color:#92400e}.gestion-datos{margin-top:12px;font-size:13px;line-height:1.7}.gestion-total{margin-top:10px;padding:9px;border-radius:8px;background:#eff6ff;text-align:center;font-weight:700}.detalle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.detalle-dato{background:#f8fafc;padding:10px;border-radius:8px}.detalle-label{font-size:10px;color:#64748b;font-weight:700}.detalle-valor{margin-top:3px;font-size:13px;font-weight:700;overflow-wrap:anywhere}.galeria{display:grid;grid-template-columns:1fr 1fr;gap:8px}.foto-gestion{width:100%;min-height:110px;max-height:230px;object-fit:cover;background:#e2e8f0;border-radius:8px}.foto-titulo{font-size:10px;font-weight:700;margin-bottom:4px}.foto-codigo{font-size:9px;color:#64748b;margin-bottom:4px;overflow-wrap:anywhere}.tabla-contenedor{overflow-x:auto}.tabla-detalle{width:100%;border-collapse:collapse;font-size:11px}.tabla-detalle th,.tabla-detalle td{border-bottom:1px solid #e2e8f0;padding:8px 5px;text-align:left}.tabla-detalle th{background:#f1f5f9}.nota-filtro{font-size:11px;background:#eff6ff;color:#174a7e;padding:9px;border-radius:8px;margin-bottom:12px}@media(max-width:420px){.contenedor{padding:9px}.card{padding:14px}.menu-principal{grid-template-columns:1fr}.detalle-grid{grid-template-columns:1fr}}
+.sincronizacion{font-size:11px;font-weight:700;margin-top:6px;color:#047857}.sincronizacion.pendiente{color:#92400e}.sincronizacion.error{color:#b91c1c}.item.pendiente{opacity:.72;border-style:dashed}.item.pendiente .item-hora{color:#92400e}
 </style>
 </head>
 <body>
@@ -48,7 +52,7 @@
 
   <section id="contenedorRegistro">
     <div class="progreso"><div id="mini1" class="paso-mini activo">1<br>LLEGADA</div><div id="mini2" class="paso-mini">2<br>RECEPCIÓN</div><div id="mini3" class="paso-mini">3<br>INVERSA</div><div id="mini4" class="paso-mini">4<br>SALIDA</div></div>
-    <div id="boxIdRecepcion" class="recepcion-id oculto"><div class="recepcion-id-label">ID RECEPCIÓN</div><div id="idRecepcionVisible" class="recepcion-id-valor"></div></div>
+    <div id="boxIdRecepcion" class="recepcion-id oculto"><div class="recepcion-id-label">ID RECEPCIÓN</div><div id="idRecepcionVisible" class="recepcion-id-valor"></div><div id="estadoSincronizacion" class="sincronizacion">Todos los escaneos guardados</div></div>
 
     <section id="paso1"><div class="card">
       <div class="titulo-card">1. Llegada de la unidad</div>
@@ -115,7 +119,7 @@
       <label>Placa</label><input id="filtroPlaca" type="text" placeholder="Placa">
       <div id="boxFiltroEncargado"><label>Encargado</label><input id="filtroEncargado" type="text" placeholder="Encargado"></div>
       <label>Estado</label><select id="filtroEstado"><option value="">TODOS</option><option value="EN PROCESO">EN PROCESO</option><option value="FINALIZADO">FINALIZADO</option></select>
-      <div class="botones-doble"><button class="btn-gris" onclick="limpiarFiltrosGestiones()">HOY / LIMPIAR</button><button class="btn-azul" onclick="buscarGestiones()">🔎 BUSCAR</button></div>
+      <div class="botones-doble"><button class="btn-gris" onclick="limpiarFiltrosGestiones()">HOY / LIMPIAR</button><button class="btn-azul" onclick="buscarGestiones(true)">🔎 BUSCAR</button></div>
     </div>
     <div id="resultadoGestiones"></div>
   </section>
@@ -131,6 +135,9 @@ let latitudActual=null,longitudActual=null,precisionActual=null;
 const fotos={fotoLlegada:"",precintoAbierto1:"",precintoAbierto2:"",precintoAbierto3:"",precintoAbierto4:"",fotoInversa:"",fotoCarga:"",precintoCerrado1:"",precintoCerrado2:"",precintoCerrado3:"",precintoCerrado4:""};
 let detalles=[],tipoBultoActual="SACO",tipoInversaActual="SACO",tieneInversa=false;
 let lectorZXing=null,scannerActivo=false,scannerDestino="DETALLE",scannerMovimiento="RECEPCIÓN",campoDestinoScanner="",ultimoCodigo="",ultimaLectura=0,bloqueoLectura=false,dispositivosVideo=[],indiceCamara=0;
+let colaEscaneos=[],envioEscaneosEnCurso=null,temporizadorEscaneos=null,secuenciaEscaneo=0;
+const cacheGestiones=new Map(),cacheDetalleGestiones=new Map();
+const CACHE_GESTIONES_MS=30000,CACHE_DETALLE_MS=60000,TAMANO_LOTE_ESCANEOS=25;
 
 function crearControlesPrecintos(){
   const llegada=document.getElementById("precintosLlegada");
@@ -149,12 +156,21 @@ function generarHtmlPrecinto(tipo,numero){
 
 async function llamarAPI(payload){
   const cuerpo=new URLSearchParams();cuerpo.append("payload",JSON.stringify(payload));
-  const respuesta=await fetch(API_URL,{method:"POST",body:cuerpo});
-  if(!respuesta.ok)throw new Error("No se pudo conectar con el servidor.");
-  const texto=await respuesta.text();let json;
-  try{json=JSON.parse(texto);}catch(e){console.error(texto);throw new Error("El servidor devolvió una respuesta no válida.");}
-  if(!json.success)throw new Error(json.error||"Ocurrió un error.");
-  return json.data;
+  const controlador=new AbortController();
+  const accion=String(payload.accion||"").toUpperCase();
+  const espera=["INICIAR_RECEPCION","FINALIZAR_RECEPCION"].includes(accion)?120000:35000;
+  const timeout=setTimeout(()=>controlador.abort(),espera);
+  try{
+    const respuesta=await fetch(API_URL,{method:"POST",body:cuerpo,cache:"no-store",signal:controlador.signal});
+    if(!respuesta.ok)throw new Error("No se pudo conectar con el servidor.");
+    const texto=await respuesta.text();let json;
+    try{json=JSON.parse(texto);}catch(e){console.error(texto);throw new Error("El servidor devolvió una respuesta no válida.");}
+    if(!json.success)throw new Error(json.error||"Ocurrió un error.");
+    return json.data;
+  }catch(error){
+    if(error&&error.name==="AbortError")throw new Error("El servidor tardó demasiado en responder. Intente nuevamente.");
+    throw error;
+  }finally{clearTimeout(timeout);}
 }
 
 async function login(){
@@ -164,7 +180,7 @@ async function login(){
   mostrarCargando("Validando usuario...");
   try{
     const res=await llamarAPI({accion:"LOGIN",usuario,contrasena});
-    tokenSesion=res.token;usuarioActual=res;sessionStorage.setItem("tokenSesionRecepcion",tokenSesion);mostrarAplicacion();obtenerGPS();
+    tokenSesion=res.token;usuarioActual=res;sessionStorage.setItem("tokenSesionRecepcion",tokenSesion);sessionStorage.setItem("usuarioSesionRecepcion",JSON.stringify(res));mostrarAplicacion();obtenerGPS();
     const pendiente=localStorage.getItem("recepcionActiva");if(pendiente)await recuperarRecepcion(pendiente);
   }catch(error){mostrarMensaje("mensajeLogin",obtenerError(error),false);}finally{ocultarCargando();}
 }
@@ -191,11 +207,14 @@ function configurarModuloConsulta(){
 
 async function restaurarSesion(){
   const token=sessionStorage.getItem("tokenSesionRecepcion");if(!token)return;
-  try{const res=await llamarAPI({accion:"VALIDAR_SESION",token});tokenSesion=token;usuarioActual=res;mostrarAplicacion();obtenerGPS();const pendiente=localStorage.getItem("recepcionActiva");if(pendiente)await recuperarRecepcion(pendiente);}catch(e){sessionStorage.removeItem("tokenSesionRecepcion");}
+  let sesionLocal=null;try{sesionLocal=JSON.parse(sessionStorage.getItem("usuarioSesionRecepcion")||"null");}catch(e){}
+  if(sesionLocal){tokenSesion=token;usuarioActual=sesionLocal;mostrarAplicacion();}
+  try{const res=await llamarAPI({accion:"VALIDAR_SESION",token});tokenSesion=token;usuarioActual=res;sessionStorage.setItem("usuarioSesionRecepcion",JSON.stringify(res));mostrarAplicacion();obtenerGPS();const pendiente=localStorage.getItem("recepcionActiva");if(pendiente)await recuperarRecepcion(pendiente);}catch(e){sessionStorage.removeItem("tokenSesionRecepcion");sessionStorage.removeItem("usuarioSesionRecepcion");tokenSesion="";usuarioActual=null;document.getElementById("pantallaApp").classList.add("oculto");document.getElementById("pantallaLogin").classList.remove("oculto");}
 }
 
 async function logout(){
-  detenerScanner();const token=tokenSesion;sessionStorage.removeItem("tokenSesionRecepcion");tokenSesion="";
+  if(colaEscaneos.length||envioEscaneosEnCurso){mostrarCargando("Guardando escaneos antes de salir...");try{await sincronizarEscaneos();}catch(error){ocultarCargando();mostrarError("No se puede cerrar sesión: aún hay escaneos sin guardar.");return;}finally{ocultarCargando();}}
+  detenerScanner();const token=tokenSesion;sessionStorage.removeItem("tokenSesionRecepcion");sessionStorage.removeItem("usuarioSesionRecepcion");tokenSesion="";
   try{if(token)await llamarAPI({accion:"LOGOUT",token});}catch(e){console.log(e);}location.reload();
 }
 
@@ -211,7 +230,7 @@ async function iniciarRecepcion(){
   try{
     const datos={token:tokenSesion,idRuta,placa,dni,fotoLlegada:fotos.fotoLlegada};
     for(let i=1;i<=4;i++){datos["codigoPrecintoAbierto"+i]=valorCampo("codigoPrecintoAbierto"+i);datos["precintoAbierto"+i]=fotos["precintoAbierto"+i];}
-    const res=await llamarAPI({accion:"INICIAR_RECEPCION",datos});idRecepcionActual=res.idRecepcion;localStorage.setItem("recepcionActiva",idRecepcionActual);document.getElementById("idRecepcionVisible").textContent=idRecepcionActual;document.getElementById("boxIdRecepcion").classList.remove("oculto");irPaso(2);mostrarMensaje("mensajeGeneral","✅ Recepción iniciada: "+idRecepcionActual,true);
+    const res=await llamarAPI({accion:"INICIAR_RECEPCION",datos});idRecepcionActual=res.idRecepcion;detalles=[];colaEscaneos=[];localStorage.setItem("recepcionActiva",idRecepcionActual);localStorage.removeItem("escaneosPendientesRecepcion");document.getElementById("idRecepcionVisible").textContent=idRecepcionActual;document.getElementById("boxIdRecepcion").classList.remove("oculto");actualizarEstadoSincronizacion();irPaso(2);mostrarMensaje("mensajeGeneral","✅ Recepción iniciada: "+idRecepcionActual,true);
   }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
 }
 
@@ -219,7 +238,7 @@ async function recuperarRecepcion(id){
   try{
     const res=await llamarAPI({accion:"CONSULTAR_RECEPCION",datos:{token:tokenSesion,idRecepcion:id}});idRecepcionActual=id;detalles=res.detalles||[];const r=res.resumen;
     if(r.fechaSalida){localStorage.removeItem("recepcionActiva");return;}
-    document.getElementById("idRuta").value=r.idRuta||"";document.getElementById("placa").value=r.placa||"";document.getElementById("dni").value=r.dni||"";document.getElementById("idRecepcionVisible").textContent=id;document.getElementById("boxIdRecepcion").classList.remove("oculto");renderizarDetalles();abrirRegistro();irPaso(2);mostrarMensaje("mensajeGeneral","Se recuperó una recepción en proceso.",true);
+    document.getElementById("idRuta").value=r.idRuta||"";document.getElementById("placa").value=r.placa||"";document.getElementById("dni").value=r.dni||"";document.getElementById("idRecepcionVisible").textContent=id;document.getElementById("boxIdRecepcion").classList.remove("oculto");colaEscaneos=[];restaurarColaEscaneos();renderizarDetalles();abrirRegistro();irPaso(2);mostrarMensaje("mensajeGeneral","Se recuperó una recepción en proceso.",true);
   }catch(error){console.error(error);localStorage.removeItem("recepcionActiva");}
 }
 
@@ -228,8 +247,8 @@ function irPaso(numero){
   for(let i=1;i<=4;i++){document.getElementById("paso"+i).classList.toggle("oculto",i!==numero);const mini=document.getElementById("mini"+i);mini.className="paso-mini";if(i<numero)mini.classList.add("completo");else if(i===numero)mini.classList.add("activo");}
   if(numero===4){actualizarResumenFinal();obtenerGPS();}window.scrollTo({top:0,behavior:"smooth"});
 }
-function irPaso3(){const cantidad=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN").length;if(cantidad===0&&!confirm("No existen sacos/bultos escaneados. ¿Desea continuar?"))return;if(!fotos.fotoCarga){mostrarError("Debe registrar la foto de los sacos/bultos recibidos antes de continuar.");return;}irPaso(3);}
-function irPaso4(){if(tieneInversa){const cantidad=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA").length;if(cantidad===0){mostrarError("Debe registrar al menos un bulto de logística inversa.");return;}if(!fotos.fotoInversa){mostrarError("Debe registrar la foto de logística inversa.");return;}}irPaso(4);}
+async function irPaso3(){const cantidad=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN").length;if(cantidad===0&&!confirm("No existen sacos/bultos escaneados. ¿Desea continuar?"))return;if(!fotos.fotoCarga){mostrarError("Debe registrar la foto de los sacos/bultos recibidos antes de continuar.");return;}if(!await asegurarEscaneosSincronizados())return;irPaso(3);}
+async function irPaso4(){if(tieneInversa){const cantidad=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA").length;if(cantidad===0){mostrarError("Debe registrar al menos un bulto de logística inversa.");return;}if(!fotos.fotoInversa){mostrarError("Debe registrar la foto de logística inversa.");return;}}if(!await asegurarEscaneosSincronizados())return;irPaso(4);}
 function seleccionarInversa(valor){tieneInversa=valor;document.getElementById("btnInversaSi").className=valor?"activo-si":"";document.getElementById("btnInversaNo").className=valor?"":"activo-no";document.getElementById("contenidoInversa").classList.toggle("oculto",!valor);}
 function seleccionarTipoBulto(tipo){tipoBultoActual=tipo;document.getElementById("btnTipoSaco").classList.toggle("seleccionado",tipo==="SACO");document.getElementById("btnTipoBulto").classList.toggle("seleccionado",tipo==="BULTO SUELTO");}
 function seleccionarTipoInversa(tipo){tipoInversaActual=tipo;document.getElementById("btnInvSaco").classList.toggle("seleccionado",tipo==="SACO");document.getElementById("btnInvBulto").classList.toggle("seleccionado",tipo==="BULTO SUELTO");}
@@ -238,22 +257,86 @@ async function guardarCodigo(codigo,movimiento,tipoBulto){
   codigo=String(codigo||"").trim().toUpperCase();if(!codigo)return false;if(!idRecepcionActual){mostrarError("No existe recepción activa.");return false;}
   const duplicado=detalles.some(item=>String(item.codigo||"").trim().toUpperCase()===codigo&&String(item.tipoMovimiento||"").trim().toUpperCase()===movimiento.trim().toUpperCase());
   if(duplicado){mostrarError("El código "+codigo+" ya fue registrado en "+movimiento+".");vibrarError();return false;}
-  try{const res=await llamarAPI({accion:"REGISTRAR_DETALLE",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,tipoMovimiento:movimiento,tipoBulto,codigo}});detalles.push({fechaHora:res.fechaHora||new Date().toISOString(),tipoMovimiento:res.tipoMovimiento||movimiento,tipoBulto:res.tipoBulto||tipoBulto,codigo:res.codigo||codigo,orden:res.orden||detalles.length+1,usuario:usuarioActual.usuario||""});renderizarDetalles();vibrar();return true;}catch(error){mostrarError(obtenerError(error));vibrarError();return false;}
+  const clientId=Date.now().toString(36)+"-"+(++secuenciaEscaneo).toString(36);
+  const item={clientId,fechaHora:"Pendiente de guardar…",tipoMovimiento:movimiento,tipoBulto,codigo,orden:detalles.length+1,usuario:usuarioActual.usuario||"",pendiente:true};
+  detalles.push(item);colaEscaneos.push({clientId,tipoMovimiento:movimiento,tipoBulto,codigo});
+  persistirColaEscaneos();renderizarDetalles();programarEnvioEscaneos();vibrar();return true;
 }
 
+function programarEnvioEscaneos(espera=900){
+  if(temporizadorEscaneos||envioEscaneosEnCurso||!colaEscaneos.length)return;
+  temporizadorEscaneos=setTimeout(()=>{temporizadorEscaneos=null;enviarColaEscaneos().catch(error=>{actualizarEstadoSincronizacion(obtenerError(error),true);});},espera);
+}
+
+function enviarColaEscaneos(){
+  if(envioEscaneosEnCurso)return envioEscaneosEnCurso;
+  if(!colaEscaneos.length)return Promise.resolve({registrados:[],rechazados:[]});
+  if(temporizadorEscaneos){clearTimeout(temporizadorEscaneos);temporizadorEscaneos=null;}
+  const lote=colaEscaneos.splice(0,TAMANO_LOTE_ESCANEOS);let exito=false;
+  actualizarEstadoSincronizacion();persistirColaEscaneos();
+  envioEscaneosEnCurso=(async()=>{
+    try{
+      const res=await llamarAPI({accion:"REGISTRAR_DETALLES",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,escaneos:lote}});
+      const registrados=new Map((res.registrados||[]).map(item=>[item.clientId,item]));
+      const rechazados=new Map((res.rechazados||[]).map(item=>[item.clientId,item]));
+      detalles=detalles.filter(item=>{
+        if(registrados.has(item.clientId)){const guardado=registrados.get(item.clientId);Object.assign(item,guardado,{pendiente:false});return true;}
+        if(rechazados.has(item.clientId))return false;
+        return true;
+      });
+      if(rechazados.size){const primero=Array.from(rechazados.values())[0];mostrarError(primero.error||"Uno de los códigos no pudo guardarse.");vibrarError();}
+      cacheGestiones.clear();cacheDetalleGestiones.delete(idRecepcionActual);exito=true;renderizarDetalles();persistirColaEscaneos();return res;
+    }catch(error){colaEscaneos=lote.concat(colaEscaneos);persistirColaEscaneos();throw error;}
+    finally{envioEscaneosEnCurso=null;actualizarEstadoSincronizacion();if(colaEscaneos.length)programarEnvioEscaneos(exito?150:1800);}
+  })();
+  return envioEscaneosEnCurso;
+}
+
+async function sincronizarEscaneos(){
+  if(temporizadorEscaneos){clearTimeout(temporizadorEscaneos);temporizadorEscaneos=null;}
+  let intentos=0;
+  while(colaEscaneos.length||envioEscaneosEnCurso){
+    try{if(envioEscaneosEnCurso)await envioEscaneosEnCurso;else await enviarColaEscaneos();intentos=0;}
+    catch(error){intentos++;if(intentos>=3)throw error;await new Promise(resolve=>setTimeout(resolve,700*intentos));}
+  }
+}
+
+async function asegurarEscaneosSincronizados(){
+  if(!colaEscaneos.length&&!envioEscaneosEnCurso)return true;
+  mostrarCargando("Guardando escaneos pendientes...");
+  try{await sincronizarEscaneos();return true;}catch(error){mostrarError("No se pudieron guardar los escaneos pendientes: "+obtenerError(error));return false;}finally{ocultarCargando();}
+}
+
+function persistirColaEscaneos(){
+  if(!idRecepcionActual)return;
+  const pendientes=detalles.filter(item=>item.pendiente).map(item=>({clientId:item.clientId,tipoMovimiento:item.tipoMovimiento,tipoBulto:item.tipoBulto,codigo:item.codigo}));
+  if(pendientes.length)localStorage.setItem("escaneosPendientesRecepcion",JSON.stringify({idRecepcion:idRecepcionActual,escaneos:pendientes}));
+  else localStorage.removeItem("escaneosPendientesRecepcion");
+}
+
+function restaurarColaEscaneos(){
+  let guardado=null;try{guardado=JSON.parse(localStorage.getItem("escaneosPendientesRecepcion")||"null");}catch(e){localStorage.removeItem("escaneosPendientesRecepcion");}
+  if(!guardado||guardado.idRecepcion!==idRecepcionActual||!Array.isArray(guardado.escaneos))return;
+  guardado.escaneos.forEach(item=>{const duplicado=detalles.some(d=>String(d.codigo||"").toUpperCase()===String(item.codigo||"").toUpperCase()&&String(d.tipoMovimiento||"").toUpperCase()===String(item.tipoMovimiento||"").toUpperCase());if(duplicado)return;const pendiente={...item,fechaHora:"Pendiente de guardar…",orden:detalles.length+1,usuario:usuarioActual.usuario||"",pendiente:true};detalles.push(pendiente);colaEscaneos.push({...item});});
+  renderizarDetalles();programarEnvioEscaneos(150);
+}
+
+function actualizarEstadoSincronizacion(error="",esError=false){const el=document.getElementById("estadoSincronizacion");if(!el)return;const cantidad=detalles.filter(item=>item.pendiente).length;if(esError){el.textContent="⚠ "+error+". Se reintentará.";el.className="sincronizacion error";}else if(cantidad){el.textContent="⏳ "+cantidad+" escaneo(s) por guardar";el.className="sincronizacion pendiente";}else{el.textContent="✓ Todos los escaneos guardados";el.className="sincronizacion";}}
+
 async function eliminarDetalle(item){
+  if(item.pendiente){colaEscaneos=colaEscaneos.filter(x=>x.clientId!==item.clientId);detalles=detalles.filter(x=>x.clientId!==item.clientId);persistirColaEscaneos();renderizarDetalles();return;}
   if(!confirm("¿Quitar el código "+item.codigo+"?"))return;mostrarCargando("Eliminando...");
-  try{await llamarAPI({accion:"ELIMINAR_DETALLE",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,codigo:item.codigo,tipoMovimiento:item.tipoMovimiento}});detalles=detalles.filter(d=>!(String(d.codigo||"").toUpperCase()===String(item.codigo||"").toUpperCase()&&String(d.tipoMovimiento||"").toUpperCase()===String(item.tipoMovimiento||"").toUpperCase()));renderizarDetalles();}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
+  try{await llamarAPI({accion:"ELIMINAR_DETALLE",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,codigo:item.codigo,tipoMovimiento:item.tipoMovimiento}});detalles=detalles.filter(d=>!(String(d.codigo||"").toUpperCase()===String(item.codigo||"").toUpperCase()&&String(d.tipoMovimiento||"").toUpperCase()===String(item.tipoMovimiento||"").toUpperCase()));cacheGestiones.clear();cacheDetalleGestiones.delete(idRecepcionActual);renderizarDetalles();}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
 }
 
 function renderizarDetalles(){
   const recepcion=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN"),inversa=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA"),sacos=recepcion.filter(x=>x.tipoBulto==="SACO").length,bultos=recepcion.filter(x=>x.tipoBulto==="BULTO SUELTO").length;
-  document.getElementById("contadorSacos").textContent=sacos;document.getElementById("contadorBultos").textContent=bultos;document.getElementById("contadorTotal").textContent=sacos+bultos;document.getElementById("contadorInversa").textContent=inversa.length;renderLista("listaRecepcion",recepcion);renderLista("listaInversa",inversa);actualizarResumenFinal();
+  document.getElementById("contadorSacos").textContent=sacos;document.getElementById("contadorBultos").textContent=bultos;document.getElementById("contadorTotal").textContent=sacos+bultos;document.getElementById("contadorInversa").textContent=inversa.length;renderLista("listaRecepcion",recepcion);renderLista("listaInversa",inversa);actualizarResumenFinal();actualizarEstadoSincronizacion();
 }
 
 function renderLista(id,datos){
   const lista=document.getElementById(id);lista.innerHTML="";
-  datos.forEach(item=>{const fila=document.createElement("div");fila.className="item";const info=document.createElement("div");info.className="item-info";info.innerHTML=`<div class="item-tipo">${escaparHtml(item.tipoMovimiento)} • ${escaparHtml(item.tipoBulto)}</div><div class="item-codigo">${escaparHtml(item.codigo)}</div><div class="item-hora">${escaparHtml(item.fechaHora||"")}</div>`;const btn=document.createElement("button");btn.className="btn-eliminar";btn.textContent="×";btn.onclick=()=>eliminarDetalle(item);fila.appendChild(info);fila.appendChild(btn);lista.appendChild(fila);});
+  const fragmento=document.createDocumentFragment(),visibles=datos.slice(-200).reverse();if(datos.length>200){const aviso=document.createElement("div");aviso.className="nota-filtro";aviso.textContent="Mostrando los 200 escaneos más recientes de "+datos.length+".";fragmento.appendChild(aviso);}visibles.forEach(item=>{const fila=document.createElement("div");fila.className=item.pendiente?"item pendiente":"item";const info=document.createElement("div");info.className="item-info";info.innerHTML=`<div class="item-tipo">${escaparHtml(item.tipoMovimiento)} • ${escaparHtml(item.tipoBulto)}</div><div class="item-codigo">${escaparHtml(item.codigo)}</div><div class="item-hora">${escaparHtml(item.pendiente?"Guardando…":(item.fechaHora||""))}</div>`;const btn=document.createElement("button");btn.className="btn-eliminar";btn.textContent=item.pendiente?"…":"×";btn.disabled=Boolean(item.pendiente);btn.onclick=()=>eliminarDetalle(item);fila.appendChild(info);fila.appendChild(btn);fragmento.appendChild(fila);});lista.appendChild(fragmento);
 }
 
 async function agregarManual(){const input=document.getElementById("codigoManual");const ok=await guardarCodigo(input.value,"RECEPCIÓN",tipoBultoActual);if(ok)input.value="";}
@@ -297,9 +380,10 @@ async function finalizarRecepcion(){
   if(latitudActual===null||longitudActual===null){mostrarError("Debe obtener la ubicación GPS.");return;}if(!confirm("¿Finalizar la recepción "+idRecepcionActual+"?"))return;
   mostrarCargando("Finalizando recepción...");document.getElementById("btnFinalizar").disabled=true;
   try{
+    await sincronizarEscaneos();document.getElementById("textoCargando").textContent="Subiendo evidencias y finalizando...";
     const datos={token:tokenSesion,idRecepcion:idRecepcionActual,fotoCarga:fotos.fotoCarga,fotoLogisticaInversa:tieneInversa?fotos.fotoInversa:"",observaciones:document.getElementById("observaciones").value.trim(),latitud:latitudActual,longitud:longitudActual,precision:precisionActual||0};
     for(let i=1;i<=4;i++){datos["codigoPrecintoCerrado"+i]=valorCampo("codigoPrecintoCerrado"+i);datos["precintoCerrado"+i]=fotos["precintoCerrado"+i];}
-    const res=await llamarAPI({accion:"FINALIZAR_RECEPCION",datos});localStorage.removeItem("recepcionActiva");alert("✅ RECEPCIÓN FINALIZADA\n\nID: "+res.idRecepcion+"\nSacos: "+res.cantidadSacos+"\nBultos: "+res.cantidadBultosSueltos+"\nTotal: "+res.totalRecepcionado+"\nLogística inversa: "+res.cantidadLogisticaInversa);location.reload();
+    const res=await llamarAPI({accion:"FINALIZAR_RECEPCION",datos});localStorage.removeItem("recepcionActiva");localStorage.removeItem("escaneosPendientesRecepcion");cacheGestiones.clear();cacheDetalleGestiones.clear();alert("✅ RECEPCIÓN FINALIZADA\n\nID: "+res.idRecepcion+"\nSacos: "+res.cantidadSacos+"\nBultos: "+res.cantidadBultosSueltos+"\nTotal: "+res.totalRecepcionado+"\nLogística inversa: "+res.cantidadLogisticaInversa);location.reload();
   }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();document.getElementById("btnFinalizar").disabled=false;}
 }
 
@@ -316,10 +400,13 @@ function abrirGestiones(){
   buscarGestiones();window.scrollTo({top:0,behavior:"smooth"});
 }
 
-async function buscarGestiones(){
+async function buscarGestiones(forzar=false){
+  const datos={token:tokenSesion,fechaDesde:document.getElementById("filtroFechaDesde").value,fechaHasta:document.getElementById("filtroFechaHasta").value,idRecepcion:valorCampo("filtroIdRecepcion"),idRuta:valorCampo("filtroRuta"),placa:valorCampo("filtroPlaca"),encargado:valorCampo("filtroEncargado"),estado:valorCampo("filtroEstado")};
+  const clave=JSON.stringify({...datos,token:""}),ahora=Date.now(),cacheado=cacheGestiones.get(clave);
+  if(!forzar&&cacheado&&ahora-cacheado.fecha<CACHE_GESTIONES_MS){renderGestiones(cacheado.valor);return;}
   mostrarCargando("Consultando gestiones...");
   try{
-    const res=await llamarAPI({accion:"LISTAR_GESTIONES",datos:{token:tokenSesion,fechaDesde:document.getElementById("filtroFechaDesde").value,fechaHasta:document.getElementById("filtroFechaHasta").value,idRecepcion:valorCampo("filtroIdRecepcion"),idRuta:valorCampo("filtroRuta"),placa:valorCampo("filtroPlaca"),encargado:valorCampo("filtroEncargado"),estado:valorCampo("filtroEstado")}});renderGestiones(res);
+    const res=await llamarAPI({accion:"LISTAR_GESTIONES",datos});cacheGestiones.set(clave,{fecha:Date.now(),valor:res});renderGestiones(res);
   }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
 }
 
@@ -330,7 +417,7 @@ function renderGestiones(res){
   res.gestiones.forEach(g=>{const card=document.createElement("div");card.className="gestion-card";const claseEstado=g.estado==="FINALIZADO"?"estado-finalizado":"estado-proceso";card.innerHTML=`<div class="gestion-cabecera"><div><div class="gestion-id">${escaparHtml(g.idRecepcion)}</div><div class="gestion-fecha">${escaparHtml(g.fechaLlegada)}</div></div><div class="${claseEstado}">${escaparHtml(g.estado)}</div></div><div class="gestion-datos"><strong>Ruta:</strong> ${escaparHtml(g.idRuta||"-")}<br><strong>Placa:</strong> ${escaparHtml(g.placa||"-")}<br><strong>PDV/Usuario:</strong> ${escaparHtml(g.usuario||"-")}<br><strong>Área:</strong> ${escaparHtml(g.area||"-")}<br><strong>Región:</strong> ${escaparHtml(g.region||"-")}<br><strong>Encargado:</strong> ${escaparHtml(g.encargado||"-")}</div><div class="gestion-total">Sacos: ${Number(g.sacos||0)} &nbsp; | &nbsp; Bultos: ${Number(g.bultos||0)}<br>Total: ${Number(g.total||0)}</div>`;const boton=document.createElement("button");boton.className="btn-azul";boton.style.marginTop="10px";boton.textContent="VER DETALLE";boton.onclick=()=>verDetalleGestion(g.idRecepcion);card.appendChild(boton);contenedor.appendChild(card);});
 }
 
-async function verDetalleGestion(idRecepcion){mostrarCargando("Cargando gestión...");try{const res=await llamarAPI({accion:"VER_GESTION",datos:{token:tokenSesion,idRecepcion}});renderDetalleGestion(res);document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.remove("oculto");window.scrollTo({top:0,behavior:"smooth"});}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}}
+async function verDetalleGestion(idRecepcion){const cacheado=cacheDetalleGestiones.get(idRecepcion);if(cacheado&&Date.now()-cacheado.fecha<CACHE_DETALLE_MS){renderDetalleGestion(cacheado.valor);document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.remove("oculto");window.scrollTo({top:0,behavior:"smooth"});return;}mostrarCargando("Cargando gestión...");try{const res=await llamarAPI({accion:"VER_GESTION",datos:{token:tokenSesion,idRecepcion}});cacheDetalleGestiones.set(idRecepcion,{fecha:Date.now(),valor:res});renderDetalleGestion(res);document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.remove("oculto");window.scrollTo({top:0,behavior:"smooth"});}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}}
 
 function renderDetalleGestion(res){
   const r=res.resumen,contenedor=document.getElementById("contenidoDetalleGestion");
@@ -348,7 +435,7 @@ function convertirUrlDrive(url){if(!url)return"";url=String(url).trim();let id="
 function fotoGestion(titulo,codigo,url){if(!url)return `<div><div class="foto-titulo">${escaparHtml(titulo)}</div>${codigo?`<div class="foto-codigo">Código: ${escaparHtml(codigo)}</div>`:""}<div style="min-height:110px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;border-radius:8px;color:#94a3b8;font-size:11px">Sin foto</div></div>`;const miniatura=convertirUrlDrive(url);return `<div><div class="foto-titulo">${escaparHtml(titulo)}</div>${codigo?`<div class="foto-codigo">Código: ${escaparHtml(codigo)}</div>`:""}<a href="${escaparHtml(url)}" target="_blank" rel="noopener noreferrer"><img class="foto-gestion" src="${escaparHtml(miniatura)}" loading="lazy" alt="${escaparHtml(titulo)}"></a></div>`;}
 function datoDetalle(titulo,valor){return `<div class="detalle-dato"><div class="detalle-label">${escaparHtml(titulo)}</div><div class="detalle-valor">${escaparHtml(valor===""||valor==null?"-":valor)}</div></div>`;}
 function volverListaGestiones(){document.getElementById("pantallaDetalleGestion").classList.add("oculto");document.getElementById("pantallaGestiones").classList.remove("oculto");}
-function limpiarFiltrosGestiones(){document.getElementById("filtroIdRecepcion").value="";document.getElementById("filtroRuta").value="";document.getElementById("filtroPlaca").value="";document.getElementById("filtroEstado").value="";establecerFiltrosHoy();const rol=String(usuarioActual.rol||"").trim().toUpperCase();document.getElementById("filtroEncargado").value=rol==="ENCARGADO"?(usuarioActual.encargado||""):"";buscarGestiones();}
+function limpiarFiltrosGestiones(){document.getElementById("filtroIdRecepcion").value="";document.getElementById("filtroRuta").value="";document.getElementById("filtroPlaca").value="";document.getElementById("filtroEstado").value="";establecerFiltrosHoy();const rol=String(usuarioActual.rol||"").trim().toUpperCase();document.getElementById("filtroEncargado").value=rol==="ENCARGADO"?(usuarioActual.encargado||""):"";buscarGestiones(true);}
 function soloNumeros(input){input.value=input.value.replace(/\D/g,"").substring(0,11);}
 function valorCampo(id){const el=document.getElementById(id);if(!el)return"";return String(el.value||"").trim().toUpperCase();}
 function capitalizarPrimera(texto){return texto?texto.charAt(0).toUpperCase()+texto.slice(1):"";}
