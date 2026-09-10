@@ -56,7 +56,7 @@
 
     <section id="paso1"><div class="card">
       <div class="titulo-card">1. Llegada de la unidad</div>
-      <label>ID Ruta *</label><div class="campo-escanear"><input id="idRuta" type="text" autocapitalize="characters" autocomplete="off" placeholder="Escanee o ingrese ID Ruta"><button type="button" class="btn-verde" onclick="iniciarScannerRuta()">📷</button></div><div id="rutaEscaneada" class="codigo-ok oculto">✅ ID Ruta escaneado</div>
+      <label>ID Ruta (opcional)</label><div class="campo-escanear"><input id="idRuta" type="text" autocapitalize="characters" autocomplete="off" placeholder="Escanee o ingrese ID Ruta (opcional)"><button type="button" class="btn-verde" onclick="iniciarScannerRuta()">📷</button></div><div id="rutaEscaneada" class="codigo-ok oculto">✅ ID Ruta escaneado</div>
       <label>Placa *</label><input id="placa" type="text" autocapitalize="characters" placeholder="ABC123">
       <label>DNI / RUC del receptor *</label><input id="dni" type="tel" inputmode="numeric" maxlength="11" placeholder="DNI 8 / RUC 11" oninput="soloNumeros(this)">
       <label>Foto llegada de unidad *</label><input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoLlegada')"><img id="previewFotoLlegada" class="preview oculto"><div id="okFotoLlegada" class="foto-ok oculto">✅ Fotografía preparada</div>
@@ -224,7 +224,7 @@ function abrirRegistro(){
 
 async function iniciarRecepcion(){
   const idRuta=valorCampo("idRuta"),placa=valorCampo("placa"),dni=document.getElementById("dni").value.trim();
-  if(!idRuta){mostrarError("Ingrese o escanee el ID Ruta.");return;}if(!placa){mostrarError("Ingrese la placa.");return;}if(!/^(?:\d{8}|\d{11})$/.test(dni)){mostrarError("Ingrese un DNI de 8 dígitos o RUC de 11 dígitos.");return;}if(!fotos.fotoLlegada){mostrarError("Debe registrar la foto de llegada.");return;}
+  if(!placa){mostrarError("Ingrese la placa.");return;}if(!/^(?:\d{8}|\d{11})$/.test(dni)){mostrarError("Ingrese un DNI de 8 dígitos o RUC de 11 dígitos.");return;}if(!fotos.fotoLlegada){mostrarError("Debe registrar la foto de llegada.");return;}
   for(let i=1;i<=4;i++){const codigo=valorCampo("codigoPrecintoAbierto"+i),foto=fotos["precintoAbierto"+i];if(codigo&&!foto){mostrarError("Precinto de llegada "+i+": falta la fotografía.");return;}if(!codigo&&foto){mostrarError("Precinto de llegada "+i+": falta escanear el código.");return;}}
   mostrarCargando("Iniciando recepción...");
   try{
