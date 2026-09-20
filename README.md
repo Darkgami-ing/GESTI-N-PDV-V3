@@ -21,6 +21,8 @@ Cada recepción y cada logística inversa se crea con una **OT obligatoria**. La
 
 Mientras la operación esté pendiente o en proceso se pueden escanear y eliminar guías, costales y paquetes. Para completar una operación se exige la guía de remisión, las evidencias correspondientes y la confirmación de descarga.
 
+Solo el usuario ADMINISTRADOR puede eliminar una operación completa mientras esté Pendiente o En proceso. Esta acción elimina también sus escaneos, costales, paquetes y evidencias asociadas de Drive. Las operaciones Completadas quedan protegidas.
+
 ## Archivos
 
 - `index.html`, `styles.css`, `app.js`: interfaz GitHub Pages.
