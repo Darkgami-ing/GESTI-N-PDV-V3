@@ -65,7 +65,7 @@ function validarSesion_(accessToken) {
 }
 
 function subirEvidencia_(body, usuario) {
-  if (CARPETA_EVIDENCIAS_ID === 'REEMPLAZAR_CON_ID_DE_CARPETA') {
+  if (CARPETA_EVIDENCIAS_ID === '1dWqZSe6XbwAOhIt05fPXK5M7r96-e-k-') {
     throw new Error('Falta configurar CARPETA_EVIDENCIAS_ID.');
   }
 
