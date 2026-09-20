@@ -14,7 +14,7 @@ Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una r
 ## Archivos
 
 - `index.html`, `styles.css`, `app.js`: interfaz GitHub Pages.
-- `config.js`: URL y clave publicable de Supabase; falta agregar la URL de Apps Script.
+- `config.js`: URL y clave publicable de Supabase y endpoint de Apps Script.
 - `supabase/schema.sql`: tablas, índices, validaciones y políticas RLS.
 - `supabase/functions/crear-usuario/index.ts`: creación segura de PDV y cuentas.
 - `apps-script/Code.gs`: subida y lectura autorizada de fotografías privadas en Drive.
@@ -60,6 +60,19 @@ supabase functions deploy crear-usuario
 
 También se puede crear la función desde el panel de Supabase copiando `supabase/functions/crear-usuario/index.ts`.
 
+### Carga masiva de PDV
+
+El Administrador puede descargar una plantilla Excel desde **Usuarios → Carga masiva de PDV**. La hoja admite hasta 1,000 registros y utiliza las columnas:
+
+- `CODIGO_PDV`
+- `NOMBRE_PDV`
+- `REGION`
+- `AREA`
+- `USUARIO_ENCARGADO`
+- `ESTADO`
+
+Los encargados deben existir previamente y estar activos. Antes de importar se muestra una vista previa con las filas válidas y observadas. Los códigos nuevos se crean y los códigos existentes se actualizan. El procesamiento se realiza en lotes de 200 registros mediante la función Edge `crear-usuario`.
+
 ## 2. Configurar Google Drive
 
 1. Crear una carpeta exclusiva para evidencias.
@@ -94,4 +107,3 @@ Aunque la aplicación web de Apps Script acepte solicitudes, cada acción valida
 - No guardar nunca `sb_secret_...` ni `service_role` en GitHub, Apps Script, HTML o mensajes.
 - Las políticas RLS determinan el acceso real; ocultar botones no se considera una medida de seguridad.
 - Las evidencias permanecen privadas en Drive y se solicitan con una sesión válida.
-
