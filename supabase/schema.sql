@@ -538,7 +538,10 @@ with check (
 drop policy if exists operaciones_delete_admin on public.operaciones;
 create policy operaciones_delete_admin on public.operaciones
 for delete to authenticated
-using (public.rol_actual() = 'ADMINISTRADOR');
+using (
+  public.rol_actual() = 'ADMINISTRADOR'
+  and estado in ('PENDIENTE', 'EN_PROCESO')
+);
 
 drop policy if exists items_select on public.items_recepcion;
 create policy items_select on public.items_recepcion
