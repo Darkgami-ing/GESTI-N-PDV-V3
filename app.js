@@ -355,6 +355,7 @@
     node.className = `status-pill ${statusClass(status)}`;
     node.textContent = statusLabel(status);
     $("#finishOperationButton")?.classList.toggle("hidden", status === "COMPLETADO" || status === "ANULADO");
+    $("#deleteActiveOperationButton")?.classList.toggle("hidden", state.profile?.rol !== "ADMINISTRADOR" || !["PENDIENTE", "EN_PROCESO"].includes(status));
   }
 
   function renderWorkspace() {
@@ -1037,6 +1038,46 @@
     }
   }
 
+  async function deleteOperation(id) {
+    if (state.profile?.rol !== "ADMINISTRADOR") return toast("Solo el Administrador puede eliminar borradores.", "error");
+    const confirmed = confirm("¿Eliminar definitivamente esta operación? Se borrarán sus escaneos, costales, paquetes y evidencias.");
+    if (!confirmed) return;
+    showLoading("Eliminando borrador…");
+    try {
+      const [operationResult, evidencesResult] = await Promise.all([
+        db.from("operaciones").select("id,ot,codigo,estado").eq("id", id).single(),
+        db.from("evidencias").select("id,drive_file_id").eq("operacion_id", id),
+      ]);
+      if (operationResult.error) throw operationResult.error;
+      if (evidencesResult.error) throw evidencesResult.error;
+      if (!["PENDIENTE", "EN_PROCESO"].includes(operationResult.data.estado)) {
+        throw new Error("Solo se pueden eliminar operaciones pendientes o en proceso.");
+      }
+
+      for (const evidence of evidencesResult.data || []) {
+        await callDrive("ELIMINAR_EVIDENCIA", { fileId: evidence.drive_file_id });
+      }
+
+      const { error } = await db.from("operaciones").delete().eq("id", id);
+      if (error) throw error;
+      if (state.operation?.id === id) {
+        localStorage.removeItem("controlLogisticoDraft");
+        resetOperationState();
+        $("#operationWorkspace").classList.add("hidden");
+        $("#operationSetup").classList.add("hidden");
+        $("#operationPicker").classList.remove("hidden");
+        $("#newPanelTitle").textContent = "Selecciona una operación";
+      }
+      $("#recordDialog")?.close();
+      toast(`OT ${operationResult.data.ot || operationResult.data.codigo} eliminada.`, "success");
+      await Promise.all([loadHome(), loadRecent(), loadRecords()]);
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
   async function startScanner(mode, inputId = "", label = "Código") {
     if (!window.ZXing) return toast("El lector no pudo cargarse. Use el ingreso manual.", "error");
     stopScanner(false);
@@ -1219,7 +1260,10 @@
       if (sealsResult.data.length) html += `<section class="detail-section"><h3>Precintos</h3><div class="sack-packages">${sealsResult.data.map((seal) => `${escapeHtml(seal.etapa)} ${seal.numero}: ${escapeHtml(seal.codigo)}`).join(" · ")}</div></section>`;
       if (evidencesResult.data.length) html += `<section class="detail-section"><h3>Evidencias (${evidencesResult.data.length})</h3><div class="evidence-buttons">${evidencesResult.data.map((evidence) => `<button class="evidence-button" data-evidence-file="${escapeHtml(evidence.drive_file_id)}">${escapeHtml(evidence.etiqueta)}</button>`).join("")}</div><div id="evidenceViewer" class="photo-preview hidden" style="margin-top:10px"></div></section>`;
       if (o.observaciones) html += `<section class="detail-section"><h3>Observaciones</h3><p>${escapeHtml(o.observaciones)}</p></section>`;
-      if (["PENDIENTE", "EN_PROCESO", "BORRADOR"].includes(o.estado)) html += `<button class="button primary full" data-resume-id="${o.id}">Continuar operación</button>`;
+      if (["PENDIENTE", "EN_PROCESO", "BORRADOR"].includes(o.estado)) {
+        html += `<button class="button primary full" data-resume-id="${o.id}">Continuar operación</button>`;
+        if (state.profile?.rol === "ADMINISTRADOR") html += `<button class="button danger full" data-delete-operation="${o.id}">Eliminar borrador</button>`;
+      }
       $("#recordDetail").innerHTML = html;
       $("#recordDialog").showModal();
     } catch (error) {
@@ -1636,6 +1680,7 @@
         else if (action === "close-sack") await closeSack();
         else if (action === "get-gps") await getGps();
         else if (action === "finish-operation") await finishOperation();
+        else if (action === "delete-active-operation") await deleteOperation(state.operation?.id);
         else if (action === "remove-transport-guide") await removeTransportGuide();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();
         else if (action === "refresh-users") await loadUsersPanel();
@@ -1673,6 +1718,8 @@
       if (record) { await openRecord(record.dataset.recordId); return; }
       const resume = event.target.closest("[data-resume-id]");
       if (resume) { await resumeOperation(resume.dataset.resumeId); return; }
+      const deleteOperationButton = event.target.closest("[data-delete-operation]");
+      if (deleteOperationButton) { await deleteOperation(deleteOperationButton.dataset.deleteOperation); return; }
       const evidence = event.target.closest("[data-evidence-file]");
       if (evidence) await viewEvidence(evidence.dataset.evidenceFile);
     });
