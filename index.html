@@ -9,9 +9,11 @@
   <title>Control Logístico PDV</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.sheetjs.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
   <div id="loading" class="loading hidden" aria-live="polite">
@@ -216,6 +218,23 @@
             <button class="button primary full" type="submit">Crear cuenta</button>
           </form>
         </div>
+        <section id="bulkPdvCard" class="card hidden">
+          <div class="card-title">
+            <span>Carga masiva de PDV</span>
+            <button type="button" class="link-button" data-action="download-pdv-template">Descargar plantilla</button>
+          </div>
+          <p class="helper-text">Disponible solo para Administradores. Primero deben existir las cuentas de los encargados indicados en el archivo.</p>
+          <label for="bulkPdvFile">Archivo Excel o CSV</label>
+          <input id="bulkPdvFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
+          <div id="bulkPdvFileInfo" class="file-info">Seleccione la plantilla completada para validar los registros.</div>
+          <div id="bulkPdvSummary" class="bulk-summary hidden"></div>
+          <div id="bulkPdvPreview" class="table-wrap hidden"></div>
+          <div class="bulk-actions">
+            <button id="bulkPdvImportButton" type="button" class="button primary" data-action="import-pdvs" disabled>Importar registros válidos</button>
+            <button id="bulkPdvResultButton" type="button" class="button secondary hidden" data-action="download-pdv-result">Descargar resultado</button>
+          </div>
+          <div id="bulkPdvMessage" class="form-message hidden"></div>
+        </section>
         <section class="card"><div class="card-title"><span>Cuentas visibles</span><button class="link-button" data-action="refresh-users">Actualizar</button></div><div id="usersList" class="record-list"></div></section>
       </section>
     </section>
@@ -243,4 +262,3 @@
   <script src="app.js"></script>
 </body>
 </html>
-

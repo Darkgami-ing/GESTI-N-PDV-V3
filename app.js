@@ -16,6 +16,10 @@
   };
   const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA"]);
   const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
+  const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "ESTADO"];
+  const BULK_PDV_MAX_ROWS = 1000;
+  const BULK_PDV_BATCH_SIZE = 200;
+  const BULK_PDV_MAX_FILE_BYTES = 5 * 1024 * 1024;
 
   if (!CFG.SUPABASE_URL || !CFG.SUPABASE_PUBLISHABLE_KEY || !window.supabase) {
     document.body.innerHTML = '<div class="empty-state" style="margin:30px">Falta configurar Supabase en config.js.</div>';
@@ -31,6 +35,8 @@
     profile: null,
     pdvs: [],
     users: [],
+    bulkPdvRows: [],
+    bulkPdvResults: [],
     selectedType: "",
     operation: null,
     items: [],
@@ -135,6 +141,7 @@
     const canManage = ["ADMINISTRADOR", "ENCARGADO"].includes(p.rol);
     $("#usersNav").classList.toggle("hidden", !canManage);
     $("#managerPdvField").classList.toggle("hidden", p.rol !== "ADMINISTRADOR");
+    $("#bulkPdvCard").classList.toggle("hidden", p.rol !== "ADMINISTRADOR");
     if (p.rol === "ENCARGADO") {
       $("#newRole").innerHTML = '<option value="PDV">PDV</option>';
       $("#newRole").disabled = true;
@@ -209,6 +216,9 @@
     state.session = null;
     state.profile = null;
     state.pdvs = [];
+    state.users = [];
+    state.bulkPdvRows = [];
+    state.bulkPdvResults = [];
     resetOperationState();
   }
 
@@ -1087,6 +1097,239 @@
     } finally { hideLoading(); }
   }
 
+  function normalizeHeader(value) {
+    return String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+  }
+
+  function requireSpreadsheetLibrary() {
+    if (!window.XLSX) throw new Error("No se pudo cargar el lector de Excel. Actualice la página y vuelva a intentarlo.");
+    return window.XLSX;
+  }
+
+  function downloadPdvTemplate() {
+    try {
+      const XLSX = requireSpreadsheetLibrary();
+      const workbook = XLSX.utils.book_new();
+      const pdvSheet = XLSX.utils.json_to_sheet([], { header: BULK_PDV_HEADERS });
+      pdvSheet["!cols"] = [
+        { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 },
+      ];
+      const instructions = [
+        ["CARGA MASIVA DE PDV"],
+        ["Complete la hoja PDV sin cambiar los encabezados."],
+        ["Los encargados deben existir previamente, estar activos y tener rol ENCARGADO."],
+        ["CODIGO_PDV debe ser único. Si ya existe, sus datos serán actualizados."],
+        ["ESTADO solo admite ACTIVO o INACTIVO."],
+        [],
+        ["EJEMPLO"],
+        BULK_PDV_HEADERS,
+        ["PE07008", "CAL-08.pdv", "LIMA", "LIMA NORTE", "JESUS", "ACTIVO"],
+      ];
+      const instructionSheet = XLSX.utils.aoa_to_sheet(instructions);
+      instructionSheet["!cols"] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 }];
+      XLSX.utils.book_append_sheet(workbook, pdvSheet, "PDV");
+      XLSX.utils.book_append_sheet(workbook, instructionSheet, "INSTRUCCIONES");
+      XLSX.writeFile(workbook, "PLANTILLA_CARGA_MASIVA_PDV.xlsx");
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    }
+  }
+
+  function validateBulkPdvRows(rawRows) {
+    const managers = new Map(
+      state.users
+        .filter((user) => user.rol === "ENCARGADO" && user.estado === "ACTIVO")
+        .map((user) => [normalizeCode(user.usuario), user]),
+    );
+
+    const rows = rawRows.map((raw, index) => {
+      const keyed = {};
+      Object.entries(raw).forEach(([key, value]) => { keyed[normalizeHeader(key)] = value; });
+      return {
+        fila: index + 2,
+        codigo: normalizeCode(keyed.CODIGO_PDV),
+        nombre: String(keyed.NOMBRE_PDV ?? "").trim(),
+        region: String(keyed.REGION ?? "").trim(),
+        area: String(keyed.AREA ?? "").trim(),
+        encargado_usuario: normalizeCode(keyed.USUARIO_ENCARGADO),
+        estado: normalizeCode(keyed.ESTADO || "ACTIVO"),
+        errors: [],
+      };
+    });
+
+    const codeCounts = rows.reduce((counts, row) => {
+      if (row.codigo) counts.set(row.codigo, (counts.get(row.codigo) || 0) + 1);
+      return counts;
+    }, new Map());
+
+    rows.forEach((row) => {
+      if (!row.codigo) row.errors.push("Falta CODIGO_PDV.");
+      else if (!/^[A-Z0-9._-]{1,50}$/.test(row.codigo)) row.errors.push("Código inválido.");
+      else if (codeCounts.get(row.codigo) > 1) row.errors.push("Código duplicado en el archivo.");
+      if (!row.nombre) row.errors.push("Falta NOMBRE_PDV.");
+      if (!row.encargado_usuario) row.errors.push("Falta USUARIO_ENCARGADO.");
+      else if (!managers.has(row.encargado_usuario)) row.errors.push("Encargado inexistente o inactivo.");
+      if (!["ACTIVO", "INACTIVO"].includes(row.estado)) row.errors.push("ESTADO debe ser ACTIVO o INACTIVO.");
+    });
+
+    return rows;
+  }
+
+  function renderBulkPdvPreview() {
+    const rows = state.bulkPdvRows;
+    const valid = rows.filter((row) => row.errors.length === 0).length;
+    const invalid = rows.length - valid;
+    $("#bulkPdvSummary").classList.remove("hidden");
+    $("#bulkPdvSummary").innerHTML = `
+      <div><span>Total</span><strong>${rows.length}</strong></div>
+      <div class="ok"><span>Válidos</span><strong>${valid}</strong></div>
+      <div class="bad"><span>Observados</span><strong>${invalid}</strong></div>`;
+    $("#bulkPdvPreview").classList.remove("hidden");
+    $("#bulkPdvPreview").innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Fila</th><th>Código</th><th>PDV</th><th>Encargado</th><th>Estado</th><th>Validación</th></tr></thead>
+        <tbody>${rows.slice(0, 100).map((row) => `
+          <tr class="${row.errors.length ? "row-error" : ""}">
+            <td>${row.fila}</td>
+            <td>${escapeHtml(row.codigo || "-")}</td>
+            <td>${escapeHtml(row.nombre || "-")}</td>
+            <td>${escapeHtml(row.encargado_usuario || "-")}</td>
+            <td>${escapeHtml(row.estado || "-")}</td>
+            <td><span class="validation-pill ${row.errors.length ? "bad" : "ok"}">${escapeHtml(row.errors.length ? row.errors.join(" ") : "Válido")}</span></td>
+          </tr>`).join("")}</tbody>
+      </table>
+      ${rows.length > 100 ? `<div class="table-note">Vista previa de las primeras 100 filas de ${rows.length}.</div>` : ""}`;
+    $("#bulkPdvImportButton").disabled = valid === 0;
+  }
+
+  async function readBulkPdvFile(event) {
+    state.bulkPdvRows = [];
+    state.bulkPdvResults = [];
+    $("#bulkPdvResultButton").classList.add("hidden");
+    $("#bulkPdvMessage").className = "form-message hidden";
+    $("#bulkPdvSummary").classList.add("hidden");
+    $("#bulkPdvPreview").classList.add("hidden");
+    $("#bulkPdvImportButton").disabled = true;
+
+    const file = event.target.files?.[0];
+    if (!file) {
+      $("#bulkPdvFileInfo").textContent = "Seleccione la plantilla completada para validar los registros.";
+      return;
+    }
+
+    $("#bulkPdvFileInfo").textContent = `${file.name} · ${Math.max(1, Math.round(file.size / 1024))} KB`;
+    showLoading("Leyendo y validando archivo…");
+    try {
+      if (file.size > BULK_PDV_MAX_FILE_BYTES) throw new Error("El archivo supera el máximo permitido de 5 MB.");
+      const XLSX = requireSpreadsheetLibrary();
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const sheetName = workbook.SheetNames.find((name) => normalizeHeader(name) === "PDV") || workbook.SheetNames[0];
+      if (!sheetName) throw new Error("El archivo no contiene hojas para importar.");
+      const sheet = workbook.Sheets[sheetName];
+      const rawRows = XLSX.utils.sheet_to_json(sheet, { defval: "", raw: false, blankrows: false });
+      const detectedHeaders = new Set(Object.keys(rawRows[0] || {}).map(normalizeHeader));
+      const missing = BULK_PDV_HEADERS.filter((header) => !detectedHeaders.has(header));
+      if (missing.length) throw new Error(`Faltan columnas: ${missing.join(", ")}.`);
+      if (!rawRows.length) throw new Error("El archivo no contiene registros de PDV.");
+      if (rawRows.length > BULK_PDV_MAX_ROWS) throw new Error(`El archivo supera el máximo de ${BULK_PDV_MAX_ROWS} registros.`);
+      state.bulkPdvRows = validateBulkPdvRows(rawRows);
+      renderBulkPdvPreview();
+    } catch (error) {
+      showFormMessage("#bulkPdvMessage", errorMessage(error));
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function renderBulkPdvResults(results) {
+    const created = results.filter((row) => row.resultado === "CREADO").length;
+    const updated = results.filter((row) => row.resultado === "ACTUALIZADO").length;
+    const rejected = results.filter((row) => row.resultado === "RECHAZADO").length;
+    $("#bulkPdvSummary").innerHTML = `
+      <div><span>Procesados</span><strong>${results.length}</strong></div>
+      <div class="ok"><span>Creados</span><strong>${created}</strong></div>
+      <div class="updated"><span>Actualizados</span><strong>${updated}</strong></div>
+      <div class="bad"><span>Rechazados</span><strong>${rejected}</strong></div>`;
+    $("#bulkPdvPreview").innerHTML = `
+      <table class="data-table">
+        <thead><tr><th>Fila</th><th>Código</th><th>Resultado</th><th>Detalle</th></tr></thead>
+        <tbody>${results.map((row) => `
+          <tr class="${row.resultado === "RECHAZADO" ? "row-error" : ""}">
+            <td>${row.fila}</td>
+            <td>${escapeHtml(row.codigo || "-")}</td>
+            <td><span class="validation-pill ${row.resultado === "RECHAZADO" ? "bad" : "ok"}">${escapeHtml(row.resultado)}</span></td>
+            <td>${escapeHtml(row.mensaje || "Procesado correctamente.")}</td>
+          </tr>`).join("")}</tbody>
+      </table>`;
+  }
+
+  async function importBulkPdvs() {
+    if (state.profile?.rol !== "ADMINISTRADOR") return toast("Solo el Administrador puede importar PDV.", "error");
+    const validRows = state.bulkPdvRows.filter((row) => row.errors.length === 0);
+    if (!validRows.length) return toast("No existen registros válidos para importar.", "error");
+    if (!confirm(`Se crearán o actualizarán ${validRows.length} PDV. ¿Desea continuar?`)) return;
+
+    showLoading("Importando PDV…");
+    try {
+      const results = state.bulkPdvRows
+        .filter((row) => row.errors.length)
+        .map((row) => ({ fila: row.fila, codigo: row.codigo, resultado: "RECHAZADO", mensaje: row.errors.join(" ") }));
+
+      for (let index = 0; index < validRows.length; index += BULK_PDV_BATCH_SIZE) {
+        const batch = validRows.slice(index, index + BULK_PDV_BATCH_SIZE).map((row) => ({
+          fila: row.fila,
+          codigo: row.codigo,
+          nombre: row.nombre,
+          region: row.region,
+          area: row.area,
+          encargado_usuario: row.encargado_usuario,
+          estado: row.estado,
+        }));
+        $("#loadingText").textContent = `Importando ${Math.min(index + batch.length, validRows.length)} de ${validRows.length}…`;
+        const response = await invokeUserAdmin({ accion: "IMPORTAR_PDVS", registros: batch });
+        results.push(...(response.resultados || []));
+      }
+
+      state.bulkPdvResults = results.sort((a, b) => a.fila - b.fila);
+      renderBulkPdvResults(state.bulkPdvResults);
+      $("#bulkPdvImportButton").disabled = true;
+      $("#bulkPdvResultButton").classList.remove("hidden");
+      const rejected = state.bulkPdvResults.filter((row) => row.resultado === "RECHAZADO").length;
+      showFormMessage("#bulkPdvMessage", rejected ? `Importación terminada con ${rejected} registro(s) rechazado(s).` : "Importación completada correctamente.", rejected === 0);
+      await loadPdvs();
+    } catch (error) {
+      showFormMessage("#bulkPdvMessage", errorMessage(error));
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function downloadBulkPdvResult() {
+    try {
+      if (!state.bulkPdvResults.length) throw new Error("No hay resultados para descargar.");
+      const XLSX = requireSpreadsheetLibrary();
+      const rows = state.bulkPdvResults.map((row) => ({
+        FILA: row.fila,
+        CODIGO_PDV: row.codigo,
+        RESULTADO: row.resultado,
+        DETALLE: row.mensaje || "Procesado correctamente.",
+      }));
+      const workbook = XLSX.utils.book_new();
+      const sheet = XLSX.utils.json_to_sheet(rows);
+      sheet["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 55 }];
+      XLSX.utils.book_append_sheet(workbook, sheet, "RESULTADO");
+      XLSX.writeFile(workbook, `RESULTADO_CARGA_PDV_${new Date().toISOString().slice(0, 10)}.xlsx`);
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    }
+  }
+
   async function createUser(event) {
     event.preventDefault();
     const role = $("#newRole").value;
@@ -1135,6 +1378,7 @@
     $("#userForm").addEventListener("submit", createUser);
     $("#passwordForm").addEventListener("submit", changePassword);
     $("#newRole").addEventListener("change", updateRoleFields);
+    $("#bulkPdvFile").addEventListener("change", readBulkPdvFile);
     $("#inversePhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "inverse"));
     $("#parcelPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "parcel"));
 
@@ -1167,6 +1411,9 @@
         else if (action === "finish-operation") await finishOperation();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();
         else if (action === "refresh-users") await loadUsersPanel();
+        else if (action === "download-pdv-template") downloadPdvTemplate();
+        else if (action === "import-pdvs") await importBulkPdvs();
+        else if (action === "download-pdv-result") downloadBulkPdvResult();
         else if (action === "scanner-close") stopScanner();
         else if (action === "scanner-camera") await changeCamera();
         return;
@@ -1235,4 +1482,3 @@
 
   boot();
 })();
-
