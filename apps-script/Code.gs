@@ -27,6 +27,7 @@ function doPost(e) {
 
     if (accion === 'SUBIR_EVIDENCIA') return subirEvidencia_(body, usuario);
     if (accion === 'OBTENER_EVIDENCIA') return obtenerEvidencia_(body, usuario);
+    if (accion === 'ELIMINAR_EVIDENCIA') return eliminarEvidencia_(body, usuario);
 
     throw new Error('Acción no reconocida.');
   } catch (error) {
@@ -70,19 +71,21 @@ function subirEvidencia_(body, usuario) {
 
   const dataUrl = String(body.dataUrl || '');
   const match = dataUrl.match(/^data:([\w.+-]+\/[\w.+-]+);base64,(.+)$/);
-  if (!match) throw new Error('La fotografía no tiene un formato válido.');
+  if (!match) throw new Error('El archivo no tiene un formato válido.');
 
   const mimeType = match[1];
-  if (!/^image\/(jpeg|png|webp)$/i.test(mimeType)) {
-    throw new Error('Solo se permiten imágenes JPG, PNG o WEBP.');
+  if (!/^image\/(jpeg|png|webp)$/i.test(mimeType) && mimeType !== 'application/pdf') {
+    throw new Error('Solo se permiten imágenes JPG, PNG, WEBP o PDF.');
   }
 
   const bytes = Utilities.base64Decode(match[2]);
-  if (bytes.length > MAX_BYTES_SUBIDA) throw new Error('La fotografía supera 6 MB.');
+  if (bytes.length > MAX_BYTES_SUBIDA) throw new Error('El archivo supera 6 MB.');
 
-  const extension = mimeType.toLowerCase().includes('png')
-    ? 'png'
-    : mimeType.toLowerCase().includes('webp') ? 'webp' : 'jpg';
+  const extension = mimeType === 'application/pdf'
+    ? 'pdf'
+    : mimeType.toLowerCase().includes('png')
+      ? 'png'
+      : mimeType.toLowerCase().includes('webp') ? 'webp' : 'jpg';
   const operacion = limpiarNombre_(body.codigoOperacion || 'OPERACION');
   const categoria = limpiarNombre_(body.categoria || 'EVIDENCIA');
   const referencia = limpiarNombre_(body.referenciaCodigo || 'GENERAL');
@@ -122,13 +125,27 @@ function obtenerEvidencia_(body, usuario) {
     ok: true,
     fileId: fileId,
     nombre: archivo.getName(),
+    mimeType: blob.getContentType(),
     dataUrl: 'data:' + blob.getContentType() + ';base64,' + Utilities.base64Encode(blob.getBytes())
   });
 }
 
+function eliminarEvidencia_(body, usuario) {
+  const fileId = String(body.fileId || '').trim();
+  if (!fileId) throw new Error('Falta el identificador de la evidencia.');
+  const registro = obtenerRegistroEvidencia_(fileId, String(body.accessToken || ''));
+  const archivo = DriveApp.getFileById(fileId);
+  archivo.setTrashed(true);
+  return responder_({ ok: true, fileId: fileId, categoria: registro.categoria });
+}
+
 function verificarAccesoEvidencia_(fileId, accessToken) {
+  obtenerRegistroEvidencia_(fileId, accessToken);
+}
+
+function obtenerRegistroEvidencia_(fileId, accessToken) {
   const filtro = encodeURIComponent(fileId);
-  const url = SUPABASE_URL + '/rest/v1/evidencias?drive_file_id=eq.' + filtro + '&select=id&limit=1';
+  const url = SUPABASE_URL + '/rest/v1/evidencias?drive_file_id=eq.' + filtro + '&select=id,categoria,operacion_id&limit=1';
   const respuesta = UrlFetchApp.fetch(url, {
     method: 'get',
     headers: {
@@ -142,6 +159,7 @@ function verificarAccesoEvidencia_(fileId, accessToken) {
   if (respuesta.getResponseCode() !== 200) throw new Error('No se pudo validar la evidencia.');
   const filas = JSON.parse(respuesta.getContentText() || '[]');
   if (!filas.length) throw new Error('No tiene permiso para ver esta evidencia.');
+  return filas[0];
 }
 
 function limpiarNombre_(valor) {
@@ -164,4 +182,3 @@ function responder_(objeto) {
 function obtenerMensaje_(error) {
   return error && error.message ? error.message : String(error || 'Error inesperado.');
 }
-
