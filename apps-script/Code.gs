@@ -9,7 +9,7 @@
  * No colocar una Secret key ni service_role en este archivo.
  */
 
-const CARPETA_EVIDENCIAS_ID = 'REEMPLAZAR_CON_ID_DE_CARPETA';
+const CARPETA_EVIDENCIAS_ID = '1dWqZSe6XbwAOhIt05fPXK5M7r96-e-k-';
 const SUPABASE_URL = 'https://qtgcpmpbtfhvoasncmkg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tj-kyp78upcwyrLbhMTqaA_l3lfRpt8';
 const MAX_BYTES_SUBIDA = 6 * 1024 * 1024;
