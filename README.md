@@ -11,6 +11,16 @@ Aplicación móvil para GitHub Pages con Supabase como base de datos y autentica
 
 Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una relación individual `operación → costal → paquete`, lo que permite buscarlo y auditarlo.
 
+## Flujo de OT y estados
+
+Cada recepción y cada logística inversa se crea con una **OT obligatoria**. La OT se utiliza como el ID visible de la gestión. La guía de remisión transporte se puede adjuntar como imagen o PDF y aparece debajo de la OT en los registros. Al seleccionar el archivo se guarda de inmediato en Drive; mientras la operación no esté completada se puede reemplazar o eliminar.
+
+- `PENDIENTE`: la gestión acaba de crearse.
+- `EN_PROCESO`: ya contiene guías, costales, paquetes, precintos o evidencias.
+- `COMPLETADO`: se confirmó la descarga; desde ese momento ya no se permite modificar ni eliminar guías.
+
+Mientras la operación esté pendiente o en proceso se pueden escanear y eliminar guías, costales y paquetes. Para completar una operación se exige la guía de remisión, las evidencias correspondientes y la confirmación de descarga.
+
 ## Archivos
 
 - `index.html`, `styles.css`, `app.js`: interfaz GitHub Pages.
@@ -25,6 +35,8 @@ Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una r
 2. Ir a **SQL Editor**.
 3. Crear una consulta nueva, pegar todo `supabase/schema.sql` y ejecutarla.
 4. Ir a **Authentication → Providers → Email** y desactivar el registro público de usuarios. Las cuentas se crearán desde el panel administrativo de la aplicación.
+
+Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, el estado automático y la categoría de documento en evidencias.
 
 ### Crear el primer administrador
 
@@ -82,7 +94,7 @@ La descarga del resultado incluye la contraseña indicada para facilitar la entr
 1. Crear una carpeta exclusiva para evidencias.
 2. Copiar el identificador de la carpeta desde su URL.
 3. Crear un proyecto nuevo de Google Apps Script.
-4. Reemplazar el contenido por `apps-script/Code.gs`.
+4. Reemplazar el contenido por `apps-script/Code.gs` (incluye subida de imágenes/PDF y eliminación autorizada de la guía antes de completar).
 5. Sustituir `REEMPLAZAR_CON_ID_DE_CARPETA` por el identificador real.
 6. Implementar como **Aplicación web**:
    - Ejecutar como: propietario.
