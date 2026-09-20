@@ -1,458 +1,246 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<meta name="theme-color" content="#174a7e">
-<title>Recepción de Unidades</title>
-<link rel="preconnect" href="https://script.google.com">
-<link rel="preconnect" href="https://script.googleusercontent.com">
-<link rel="preconnect" href="https://unpkg.com" crossorigin>
-<script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
-<style>
-*{box-sizing:border-box}html{-webkit-text-size-adjust:100%}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#f4f7fa;color:#1f2937}.contenedor{width:min(100%,780px);margin:auto;padding:12px}.logo{text-align:center;font-size:23px;font-weight:800;color:#174a7e;margin:12px 0 4px}.subtitulo{text-align:center;color:#64748b;font-size:13px;margin-bottom:18px}.card{background:#fff;border-radius:14px;padding:17px;margin-bottom:14px;box-shadow:0 2px 8px rgba(15,23,42,.08)}.titulo-card{font-size:17px;font-weight:700;color:#174a7e;margin-bottom:15px}.subtitulo-card{font-size:14px;font-weight:800;color:#334155;margin:18px 0 10px}label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}input,select,textarea{width:100%;min-height:48px;border:1px solid #cbd5e1;border-radius:9px;padding:10px 12px;font-size:16px;background:#fff;margin-bottom:14px;outline:none}input:focus,select:focus,textarea:focus{border-color:#2563eb;box-shadow:0 0 0 2px rgba(37,99,235,.10)}textarea{min-height:90px;resize:vertical}button{width:100%;min-height:49px;border:none;border-radius:9px;font-size:14px;font-weight:700;cursor:pointer;touch-action:manipulation}button:disabled{opacity:.55}.oculto{display:none!important}.btn-principal{background:#174a7e;color:#fff}.btn-azul{background:#2563eb;color:#fff}.btn-verde{background:#059669;color:#fff}.btn-rojo{background:#dc2626;color:#fff}.btn-gris{background:#e2e8f0;color:#334155}.usuario-barra{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#174a7e;color:#fff;border-radius:11px;padding:12px 14px;margin-bottom:12px}.usuario-nombre{font-weight:800;font-size:14px}.usuario-info{font-size:11px;margin-top:4px;opacity:.9}.btn-salir{width:auto;min-width:70px;min-height:36px;padding:5px 10px;background:rgba(255,255,255,.17);color:#fff}.menu-principal{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}.progreso{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px}.paso-mini{text-align:center;padding:9px 2px;border-radius:8px;background:#e2e8f0;color:#64748b;font-size:10px;font-weight:700}.paso-mini.activo{background:#174a7e;color:#fff}.paso-mini.completo{background:#dcfce7;color:#047857}.recepcion-id{background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px;margin-bottom:14px;text-align:center}.recepcion-id-label{font-size:11px;color:#64748b}.recepcion-id-valor{font-size:18px;color:#174a7e;font-weight:800;margin-top:4px}.campo-escanear{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:7px;margin-bottom:14px}.campo-escanear input{margin-bottom:0}.campo-escanear button{min-height:48px;font-size:20px}.precinto-box{border:1px solid #e2e8f0;background:#f8fafc;border-radius:11px;padding:12px;margin-bottom:13px}.precinto-titulo{font-weight:800;color:#174a7e;font-size:13px;margin-bottom:10px}.codigo-ok{color:#047857;font-size:11px;font-weight:700;margin:-5px 0 10px}.preview{width:100%;max-height:270px;object-fit:contain;border-radius:9px;background:#f1f5f9;margin-top:-5px;margin-bottom:10px}.foto-ok{font-size:12px;color:#047857;font-weight:700;margin-bottom:10px}.contadores{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:10px}.contador{padding:12px;border-radius:10px;background:#eff6ff;text-align:center}.contador-titulo{font-size:11px;font-weight:700;color:#64748b}.contador-numero{font-size:28px;font-weight:800;color:#174a7e;margin-top:4px}.total-box{background:#ecfdf5;border-radius:10px;padding:12px;text-align:center;margin-bottom:15px}.total-numero{font-size:29px;font-weight:800;color:#047857}.selector-tipo,.decision{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:13px}.selector-tipo button,.decision button{background:#e2e8f0;color:#475569}.selector-tipo button.seleccionado{background:#174a7e;color:#fff}.decision button.activo-si{background:#059669;color:#fff}.decision button.activo-no{background:#64748b;color:#fff}.manual{display:grid;grid-template-columns:minmax(0,1fr) 70px;gap:8px}.manual input{margin:0}.lista{margin-top:15px}.item{display:flex;align-items:center;justify-content:space-between;gap:8px;border:1px solid #e2e8f0;border-radius:9px;padding:10px;margin-bottom:7px}.item-info{flex:1;min-width:0}.item-tipo{font-size:10px;color:#64748b}.item-codigo{font-size:14px;font-weight:700;overflow-wrap:anywhere;margin-top:2px}.item-hora{font-size:10px;color:#94a3b8;margin-top:3px}.btn-eliminar{width:38px;min-width:38px;min-height:38px;border-radius:50%;background:#fee2e2;color:#b91c1c;font-size:19px}.botones-doble{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.gps{padding:11px;border-radius:9px;background:#f1f5f9;font-size:12px;line-height:1.5;margin-bottom:12px}.gps-ok{background:#ecfdf5;color:#047857}.gps-error{background:#fef2f2;color:#b91c1c}.mensaje{padding:12px;margin-bottom:13px;border-radius:9px;font-size:13px}.mensaje-ok{background:#ecfdf5;border:1px solid #a7f3d0;color:#047857}.mensaje-error{background:#fef2f2;border:1px solid #fecaca;color:#b91c1c}.cargando{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.72)}.cargando-box{width:min(85%,300px);background:#fff;border-radius:14px;padding:25px;text-align:center;font-weight:700}.spinner{width:42px;height:42px;border-radius:50%;border:4px solid #e2e8f0;border-top-color:#174a7e;margin:0 auto 14px;animation:giro .8s linear infinite}@keyframes giro{to{transform:rotate(360deg)}}.scanner-modal{position:fixed;inset:0;background:rgba(0,0,0,.94);z-index:100000;display:flex;flex-direction:column;padding:12px}.scanner-header{color:#fff;text-align:center;font-size:16px;font-weight:800;padding:8px}.video-box{position:relative;width:100%;max-width:650px;margin:auto;overflow:hidden;border-radius:14px;background:#000}#videoScanner{display:block;width:100%;height:min(65vh,540px);object-fit:cover}.zona-lectura{position:absolute;left:7%;top:30%;width:86%;height:38%;border:3px solid #22c55e;border-radius:12px;pointer-events:none;box-shadow:0 0 0 9999px rgba(0,0,0,.22)}.linea{position:absolute;width:100%;height:3px;background:#22c55e;animation:scan 1.7s linear infinite}@keyframes scan{from{top:0}to{top:calc(100% - 3px)}}.estado-scanner{width:min(100%,650px);margin:10px auto;border-radius:8px;padding:10px;background:#f1f5f9;text-align:center;font-size:12px}.estado-scanner.ok{background:#dcfce7;color:#047857}.scanner-botones{width:min(100%,650px);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:8px}.resumen-final{background:#f8fafc;border-radius:10px;padding:12px;font-size:13px;line-height:1.8}.resumen-final strong{color:#174a7e}.gestion-card{background:#fff;border-radius:13px;padding:15px;margin-bottom:10px;box-shadow:0 2px 8px rgba(15,23,42,.08)}.gestion-cabecera{display:flex;justify-content:space-between;gap:8px}.gestion-id{font-size:16px;font-weight:800;color:#174a7e}.gestion-fecha{font-size:11px;color:#64748b;margin-top:4px}.estado-finalizado,.estado-proceso{padding:5px 8px;border-radius:20px;font-size:10px;font-weight:800;white-space:nowrap}.estado-finalizado{background:#dcfce7;color:#047857}.estado-proceso{background:#fef3c7;color:#92400e}.gestion-datos{margin-top:12px;font-size:13px;line-height:1.7}.gestion-total{margin-top:10px;padding:9px;border-radius:8px;background:#eff6ff;text-align:center;font-weight:700}.detalle-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.detalle-dato{background:#f8fafc;padding:10px;border-radius:8px}.detalle-label{font-size:10px;color:#64748b;font-weight:700}.detalle-valor{margin-top:3px;font-size:13px;font-weight:700;overflow-wrap:anywhere}.galeria{display:grid;grid-template-columns:1fr 1fr;gap:8px}.foto-gestion{width:100%;min-height:110px;max-height:230px;object-fit:cover;background:#e2e8f0;border-radius:8px}.foto-titulo{font-size:10px;font-weight:700;margin-bottom:4px}.foto-codigo{font-size:9px;color:#64748b;margin-bottom:4px;overflow-wrap:anywhere}.tabla-contenedor{overflow-x:auto}.tabla-detalle{width:100%;border-collapse:collapse;font-size:11px}.tabla-detalle th,.tabla-detalle td{border-bottom:1px solid #e2e8f0;padding:8px 5px;text-align:left}.tabla-detalle th{background:#f1f5f9}.nota-filtro{font-size:11px;background:#eff6ff;color:#174a7e;padding:9px;border-radius:8px;margin-bottom:12px}@media(max-width:420px){.contenedor{padding:9px}.card{padding:14px}.menu-principal{grid-template-columns:1fr}.detalle-grid{grid-template-columns:1fr}}
-.sincronizacion{font-size:11px;font-weight:700;margin-top:6px;color:#047857}.sincronizacion.pendiente{color:#92400e}.sincronizacion.error{color:#b91c1c}.item.pendiente{opacity:.72;border-style:dashed}.item.pendiente .item-hora{color:#92400e}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#123f6d">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>Control Logístico PDV</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
 </head>
 <body>
-<div id="cargando" class="cargando oculto"><div class="cargando-box"><div class="spinner"></div><div id="textoCargando">Procesando...</div></div></div>
-
-<div id="scannerModal" class="scanner-modal oculto">
-  <div id="scannerTitulo" class="scanner-header">Escanear código</div>
-  <div class="video-box"><video id="videoScanner" autoplay muted playsinline></video><div class="zona-lectura"><div class="linea"></div></div></div>
-  <div id="estadoScanner" class="estado-scanner">Apunte al código.</div>
-  <div class="scanner-botones"><button class="btn-rojo" onclick="detenerScanner()">CERRAR</button><button class="btn-azul" onclick="cambiarCamara()">🔄 CÁMARA</button></div>
-</div>
-
-<div class="contenedor">
-<section id="pantallaLogin">
-  <div class="logo">RECEPCIÓN DE UNIDADES</div>
-  <div class="subtitulo">Control de recepción y logística inversa</div>
-  <div class="card">
-    <div class="titulo-card">Iniciar sesión</div>
-    <div id="mensajeLogin" class="oculto"></div>
-    <label>Usuario</label><input id="loginUsuario" type="text" autocapitalize="characters" autocomplete="username" placeholder="Usuario">
-    <label>Contraseña</label><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Contraseña">
-    <button class="btn-principal" onclick="login()">INGRESAR</button>
-  </div>
-</section>
-
-<section id="pantallaApp" class="oculto">
-  <div class="usuario-barra">
-    <div><div id="usuarioNombre" class="usuario-nombre"></div><div id="usuarioInfo" class="usuario-info"></div></div>
-    <button class="btn-salir" onclick="logout()">SALIR</button>
+  <div id="loading" class="loading hidden" aria-live="polite">
+    <div class="loading-card"><span class="spinner"></span><strong id="loadingText">Procesando…</strong></div>
   </div>
 
-  <div class="menu-principal">
-    <button class="btn-principal" onclick="abrirRegistro()">➕ REGISTRO</button>
-    <button id="btnVerGestiones" class="btn-azul oculto" onclick="abrirGestiones()">📋 VER GESTIONES</button>
-  </div>
-
-  <div id="mensajeGeneral" class="oculto"></div>
-
-  <section id="contenedorRegistro">
-    <div class="progreso"><div id="mini1" class="paso-mini activo">1<br>LLEGADA</div><div id="mini2" class="paso-mini">2<br>RECEPCIÓN</div><div id="mini3" class="paso-mini">3<br>INVERSA</div><div id="mini4" class="paso-mini">4<br>SALIDA</div></div>
-    <div id="boxIdRecepcion" class="recepcion-id oculto"><div class="recepcion-id-label">ID RECEPCIÓN</div><div id="idRecepcionVisible" class="recepcion-id-valor"></div><div id="estadoSincronizacion" class="sincronizacion">Todos los escaneos guardados</div></div>
-
-    <section id="paso1"><div class="card">
-      <div class="titulo-card">1. Llegada de la unidad</div>
-      <label>ID Ruta (opcional)</label><div class="campo-escanear"><input id="idRuta" type="text" autocapitalize="characters" autocomplete="off" placeholder="Escanee o ingrese ID Ruta (opcional)"><button type="button" class="btn-verde" onclick="iniciarScannerRuta()">📷</button></div><div id="rutaEscaneada" class="codigo-ok oculto">✅ ID Ruta escaneado</div>
-      <label>Placa *</label><input id="placa" type="text" autocapitalize="characters" placeholder="ABC123">
-      <label>DNI / RUC del receptor *</label><input id="dni" type="tel" inputmode="numeric" maxlength="11" placeholder="DNI 8 / RUC 11" oninput="soloNumeros(this)">
-      <label>Foto llegada de unidad *</label><input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoLlegada')"><img id="previewFotoLlegada" class="preview oculto"><div id="okFotoLlegada" class="foto-ok oculto">✅ Fotografía preparada</div>
-      <div class="subtitulo-card">PRECINTOS DE LLEGADA</div><div id="precintosLlegada"></div>
-      <button class="btn-principal" onclick="iniciarRecepcion()">INICIAR RECEPCIÓN</button>
-    </div></section>
-
-    <section id="paso2" class="oculto"><div class="card">
-      <div class="titulo-card">2. Recepción de carga</div>
-      <div class="contadores"><div class="contador"><div class="contador-titulo">SACOS</div><div id="contadorSacos" class="contador-numero">0</div></div><div class="contador"><div class="contador-titulo">BULTOS SUELTOS</div><div id="contadorBultos" class="contador-numero">0</div></div></div>
-      <div class="total-box"><div class="contador-titulo">TOTAL RECEPCIONADO</div><div id="contadorTotal" class="total-numero">0</div></div>
-      <label>¿Qué está escaneando?</label><div class="selector-tipo"><button id="btnTipoSaco" class="seleccionado" onclick="seleccionarTipoBulto('SACO')">SACO</button><button id="btnTipoBulto" onclick="seleccionarTipoBulto('BULTO SUELTO')">BULTO SUELTO</button></div>
-      <button class="btn-verde" onclick="iniciarScannerRecepcion()">📷 INICIAR LECTOR</button>
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
-      <label>Ingreso manual</label><div class="manual"><input id="codigoManual" type="text" autocapitalize="characters" autocomplete="off" placeholder="Código"><button class="btn-azul" onclick="agregarManual()">+</button></div>
-      <div id="listaRecepcion" class="lista"></div>
-
-      <hr style="border:none;border-top:1px solid #e2e8f0;margin:18px 0;">
-      <div class="subtitulo-card">EVIDENCIA DE CARGA RECIBIDA</div>
-      <label>Foto de sacos / bultos recibidos *</label>
-      <input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoCarga')">
-      <img id="previewFotoCarga" class="preview oculto">
-      <div id="okFotoCarga" class="foto-ok oculto">✅ Fotografía preparada</div>
-
-      <div style="margin-top:15px"><button class="btn-principal" onclick="irPaso3()">CONTINUAR</button></div>
-    </div></section>
-
-    <section id="paso3" class="oculto"><div class="card">
-      <div class="titulo-card">3. Logística inversa</div>
-      <label>¿Se entrega logística inversa?</label><div class="decision"><button id="btnInversaNo" class="activo-no" onclick="seleccionarInversa(false)">NO</button><button id="btnInversaSi" onclick="seleccionarInversa(true)">SÍ</button></div>
-      <div id="contenidoInversa" class="oculto">
-        <div class="contador"><div class="contador-titulo">BULTOS LOGÍSTICA INVERSA</div><div id="contadorInversa" class="contador-numero">0</div></div>
-        <label style="margin-top:15px">Tipo de bulto</label><div class="selector-tipo"><button id="btnInvSaco" class="seleccionado" onclick="seleccionarTipoInversa('SACO')">SACO</button><button id="btnInvBulto" onclick="seleccionarTipoInversa('BULTO SUELTO')">BULTO SUELTO</button></div>
-        <button class="btn-verde" onclick="iniciarScannerInversa()">📷 INICIAR LECTOR</button>
-        <div style="margin-top:15px"><label>Ingreso manual</label><div class="manual"><input id="codigoManualInversa" type="text" autocapitalize="characters" autocomplete="off" placeholder="Código"><button class="btn-azul" onclick="agregarManualInversa()">+</button></div></div>
-        <div id="listaInversa" class="lista"></div>
-        <div style="margin-top:15px"><label>Foto logística inversa *</label><input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'fotoInversa')"><img id="previewFotoInversa" class="preview oculto"><div id="okFotoInversa" class="foto-ok oculto">✅ Fotografía preparada</div></div>
-      </div>
-      <div class="botones-doble"><button class="btn-gris" onclick="irPaso(2)">ATRÁS</button><button class="btn-principal" onclick="irPaso4()">CONTINUAR</button></div>
-    </div></section>
-
-    <section id="paso4" class="oculto"><div class="card">
-      <div class="titulo-card">4. Salida de la unidad</div>
-      <div class="subtitulo-card">PRECINTOS DE SALIDA</div><div id="precintosSalida"></div>
-      <label>Observaciones</label><textarea id="observaciones" placeholder="Observaciones"></textarea>
-      <label>Ubicación GPS</label><div id="estadoGps" class="gps">Ubicación pendiente.</div><button class="btn-azul" onclick="obtenerGPS()">📍 ACTUALIZAR UBICACIÓN</button>
-      <div id="resumenFinal" class="resumen-final" style="margin-top:15px"></div>
-      <div class="botones-doble"><button class="btn-gris" onclick="irPaso(3)">ATRÁS</button><button id="btnFinalizar" class="btn-principal" onclick="finalizarRecepcion()">FINALIZAR RECEPCIÓN</button></div>
-    </div></section>
-  </section>
-
-  <section id="pantallaGestiones" class="oculto">
-    <div class="card">
-      <div class="titulo-card">📋 Gestiones de recepción</div>
-      <div class="nota-filtro">Por defecto se muestran solo las gestiones del día de hoy. Para consultar días anteriores, cambia el rango de fechas y pulsa BUSCAR.</div>
-      <label>Fecha desde</label><input id="filtroFechaDesde" type="date">
-      <label>Fecha hasta</label><input id="filtroFechaHasta" type="date">
-      <label>ID Recepción</label><input id="filtroIdRecepcion" type="text" placeholder="REC-...">
-      <label>ID Ruta</label><input id="filtroRuta" type="text" placeholder="Ruta">
-      <label>Placa</label><input id="filtroPlaca" type="text" placeholder="Placa">
-      <div id="boxFiltroEncargado"><label>Encargado</label><input id="filtroEncargado" type="text" placeholder="Encargado"></div>
-      <label>Estado</label><select id="filtroEstado"><option value="">TODOS</option><option value="EN PROCESO">EN PROCESO</option><option value="FINALIZADO">FINALIZADO</option></select>
-      <div class="botones-doble"><button class="btn-gris" onclick="limpiarFiltrosGestiones()">HOY / LIMPIAR</button><button class="btn-azul" onclick="buscarGestiones(true)">🔎 BUSCAR</button></div>
+  <div id="scannerModal" class="scanner-modal hidden" role="dialog" aria-modal="true">
+    <div class="scanner-top">
+      <div><strong id="scannerTitle">Escanear código</strong><small id="scannerHint">Apunte al código de barras o QR</small></div>
+      <button type="button" class="icon-button danger" data-action="scanner-close" aria-label="Cerrar lector">×</button>
     </div>
-    <div id="resultadoGestiones"></div>
-  </section>
+    <div class="video-frame">
+      <video id="scannerVideo" autoplay muted playsinline></video>
+      <div class="scan-target"><span></span></div>
+    </div>
+    <div id="scannerStatus" class="scanner-status">Preparando cámara…</div>
+    <div class="scanner-actions">
+      <button type="button" class="button secondary" data-action="scanner-camera">Cambiar cámara</button>
+      <button type="button" class="button danger" data-action="scanner-close">Cerrar</button>
+    </div>
+  </div>
 
-  <section id="pantallaDetalleGestion" class="oculto"><div class="card"><button class="btn-gris" onclick="volverListaGestiones()">← VOLVER A GESTIONES</button></div><div id="contenidoDetalleGestion"></div></section>
-</section>
-</div>
+  <main class="app-shell">
+    <section id="loginView" class="login-view">
+      <div class="brand brand-login">
+        <span class="brand-mark">CL</span>
+        <div><h1>Control Logístico</h1><p>Recepciones y logística inversa</p></div>
+      </div>
+      <form id="loginForm" class="card login-card">
+        <div class="card-title"><span>Acceso al sistema</span></div>
+        <label for="loginUser">Usuario</label>
+        <input id="loginUser" autocomplete="username" autocapitalize="characters" required placeholder="Ingrese su usuario">
+        <label for="loginPassword">Contraseña</label>
+        <div class="password-field">
+          <input id="loginPassword" type="password" autocomplete="current-password" required placeholder="Ingrese su contraseña">
+          <button type="button" class="eye-button" data-action="toggle-password" data-target="loginPassword" aria-label="Mostrar contraseña">Ver</button>
+        </div>
+        <button class="button primary full" type="submit">Ingresar</button>
+        <div id="loginMessage" class="form-message hidden"></div>
+      </form>
+    </section>
 
-<script>
-const API_URL = "https://script.google.com/macros/s/AKfycbzOtjAzFM_qYKtxFDTB9acq-NOcqobDMCp0H55FzserkLAa631lYtL-JN-0RSBQfOcv/exec";
-let tokenSesion="",usuarioActual=null,idRecepcionActual="",pasoActual=1;
-let latitudActual=null,longitudActual=null,precisionActual=null;
-const fotos={fotoLlegada:"",precintoAbierto1:"",precintoAbierto2:"",precintoAbierto3:"",precintoAbierto4:"",fotoInversa:"",fotoCarga:"",precintoCerrado1:"",precintoCerrado2:"",precintoCerrado3:"",precintoCerrado4:""};
-let detalles=[],tipoBultoActual="SACO",tipoInversaActual="SACO",tieneInversa=false;
-let lectorZXing=null,scannerActivo=false,scannerDestino="DETALLE",scannerMovimiento="RECEPCIÓN",campoDestinoScanner="",ultimoCodigo="",ultimaLectura=0,bloqueoLectura=false,dispositivosVideo=[],indiceCamara=0;
-let colaEscaneos=[],envioEscaneosEnCurso=null,temporizadorEscaneos=null,secuenciaEscaneo=0;
-const cacheGestiones=new Map(),cacheDetalleGestiones=new Map();
-const CACHE_GESTIONES_MS=30000,CACHE_DETALLE_MS=60000,TAMANO_LOTE_ESCANEOS=25;
+    <section id="appView" class="hidden">
+      <header class="topbar">
+        <div class="brand compact"><span class="brand-mark">CL</span><div><strong>Control Logístico</strong><small id="profileCaption"></small></div></div>
+        <button type="button" class="icon-button" data-action="open-account-menu" aria-label="Cuenta">☰</button>
+      </header>
 
-function crearControlesPrecintos(){
-  const llegada=document.getElementById("precintosLlegada");
-  const salida=document.getElementById("precintosSalida");
-  llegada.innerHTML="";salida.innerHTML="";
-  for(let i=1;i<=4;i++){llegada.innerHTML+=generarHtmlPrecinto("LLEGADA",i);salida.innerHTML+=generarHtmlPrecinto("SALIDA",i);}
-}
+      <nav id="mainNav" class="main-nav" aria-label="Navegación principal">
+        <button class="nav-item active" data-view="home"><span>⌂</span>Inicio</button>
+        <button class="nav-item" data-view="new"><span>＋</span>Nueva</button>
+        <button class="nav-item" data-view="records"><span>▤</span>Registros</button>
+        <button id="usersNav" class="nav-item hidden" data-view="users"><span>♙</span>Usuarios</button>
+      </nav>
 
-function generarHtmlPrecinto(tipo,numero){
-  const esLlegada=tipo==="LLEGADA";
-  const clave=esLlegada?"precintoAbierto"+numero:"precintoCerrado"+numero;
-  const campoCodigo=esLlegada?"codigoPrecintoAbierto"+numero:"codigoPrecintoCerrado"+numero;
-  const requerido=(tipo==="SALIDA"&&numero===1)?" *":"";
-  return `<div class="precinto-box"><div class="precinto-titulo">PRECINTO DE ${tipo} ${numero}${requerido}</div><label>Código del precinto</label><div class="campo-escanear"><input id="${campoCodigo}" type="text" autocomplete="off" autocapitalize="characters" placeholder="Escanee o escriba código"><button type="button" class="btn-verde" onclick="iniciarScannerPrecinto('${campoCodigo}','${tipo}',${numero})">📷</button></div><div id="ok${capitalizarPrimera(campoCodigo)}" class="codigo-ok oculto">✅ Código escaneado</div><label>Fotografía del precinto</label><input type="file" accept="image/*" capture="environment" onchange="procesarFotoInput(this,'${clave}')"><img id="preview${capitalizarPrimera(clave)}" class="preview oculto"><div id="ok${capitalizarPrimera(clave)}" class="foto-ok oculto">✅ Fotografía preparada</div></div>`;
-}
+      <div id="toastRegion" class="toast-region" aria-live="polite"></div>
 
-async function llamarAPI(payload){
-  const cuerpo=new URLSearchParams();cuerpo.append("payload",JSON.stringify(payload));
-  const controlador=new AbortController();
-  const accion=String(payload.accion||"").toUpperCase();
-  const espera=["INICIAR_RECEPCION","FINALIZAR_RECEPCION"].includes(accion)?120000:35000;
-  const timeout=setTimeout(()=>controlador.abort(),espera);
-  try{
-    const respuesta=await fetch(API_URL,{method:"POST",body:cuerpo,cache:"no-store",signal:controlador.signal});
-    if(!respuesta.ok)throw new Error("No se pudo conectar con el servidor.");
-    const texto=await respuesta.text();let json;
-    try{json=JSON.parse(texto);}catch(e){console.error(texto);throw new Error("El servidor devolvió una respuesta no válida.");}
-    if(!json.success)throw new Error(json.error||"Ocurrió un error.");
-    return json.data;
-  }catch(error){
-    if(error&&error.name==="AbortError")throw new Error("El servidor tardó demasiado en responder. Intente nuevamente.");
-    throw error;
-  }finally{clearTimeout(timeout);}
-}
+      <section id="homePanel" class="panel active">
+        <div class="page-heading"><div><p class="eyebrow">Panel principal</p><h2>Operaciones logísticas</h2></div><button class="button primary small" data-view="new">Nueva operación</button></div>
+        <div id="homeSummary" class="summary-grid">
+          <article class="summary-card"><span>Total hoy</span><strong id="sumToday">0</strong></article>
+          <article class="summary-card warning"><span>Borradores</span><strong id="sumDraft">0</strong></article>
+          <article class="summary-card success"><span>Finalizadas</span><strong id="sumDone">0</strong></article>
+          <article class="summary-card"><span>Paquetes devueltos</span><strong id="sumPackages">0</strong></article>
+        </div>
+        <div class="operation-grid">
+          <button class="operation-card truck" data-operation="RECEPCION_CAMION"><span class="operation-icon">🚚</span><strong>Recepción de camión exclusivo</strong><small>Unidad, precintos, sacos, fotos y GPS</small></button>
+          <button class="operation-card reverse" data-operation="INVERSA_CAMION"><span class="operation-icon">↩</span><strong>Logística inversa de camión</strong><small>Costales y paquetes asociados</small></button>
+          <button class="operation-card parcel" data-operation="RECEPCION_ENCOMIENDA"><span class="operation-icon">▣</span><strong>Recepción de encomiendas</strong><small>Escaneo de sacos y evidencias</small></button>
+          <button class="operation-card reverse-parcel" data-operation="INVERSA_ENCOMIENDA"><span class="operation-icon">⇆</span><strong>Logística inversa por encomienda</strong><small>Costales y paquetes devueltos</small></button>
+        </div>
+        <section class="card">
+          <div class="card-title"><span>Actividad reciente</span><button class="link-button" data-view="records">Ver todos</button></div>
+          <div id="recentList" class="record-list"><div class="empty-state">No hay registros para mostrar.</div></div>
+        </section>
+      </section>
 
-async function login(){
-  ocultarMensaje("mensajeLogin");
-  const usuario=valorCampo("loginUsuario"),contrasena=document.getElementById("loginPassword").value;
-  if(!usuario||!contrasena){mostrarMensaje("mensajeLogin","Ingrese usuario y contraseña.",false);return;}
-  mostrarCargando("Validando usuario...");
-  try{
-    const res=await llamarAPI({accion:"LOGIN",usuario,contrasena});
-    tokenSesion=res.token;usuarioActual=res;sessionStorage.setItem("tokenSesionRecepcion",tokenSesion);sessionStorage.setItem("usuarioSesionRecepcion",JSON.stringify(res));mostrarAplicacion();obtenerGPS();
-    const pendiente=localStorage.getItem("recepcionActiva");if(pendiente)await recuperarRecepcion(pendiente);
-  }catch(error){mostrarMensaje("mensajeLogin",obtenerError(error),false);}finally{ocultarCargando();}
-}
+      <section id="newPanel" class="panel">
+        <div class="page-heading"><div><p class="eyebrow">Nuevo registro</p><h2 id="newPanelTitle">Selecciona una operación</h2></div></div>
+        <div id="operationPicker" class="operation-grid compact-grid">
+          <button class="operation-card truck" data-operation="RECEPCION_CAMION"><span class="operation-icon">🚚</span><strong>Recepción camión</strong></button>
+          <button class="operation-card reverse" data-operation="INVERSA_CAMION"><span class="operation-icon">↩</span><strong>Inversa camión</strong></button>
+          <button class="operation-card parcel" data-operation="RECEPCION_ENCOMIENDA"><span class="operation-icon">▣</span><strong>Recepción encomienda</strong></button>
+          <button class="operation-card reverse-parcel" data-operation="INVERSA_ENCOMIENDA"><span class="operation-icon">⇆</span><strong>Inversa encomienda</strong></button>
+        </div>
 
-function mostrarAplicacion(){
-  document.getElementById("pantallaLogin").classList.add("oculto");document.getElementById("pantallaApp").classList.remove("oculto");
-  document.getElementById("usuarioNombre").textContent=usuarioActual.usuario||"";
-  const datos=[];if(usuarioActual.rol)datos.push(usuarioActual.rol);if(usuarioActual.area)datos.push(usuarioActual.area);if(usuarioActual.region)datos.push(usuarioActual.region);if(usuarioActual.encargado)datos.push("Enc: "+usuarioActual.encargado);
-  document.getElementById("usuarioInfo").textContent=datos.join(" | ");configurarModuloConsulta();
-}
+        <form id="operationSetup" class="card hidden">
+          <div class="card-title"><span id="setupTitle">Datos de la operación</span><button type="button" class="link-button danger-text" data-action="cancel-operation">Cancelar</button></div>
+          <div id="pdvField" class="field hidden"><label for="operationPdv">PDV</label><select id="operationPdv"></select></div>
+          <div id="truckFields" class="field-grid hidden">
+            <div class="field"><label for="routeId">ID de ruta <span class="optional">(opcional)</span></label><div class="scan-input"><input id="routeId" autocapitalize="characters"><button type="button" data-scan-target="routeId" data-scan-label="ID de ruta">▣</button></div></div>
+            <div class="field"><label for="vehiclePlate">Placa</label><input id="vehiclePlate" autocapitalize="characters" placeholder="ABC123"></div>
+          </div>
+          <div id="parcelFields" class="field-grid hidden">
+            <div class="field"><label for="parcelCompany">Empresa de encomienda</label><input id="parcelCompany" placeholder="Empresa transportista"></div>
+            <div class="field"><label for="parcelNumber">Número de encomienda o guía</label><div class="scan-input"><input id="parcelNumber" autocapitalize="characters"><button type="button" data-scan-target="parcelNumber" data-scan-label="Número de encomienda">▣</button></div></div>
+          </div>
+          <button type="submit" class="button primary full">Iniciar operación</button>
+        </form>
 
-function configurarModuloConsulta(){
-  if(!usuarioActual)return;
-  const rol=String(usuarioActual.rol||"").trim().toUpperCase();
-  document.getElementById("btnVerGestiones").classList.toggle("oculto",!["ADMINISTRADOR","ENCARGADO","PDV"].includes(rol));
-  const box=document.getElementById("boxFiltroEncargado");
-  if(rol==="ADMINISTRADOR")box.classList.remove("oculto");
-  else if(rol==="ENCARGADO"){
-    box.classList.remove("oculto");
-    document.getElementById("filtroEncargado").value=usuarioActual.encargado||"";
-    document.getElementById("filtroEncargado").readOnly=true;
-  }else box.classList.add("oculto");
-}
+        <section id="operationWorkspace" class="hidden">
+          <div class="operation-banner"><div><small>OPERACIÓN EN CURSO</small><strong id="activeOperationCode"></strong><span id="activeOperationLabel"></span></div><span class="status-pill draft">Borrador</span></div>
 
-async function restaurarSesion(){
-  const token=sessionStorage.getItem("tokenSesionRecepcion");if(!token)return;
-  let sesionLocal=null;try{sesionLocal=JSON.parse(sessionStorage.getItem("usuarioSesionRecepcion")||"null");}catch(e){}
-  if(sesionLocal){tokenSesion=token;usuarioActual=sesionLocal;mostrarAplicacion();}
-  try{const res=await llamarAPI({accion:"VALIDAR_SESION",token});tokenSesion=token;usuarioActual=res;sessionStorage.setItem("usuarioSesionRecepcion",JSON.stringify(res));mostrarAplicacion();obtenerGPS();const pendiente=localStorage.getItem("recepcionActiva");if(pendiente)await recuperarRecepcion(pendiente);}catch(e){sessionStorage.removeItem("tokenSesionRecepcion");sessionStorage.removeItem("usuarioSesionRecepcion");tokenSesion="";usuarioActual=null;document.getElementById("pantallaApp").classList.add("oculto");document.getElementById("pantallaLogin").classList.remove("oculto");}
-}
+          <section id="truckArrivalSection" class="card flow-section hidden">
+            <div class="step-title"><span>1</span><div><strong>Llegada de la unidad</strong><small>Fotografías y precintos de llegada</small></div></div>
+            <div class="photo-grid">
+              <div class="photo-slot" data-photo-slot="LLEGADA_UNIDAD" data-photo-label="Llegada de la unidad"><strong>Llegada de la unidad *</strong><input type="file" accept="image/*"><div class="photo-preview">Sin fotografía</div></div>
+              <div class="photo-slot" data-photo-slot="INTERIOR_UNIDAD" data-photo-label="Interior de la unidad"><strong>Interior de la unidad</strong><input type="file" accept="image/*"><div class="photo-preview">Sin fotografía</div></div>
+            </div>
+            <h3 class="section-subtitle">Precintos de llegada</h3>
+            <div id="arrivalSeals" class="seal-grid"></div>
+          </section>
 
-async function logout(){
-  if(colaEscaneos.length||envioEscaneosEnCurso){mostrarCargando("Guardando escaneos antes de salir...");try{await sincronizarEscaneos();}catch(error){ocultarCargando();mostrarError("No se puede cerrar sesión: aún hay escaneos sin guardar.");return;}finally{ocultarCargando();}}
-  detenerScanner();const token=tokenSesion;sessionStorage.removeItem("tokenSesionRecepcion");sessionStorage.removeItem("usuarioSesionRecepcion");tokenSesion="";
-  try{if(token)await llamarAPI({accion:"LOGOUT",token});}catch(e){console.log(e);}location.reload();
-}
+          <section id="receiptItemsSection" class="card flow-section hidden">
+            <div class="step-title"><span id="receiptStepNumber">2</span><div><strong id="receiptItemsTitle">Sacos y bultos recibidos</strong><small>Escanee cada código una sola vez</small></div></div>
+            <div id="itemTypeChooser" class="segment-control"><button type="button" class="active" data-item-type="SACO">Saco</button><button type="button" data-item-type="BULTO_SUELTO">Bulto suelto</button></div>
+            <button type="button" class="button scan full" data-scan-mode="RECEIPT_ITEM">Abrir lector continuo</button>
+            <div class="manual-row"><input id="manualReceiptCode" autocapitalize="characters" placeholder="Código del saco o bulto"><button type="button" class="button secondary" data-action="add-receipt-manual">Agregar</button></div>
+            <div class="counter-row"><span>Escaneados</span><strong id="receiptItemCount">0</strong></div>
+            <div id="receiptItemsList" class="scan-list"></div>
+            <div id="loadPhotoSlot" class="photo-slot single" data-photo-slot="CARGA_RECIBIDA" data-photo-label="Sacos y bultos recibidos"><strong>Foto de sacos/bultos recibidos *</strong><input type="file" accept="image/*"><div class="photo-preview">Sin fotografía</div></div>
+          </section>
 
-function abrirRegistro(){
-  document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.add("oculto");document.getElementById("contenedorRegistro").classList.remove("oculto");irPaso(pasoActual||1);
-}
+          <section id="inverseSection" class="card flow-section hidden">
+            <div class="step-title"><span>2</span><div><strong>Costales y paquetes devueltos</strong><small>Abra un costal y asigne sus paquetes</small></div></div>
+            <div id="activeSackBox" class="active-sack empty"><span>Costal activo</span><strong id="activeSackCode">Ninguno</strong><small id="activeSackCount">Escanee un costal para comenzar</small></div>
+            <div class="two-actions">
+              <button type="button" class="button scan" data-scan-mode="SACK">Escanear costal</button>
+              <button type="button" id="closeSackButton" class="button secondary" data-action="close-sack" disabled>Cerrar costal</button>
+            </div>
+            <div class="manual-row"><input id="manualSackCode" autocapitalize="characters" placeholder="Código del costal"><button type="button" class="button secondary" data-action="add-sack-manual">Abrir</button></div>
+            <div class="divider"></div>
+            <button type="button" id="packageScannerButton" class="button scan full" data-scan-mode="PACKAGE" disabled>Escanear paquetes del costal</button>
+            <div class="manual-row"><input id="manualPackageCode" autocapitalize="characters" placeholder="Código del paquete"><button type="button" class="button secondary" data-action="add-package-manual">Agregar</button></div>
+            <div class="counter-row"><span>Costales / paquetes</span><strong><span id="sackCount">0</span> / <span id="packageCount">0</span></strong></div>
+            <div id="sackList" class="sack-list"></div>
+            <div id="inversePhotos" class="general-photos" data-category="LOGISTICA_INVERSA">
+              <div class="section-subtitle">Evidencias de la entrega *</div>
+              <input id="inversePhotoInput" type="file" accept="image/*" multiple>
+              <small>Puede seleccionar o tomar hasta 3 fotografías.</small>
+              <div id="inversePhotoPreview" class="photo-grid"></div>
+            </div>
+          </section>
 
-async function iniciarRecepcion(){
-  const idRuta=valorCampo("idRuta"),placa=valorCampo("placa"),dni=document.getElementById("dni").value.trim();
-  if(!placa){mostrarError("Ingrese la placa.");return;}if(!/^(?:\d{8}|\d{11})$/.test(dni)){mostrarError("Ingrese un DNI de 8 dígitos o RUC de 11 dígitos.");return;}if(!fotos.fotoLlegada){mostrarError("Debe registrar la foto de llegada.");return;}
-  for(let i=1;i<=4;i++){const codigo=valorCampo("codigoPrecintoAbierto"+i),foto=fotos["precintoAbierto"+i];if(codigo&&!foto){mostrarError("Precinto de llegada "+i+": falta la fotografía.");return;}if(!codigo&&foto){mostrarError("Precinto de llegada "+i+": falta escanear el código.");return;}}
-  mostrarCargando("Iniciando recepción...");
-  try{
-    const datos={token:tokenSesion,idRuta,placa,dni,fotoLlegada:fotos.fotoLlegada};
-    for(let i=1;i<=4;i++){datos["codigoPrecintoAbierto"+i]=valorCampo("codigoPrecintoAbierto"+i);datos["precintoAbierto"+i]=fotos["precintoAbierto"+i];}
-    const res=await llamarAPI({accion:"INICIAR_RECEPCION",datos});idRecepcionActual=res.idRecepcion;detalles=[];colaEscaneos=[];localStorage.setItem("recepcionActiva",idRecepcionActual);localStorage.removeItem("escaneosPendientesRecepcion");document.getElementById("idRecepcionVisible").textContent=idRecepcionActual;document.getElementById("boxIdRecepcion").classList.remove("oculto");actualizarEstadoSincronizacion();irPaso(2);mostrarMensaje("mensajeGeneral","✅ Recepción iniciada: "+idRecepcionActual,true);
-  }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
-}
+          <section id="truckDepartureSection" class="card flow-section hidden">
+            <div class="step-title"><span>3</span><div><strong>Salida de la unidad</strong><small>Precintos de salida</small></div></div>
+            <div id="departureSeals" class="seal-grid"></div>
+          </section>
 
-async function recuperarRecepcion(id){
-  try{
-    const res=await llamarAPI({accion:"CONSULTAR_RECEPCION",datos:{token:tokenSesion,idRecepcion:id}});idRecepcionActual=id;detalles=res.detalles||[];const r=res.resumen;
-    if(r.fechaSalida){localStorage.removeItem("recepcionActiva");return;}
-    document.getElementById("idRuta").value=r.idRuta||"";document.getElementById("placa").value=r.placa||"";document.getElementById("dni").value=r.dni||"";document.getElementById("idRecepcionVisible").textContent=id;document.getElementById("boxIdRecepcion").classList.remove("oculto");colaEscaneos=[];restaurarColaEscaneos();renderizarDetalles();abrirRegistro();irPaso(2);mostrarMensaje("mensajeGeneral","Se recuperó una recepción en proceso.",true);
-  }catch(error){console.error(error);localStorage.removeItem("recepcionActiva");}
-}
+          <section id="parcelPhotosSection" class="card flow-section hidden">
+            <div class="step-title"><span>2</span><div><strong>Evidencias de recepción</strong><small>Hasta tres fotografías</small></div></div>
+            <input id="parcelPhotoInput" type="file" accept="image/*" multiple>
+            <small>En iPhone puede tomar una fotografía o elegirla de la galería.</small>
+            <div id="parcelPhotoPreview" class="photo-grid"></div>
+          </section>
 
-function irPaso(numero){
-  detenerScanner();pasoActual=numero;
-  for(let i=1;i<=4;i++){document.getElementById("paso"+i).classList.toggle("oculto",i!==numero);const mini=document.getElementById("mini"+i);mini.className="paso-mini";if(i<numero)mini.classList.add("completo");else if(i===numero)mini.classList.add("activo");}
-  if(numero===4){actualizarResumenFinal();obtenerGPS();}window.scrollTo({top:0,behavior:"smooth"});
-}
-async function irPaso3(){const cantidad=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN").length;if(cantidad===0&&!confirm("No existen sacos/bultos escaneados. ¿Desea continuar?"))return;if(!fotos.fotoCarga){mostrarError("Debe registrar la foto de los sacos/bultos recibidos antes de continuar.");return;}if(!await asegurarEscaneosSincronizados())return;irPaso(3);}
-async function irPaso4(){if(tieneInversa){const cantidad=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA").length;if(cantidad===0){mostrarError("Debe registrar al menos un bulto de logística inversa.");return;}if(!fotos.fotoInversa){mostrarError("Debe registrar la foto de logística inversa.");return;}}if(!await asegurarEscaneosSincronizados())return;irPaso(4);}
-function seleccionarInversa(valor){tieneInversa=valor;document.getElementById("btnInversaSi").className=valor?"activo-si":"";document.getElementById("btnInversaNo").className=valor?"":"activo-no";document.getElementById("contenidoInversa").classList.toggle("oculto",!valor);}
-function seleccionarTipoBulto(tipo){tipoBultoActual=tipo;document.getElementById("btnTipoSaco").classList.toggle("seleccionado",tipo==="SACO");document.getElementById("btnTipoBulto").classList.toggle("seleccionado",tipo==="BULTO SUELTO");}
-function seleccionarTipoInversa(tipo){tipoInversaActual=tipo;document.getElementById("btnInvSaco").classList.toggle("seleccionado",tipo==="SACO");document.getElementById("btnInvBulto").classList.toggle("seleccionado",tipo==="BULTO SUELTO");}
+          <section class="card flow-section">
+            <div class="step-title"><span>✓</span><div><strong>Confirmación</strong><small>Ubicación, responsable y observaciones</small></div></div>
+            <div id="gpsStatus" class="gps-box">Ubicación pendiente.</div>
+            <button type="button" class="button secondary full" data-action="get-gps">Obtener ubicación GPS</button>
+            <div class="field"><label for="responsibleDocument">DNI/RUC del responsable <span class="optional">(opcional)</span></label><input id="responsibleDocument" inputmode="numeric" maxlength="11"></div>
+            <div class="field"><label for="operationNotes">Observaciones <span class="optional">(opcional)</span></label><textarea id="operationNotes" rows="3"></textarea></div>
+            <button type="button" class="button success full" data-action="finish-operation">Finalizar operación</button>
+          </section>
+        </section>
+      </section>
 
-async function guardarCodigo(codigo,movimiento,tipoBulto){
-  codigo=String(codigo||"").trim().toUpperCase();if(!codigo)return false;if(!idRecepcionActual){mostrarError("No existe recepción activa.");return false;}
-  const duplicado=detalles.some(item=>String(item.codigo||"").trim().toUpperCase()===codigo&&String(item.tipoMovimiento||"").trim().toUpperCase()===movimiento.trim().toUpperCase());
-  if(duplicado){mostrarError("El código "+codigo+" ya fue registrado en "+movimiento+".");vibrarError();return false;}
-  const clientId=Date.now().toString(36)+"-"+(++secuenciaEscaneo).toString(36);
-  const item={clientId,fechaHora:"Pendiente de guardar…",tipoMovimiento:movimiento,tipoBulto,codigo,orden:detalles.length+1,usuario:usuarioActual.usuario||"",pendiente:true};
-  detalles.push(item);colaEscaneos.push({clientId,tipoMovimiento:movimiento,tipoBulto,codigo});
-  persistirColaEscaneos();renderizarDetalles();programarEnvioEscaneos();vibrar();return true;
-}
+      <section id="recordsPanel" class="panel">
+        <div class="page-heading"><div><p class="eyebrow">Consulta</p><h2>Registros</h2></div><button class="button secondary small" data-action="refresh-records">Actualizar</button></div>
+        <section class="card filters-card">
+          <div class="filter-grid">
+            <div><label for="filterType">Operación</label><select id="filterType"><option value="">Todas</option><option value="RECEPCION_CAMION">Recepción camión</option><option value="INVERSA_CAMION">Inversa camión</option><option value="RECEPCION_ENCOMIENDA">Recepción encomienda</option><option value="INVERSA_ENCOMIENDA">Inversa encomienda</option></select></div>
+            <div><label for="filterStatus">Estado</label><select id="filterStatus"><option value="">Todos</option><option value="BORRADOR">Borrador</option><option value="FINALIZADO">Finalizado</option><option value="ANULADO">Anulado</option></select></div>
+            <div><label for="filterFrom">Desde</label><input id="filterFrom" type="date"></div>
+            <div><label for="filterTo">Hasta</label><input id="filterTo" type="date"></div>
+          </div>
+          <button type="button" class="button primary full" data-action="search-records">Buscar</button>
+        </section>
+        <div id="recordsSummary" class="summary-grid three"></div>
+        <div id="recordsList" class="record-list"><div class="empty-state">Utilice los filtros para consultar.</div></div>
+      </section>
 
-function programarEnvioEscaneos(espera=900){
-  if(temporizadorEscaneos||envioEscaneosEnCurso||!colaEscaneos.length)return;
-  temporizadorEscaneos=setTimeout(()=>{temporizadorEscaneos=null;enviarColaEscaneos().catch(error=>{actualizarEstadoSincronizacion(obtenerError(error),true);});},espera);
-}
+      <section id="usersPanel" class="panel">
+        <div class="page-heading"><div><p class="eyebrow">Administración</p><h2>PDV y usuarios</h2></div></div>
+        <div class="two-column">
+          <form id="pdvForm" class="card">
+            <div class="card-title"><span>Crear PDV</span></div>
+            <label for="pdvCode">Código</label><input id="pdvCode" required autocapitalize="characters">
+            <label for="pdvName">Nombre del PDV</label><input id="pdvName" required>
+            <label for="pdvRegion">Región</label><input id="pdvRegion">
+            <label for="pdvArea">Área</label><input id="pdvArea">
+            <div id="managerPdvField" class="field hidden"><label for="pdvManager">Encargado</label><select id="pdvManager"></select></div>
+            <button class="button primary full" type="submit">Crear PDV</button>
+          </form>
+          <form id="userForm" class="card">
+            <div class="card-title"><span>Crear cuenta</span></div>
+            <label for="newUsername">Usuario</label><input id="newUsername" required autocapitalize="characters">
+            <label for="newFullName">Nombres y apellidos</label><input id="newFullName" required>
+            <label for="newRole">Rol</label><select id="newRole"><option value="PDV">PDV</option><option value="ENCARGADO">Encargado</option><option value="ADMINISTRADOR">Administrador</option></select>
+            <div id="newUserPdvField"><label for="newUserPdv">PDV correspondiente</label><select id="newUserPdv"></select></div>
+            <label for="newPassword">Contraseña temporal</label><div class="password-field"><input id="newPassword" type="password" minlength="8" required><button type="button" class="eye-button" data-action="toggle-password" data-target="newPassword">Ver</button></div>
+            <button class="button primary full" type="submit">Crear cuenta</button>
+          </form>
+        </div>
+        <section class="card"><div class="card-title"><span>Cuentas visibles</span><button class="link-button" data-action="refresh-users">Actualizar</button></div><div id="usersList" class="record-list"></div></section>
+      </section>
+    </section>
+  </main>
 
-function enviarColaEscaneos(){
-  if(envioEscaneosEnCurso)return envioEscaneosEnCurso;
-  if(!colaEscaneos.length)return Promise.resolve({registrados:[],rechazados:[]});
-  if(temporizadorEscaneos){clearTimeout(temporizadorEscaneos);temporizadorEscaneos=null;}
-  const lote=colaEscaneos.splice(0,TAMANO_LOTE_ESCANEOS);let exito=false;
-  actualizarEstadoSincronizacion();persistirColaEscaneos();
-  envioEscaneosEnCurso=(async()=>{
-    try{
-      const res=await llamarAPI({accion:"REGISTRAR_DETALLES",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,escaneos:lote}});
-      const registrados=new Map((res.registrados||[]).map(item=>[item.clientId,item]));
-      const rechazados=new Map((res.rechazados||[]).map(item=>[item.clientId,item]));
-      detalles=detalles.filter(item=>{
-        if(registrados.has(item.clientId)){const guardado=registrados.get(item.clientId);Object.assign(item,guardado,{pendiente:false});return true;}
-        if(rechazados.has(item.clientId))return false;
-        return true;
-      });
-      if(rechazados.size){const primero=Array.from(rechazados.values())[0];mostrarError(primero.error||"Uno de los códigos no pudo guardarse.");vibrarError();}
-      cacheGestiones.clear();cacheDetalleGestiones.delete(idRecepcionActual);exito=true;renderizarDetalles();persistirColaEscaneos();return res;
-    }catch(error){colaEscaneos=lote.concat(colaEscaneos);persistirColaEscaneos();throw error;}
-    finally{envioEscaneosEnCurso=null;actualizarEstadoSincronizacion();if(colaEscaneos.length)programarEnvioEscaneos(exito?150:1800);}
-  })();
-  return envioEscaneosEnCurso;
-}
+  <dialog id="accountDialog" class="modal-card">
+    <div class="modal-head"><strong>Mi cuenta</strong><button type="button" class="icon-button" data-action="close-dialog" data-dialog="accountDialog">×</button></div>
+    <div id="accountInfo" class="account-info"></div>
+    <button type="button" class="button secondary full" data-action="open-password-dialog">Cambiar mi contraseña</button>
+    <button type="button" class="button danger full" data-action="logout">Cerrar sesión</button>
+  </dialog>
 
-async function sincronizarEscaneos(){
-  if(temporizadorEscaneos){clearTimeout(temporizadorEscaneos);temporizadorEscaneos=null;}
-  let intentos=0;
-  while(colaEscaneos.length||envioEscaneosEnCurso){
-    try{if(envioEscaneosEnCurso)await envioEscaneosEnCurso;else await enviarColaEscaneos();intentos=0;}
-    catch(error){intentos++;if(intentos>=3)throw error;await new Promise(resolve=>setTimeout(resolve,700*intentos));}
-  }
-}
+  <dialog id="passwordDialog" class="modal-card">
+    <form id="passwordForm">
+      <div class="modal-head"><strong>Cambiar contraseña</strong><button type="button" class="icon-button" data-action="close-dialog" data-dialog="passwordDialog">×</button></div>
+      <label for="passwordNew">Nueva contraseña</label><input id="passwordNew" type="password" minlength="8" required>
+      <label for="passwordConfirm">Confirmar contraseña</label><input id="passwordConfirm" type="password" minlength="8" required>
+      <button type="submit" class="button primary full">Guardar contraseña</button>
+    </form>
+  </dialog>
 
-async function asegurarEscaneosSincronizados(){
-  if(!colaEscaneos.length&&!envioEscaneosEnCurso)return true;
-  mostrarCargando("Guardando escaneos pendientes...");
-  try{await sincronizarEscaneos();return true;}catch(error){mostrarError("No se pudieron guardar los escaneos pendientes: "+obtenerError(error));return false;}finally{ocultarCargando();}
-}
+  <dialog id="recordDialog" class="modal-card wide"><div class="modal-head"><strong id="recordDialogTitle">Detalle</strong><button type="button" class="icon-button" data-action="close-dialog" data-dialog="recordDialog">×</button></div><div id="recordDetail"></div></dialog>
 
-function persistirColaEscaneos(){
-  if(!idRecepcionActual)return;
-  const pendientes=detalles.filter(item=>item.pendiente).map(item=>({clientId:item.clientId,tipoMovimiento:item.tipoMovimiento,tipoBulto:item.tipoBulto,codigo:item.codigo}));
-  if(pendientes.length)localStorage.setItem("escaneosPendientesRecepcion",JSON.stringify({idRecepcion:idRecepcionActual,escaneos:pendientes}));
-  else localStorage.removeItem("escaneosPendientesRecepcion");
-}
-
-function restaurarColaEscaneos(){
-  let guardado=null;try{guardado=JSON.parse(localStorage.getItem("escaneosPendientesRecepcion")||"null");}catch(e){localStorage.removeItem("escaneosPendientesRecepcion");}
-  if(!guardado||guardado.idRecepcion!==idRecepcionActual||!Array.isArray(guardado.escaneos))return;
-  guardado.escaneos.forEach(item=>{const duplicado=detalles.some(d=>String(d.codigo||"").toUpperCase()===String(item.codigo||"").toUpperCase()&&String(d.tipoMovimiento||"").toUpperCase()===String(item.tipoMovimiento||"").toUpperCase());if(duplicado)return;const pendiente={...item,fechaHora:"Pendiente de guardar…",orden:detalles.length+1,usuario:usuarioActual.usuario||"",pendiente:true};detalles.push(pendiente);colaEscaneos.push({...item});});
-  renderizarDetalles();programarEnvioEscaneos(150);
-}
-
-function actualizarEstadoSincronizacion(error="",esError=false){const el=document.getElementById("estadoSincronizacion");if(!el)return;const cantidad=detalles.filter(item=>item.pendiente).length;if(esError){el.textContent="⚠ "+error+". Se reintentará.";el.className="sincronizacion error";}else if(cantidad){el.textContent="⏳ "+cantidad+" escaneo(s) por guardar";el.className="sincronizacion pendiente";}else{el.textContent="✓ Todos los escaneos guardados";el.className="sincronizacion";}}
-
-async function eliminarDetalle(item){
-  if(item.pendiente){colaEscaneos=colaEscaneos.filter(x=>x.clientId!==item.clientId);detalles=detalles.filter(x=>x.clientId!==item.clientId);persistirColaEscaneos();renderizarDetalles();return;}
-  if(!confirm("¿Quitar el código "+item.codigo+"?"))return;mostrarCargando("Eliminando...");
-  try{await llamarAPI({accion:"ELIMINAR_DETALLE",datos:{token:tokenSesion,idRecepcion:idRecepcionActual,codigo:item.codigo,tipoMovimiento:item.tipoMovimiento}});detalles=detalles.filter(d=>!(String(d.codigo||"").toUpperCase()===String(item.codigo||"").toUpperCase()&&String(d.tipoMovimiento||"").toUpperCase()===String(item.tipoMovimiento||"").toUpperCase()));cacheGestiones.clear();cacheDetalleGestiones.delete(idRecepcionActual);renderizarDetalles();}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
-}
-
-function renderizarDetalles(){
-  const recepcion=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN"),inversa=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA"),sacos=recepcion.filter(x=>x.tipoBulto==="SACO").length,bultos=recepcion.filter(x=>x.tipoBulto==="BULTO SUELTO").length;
-  document.getElementById("contadorSacos").textContent=sacos;document.getElementById("contadorBultos").textContent=bultos;document.getElementById("contadorTotal").textContent=sacos+bultos;document.getElementById("contadorInversa").textContent=inversa.length;renderLista("listaRecepcion",recepcion);renderLista("listaInversa",inversa);actualizarResumenFinal();actualizarEstadoSincronizacion();
-}
-
-function renderLista(id,datos){
-  const lista=document.getElementById(id);lista.innerHTML="";
-  const fragmento=document.createDocumentFragment(),visibles=datos.slice(-200).reverse();if(datos.length>200){const aviso=document.createElement("div");aviso.className="nota-filtro";aviso.textContent="Mostrando los 200 escaneos más recientes de "+datos.length+".";fragmento.appendChild(aviso);}visibles.forEach(item=>{const fila=document.createElement("div");fila.className=item.pendiente?"item pendiente":"item";const info=document.createElement("div");info.className="item-info";info.innerHTML=`<div class="item-tipo">${escaparHtml(item.tipoMovimiento)} • ${escaparHtml(item.tipoBulto)}</div><div class="item-codigo">${escaparHtml(item.codigo)}</div><div class="item-hora">${escaparHtml(item.pendiente?"Guardando…":(item.fechaHora||""))}</div>`;const btn=document.createElement("button");btn.className="btn-eliminar";btn.textContent=item.pendiente?"…":"×";btn.disabled=Boolean(item.pendiente);btn.onclick=()=>eliminarDetalle(item);fila.appendChild(info);fila.appendChild(btn);fragmento.appendChild(fila);});lista.appendChild(fragmento);
-}
-
-async function agregarManual(){const input=document.getElementById("codigoManual");const ok=await guardarCodigo(input.value,"RECEPCIÓN",tipoBultoActual);if(ok)input.value="";}
-async function agregarManualInversa(){const input=document.getElementById("codigoManualInversa");const ok=await guardarCodigo(input.value,"LOGÍSTICA INVERSA",tipoInversaActual);if(ok)input.value="";}
-
-function iniciarScannerRuta(){scannerDestino="RUTA";campoDestinoScanner="idRuta";document.getElementById("scannerTitulo").textContent="ESCANEAR ID RUTA";activarScanner();}
-function iniciarScannerPrecinto(campo,tipo,numero){scannerDestino="PRECINTO";campoDestinoScanner=campo;document.getElementById("scannerTitulo").textContent="ESCANEAR PRECINTO DE "+tipo+" "+numero;activarScanner();}
-function iniciarScannerRecepcion(){scannerDestino="DETALLE";scannerMovimiento="RECEPCIÓN";document.getElementById("scannerTitulo").textContent="RECEPCIÓN - "+tipoBultoActual;activarScanner();}
-function iniciarScannerInversa(){scannerDestino="DETALLE";scannerMovimiento="LOGÍSTICA INVERSA";document.getElementById("scannerTitulo").textContent="LOGÍSTICA INVERSA - "+tipoInversaActual;activarScanner();}
-
-async function activarScanner(){
-  detenerScanner(false);if(typeof ZXing==="undefined"){mostrarError("No se pudo cargar el lector.");return;}
-  document.getElementById("scannerModal").classList.remove("oculto");const estado=document.getElementById("estadoScanner");estado.className="estado-scanner";estado.textContent="Solicitando cámara...";
-  try{lectorZXing=new ZXing.BrowserMultiFormatReader();scannerActivo=true;await lectorZXing.decodeFromConstraints({audio:false,video:{facingMode:{ideal:"environment"},width:{ideal:1280},height:{ideal:720}}},"videoScanner",resultado=>{if(resultado&&scannerActivo)procesarLectura(resultado);});estado.className="estado-scanner ok";estado.textContent="✅ Lector activo";try{dispositivosVideo=await lectorZXing.listVideoInputDevices();}catch(e){console.log(e);}}catch(error){console.error(error);detenerScanner();mostrarError("No se pudo abrir la cámara. Revise los permisos de Chrome.");}
-}
-
-async function procesarLectura(resultado){
-  if(bloqueoLectura)return;let codigo=typeof resultado.getText==="function"?resultado.getText():resultado.text;codigo=String(codigo||"").trim().toUpperCase();if(!codigo)return;
-  if(scannerDestino==="RUTA"){document.getElementById("idRuta").value=codigo;document.getElementById("rutaEscaneada").classList.remove("oculto");vibrar();detenerScanner();return;}
-  if(scannerDestino==="PRECINTO"){const campo=document.getElementById(campoDestinoScanner);if(campo){campo.value=codigo;const ok=document.getElementById("ok"+capitalizarPrimera(campoDestinoScanner));if(ok)ok.classList.remove("oculto");}vibrar();detenerScanner();return;}
-  const ahora=Date.now();if(codigo===ultimoCodigo&&ahora-ultimaLectura<2500)return;ultimoCodigo=codigo;ultimaLectura=ahora;bloqueoLectura=true;const tipo=scannerMovimiento==="RECEPCIÓN"?tipoBultoActual:tipoInversaActual;const ok=await guardarCodigo(codigo,scannerMovimiento,tipo);const estado=document.getElementById("estadoScanner");if(ok){estado.className="estado-scanner ok";estado.textContent="✅ "+codigo;}setTimeout(()=>{bloqueoLectura=false;if(scannerActivo)estado.textContent="Apunte al siguiente código...";},700);
-}
-
-function detenerScanner(ocultar=true){scannerActivo=false;bloqueoLectura=false;if(lectorZXing){try{lectorZXing.reset();}catch(e){}}lectorZXing=null;const video=document.getElementById("videoScanner");if(video&&video.srcObject){video.srcObject.getTracks().forEach(track=>track.stop());video.srcObject=null;}if(ocultar)document.getElementById("scannerModal").classList.add("oculto");}
-async function cambiarCamara(){if(dispositivosVideo.length<2){mostrarError("No se detectó otra cámara.");return;}detenerScanner(false);indiceCamara=(indiceCamara+1)%dispositivosVideo.length;try{lectorZXing=new ZXing.BrowserMultiFormatReader();scannerActivo=true;await lectorZXing.decodeFromVideoDevice(dispositivosVideo[indiceCamara].deviceId,"videoScanner",resultado=>{if(resultado&&scannerActivo)procesarLectura(resultado);});}catch(error){mostrarError("No se pudo cambiar de cámara.");}}
-
-function procesarFotoInput(input,clave){
-  const archivo=input.files&&input.files[0];if(!archivo)return;mostrarCargando("Procesando fotografía...");const reader=new FileReader();reader.onload=event=>{const imagen=new Image();imagen.onload=()=>{try{const MAX=1280;let ancho=imagen.width,alto=imagen.height;if(ancho>alto&&ancho>MAX){alto=Math.round(alto*MAX/ancho);ancho=MAX;}else if(alto>MAX){ancho=Math.round(ancho*MAX/alto);alto=MAX;}const canvas=document.createElement("canvas");canvas.width=ancho;canvas.height=alto;canvas.getContext("2d").drawImage(imagen,0,0,ancho,alto);fotos[clave]=canvas.toDataURL("image/jpeg",.67);mostrarPreview(clave);}finally{ocultarCargando();}};imagen.onerror=()=>{ocultarCargando();mostrarError("No se pudo procesar la fotografía.");};imagen.src=event.target.result;};reader.readAsDataURL(archivo);
-}
-
-function mostrarPreview(clave){const idClave=capitalizarPrimera(clave),img=document.getElementById("preview"+idClave),ok=document.getElementById("ok"+idClave);if(img){img.src=fotos[clave];img.classList.remove("oculto");}if(ok)ok.classList.remove("oculto");}
-
-function obtenerGPS(){
-  const estado=document.getElementById("estadoGps");if(!estado)return;estado.className="gps";estado.textContent="Obteniendo ubicación...";if(!navigator.geolocation){estado.className="gps gps-error";estado.textContent="GPS no disponible.";return;}
-  navigator.geolocation.getCurrentPosition(pos=>{latitudActual=pos.coords.latitude;longitudActual=pos.coords.longitude;precisionActual=pos.coords.accuracy;estado.className="gps gps-ok";estado.innerHTML="✅ Ubicación obtenida<br>Lat: "+latitudActual.toFixed(6)+"<br>Lon: "+longitudActual.toFixed(6)+"<br>Precisión: "+Math.round(precisionActual)+" m";},()=>{latitudActual=null;longitudActual=null;precisionActual=null;estado.className="gps gps-error";estado.textContent="No se pudo obtener ubicación.";},{enableHighAccuracy:true,timeout:20000,maximumAge:0});
-}
-
-async function finalizarRecepcion(){
-  if(!fotos.fotoCarga){mostrarError("Debe registrar la foto de sacos/bultos.");return;}if(!valorCampo("codigoPrecintoCerrado1")){mostrarError("Debe escanear el código del Precinto de Salida 1.");return;}if(!fotos.precintoCerrado1){mostrarError("Debe fotografiar el Precinto de Salida 1.");return;}
-  for(let i=1;i<=4;i++){const codigo=valorCampo("codigoPrecintoCerrado"+i),foto=fotos["precintoCerrado"+i];if(codigo&&!foto){mostrarError("Precinto de salida "+i+": falta la fotografía.");return;}if(!codigo&&foto){mostrarError("Precinto de salida "+i+": falta escanear el código.");return;}}
-  if(latitudActual===null||longitudActual===null){mostrarError("Debe obtener la ubicación GPS.");return;}if(!confirm("¿Finalizar la recepción "+idRecepcionActual+"?"))return;
-  mostrarCargando("Finalizando recepción...");document.getElementById("btnFinalizar").disabled=true;
-  try{
-    await sincronizarEscaneos();document.getElementById("textoCargando").textContent="Subiendo evidencias y finalizando...";
-    const datos={token:tokenSesion,idRecepcion:idRecepcionActual,fotoCarga:fotos.fotoCarga,fotoLogisticaInversa:tieneInversa?fotos.fotoInversa:"",observaciones:document.getElementById("observaciones").value.trim(),latitud:latitudActual,longitud:longitudActual,precision:precisionActual||0};
-    for(let i=1;i<=4;i++){datos["codigoPrecintoCerrado"+i]=valorCampo("codigoPrecintoCerrado"+i);datos["precintoCerrado"+i]=fotos["precintoCerrado"+i];}
-    const res=await llamarAPI({accion:"FINALIZAR_RECEPCION",datos});localStorage.removeItem("recepcionActiva");localStorage.removeItem("escaneosPendientesRecepcion");cacheGestiones.clear();cacheDetalleGestiones.clear();alert("✅ RECEPCIÓN FINALIZADA\n\nID: "+res.idRecepcion+"\nSacos: "+res.cantidadSacos+"\nBultos: "+res.cantidadBultosSueltos+"\nTotal: "+res.totalRecepcionado+"\nLogística inversa: "+res.cantidadLogisticaInversa);location.reload();
-  }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();document.getElementById("btnFinalizar").disabled=false;}
-}
-
-function actualizarResumenFinal(){const caja=document.getElementById("resumenFinal");if(!caja)return;const sacos=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN"&&x.tipoBulto==="SACO").length,bultos=detalles.filter(x=>x.tipoMovimiento==="RECEPCIÓN"&&x.tipoBulto==="BULTO SUELTO").length,inversa=detalles.filter(x=>x.tipoMovimiento==="LOGÍSTICA INVERSA").length;caja.innerHTML="<strong>ID Recepción:</strong> "+escaparHtml(idRecepcionActual||"-")+"<br><strong>Sacos:</strong> "+sacos+"<br><strong>Bultos sueltos:</strong> "+bultos+"<br><strong>Total:</strong> "+(sacos+bultos)+"<br><strong>Logística inversa:</strong> "+inversa;}
-
-function fechaLocalISO(){const d=new Date(),y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,"0"),dia=String(d.getDate()).padStart(2,"0");return `${y}-${m}-${dia}`;}
-function establecerFiltrosHoy(){const hoy=fechaLocalISO();document.getElementById("filtroFechaDesde").value=hoy;document.getElementById("filtroFechaHasta").value=hoy;}
-
-function abrirGestiones(){
-  detenerScanner();document.getElementById("contenedorRegistro").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.add("oculto");document.getElementById("pantallaGestiones").classList.remove("oculto");
-  establecerFiltrosHoy();
-  const rol=String(usuarioActual.rol||"").trim().toUpperCase();
-  if(rol==="ENCARGADO"){document.getElementById("filtroEncargado").value=usuarioActual.encargado||"";document.getElementById("filtroEncargado").readOnly=true;}else{document.getElementById("filtroEncargado").readOnly=false;}
-  buscarGestiones();window.scrollTo({top:0,behavior:"smooth"});
-}
-
-async function buscarGestiones(forzar=false){
-  const datos={token:tokenSesion,fechaDesde:document.getElementById("filtroFechaDesde").value,fechaHasta:document.getElementById("filtroFechaHasta").value,idRecepcion:valorCampo("filtroIdRecepcion"),idRuta:valorCampo("filtroRuta"),placa:valorCampo("filtroPlaca"),encargado:valorCampo("filtroEncargado"),estado:valorCampo("filtroEstado")};
-  const clave=JSON.stringify({...datos,token:""}),ahora=Date.now(),cacheado=cacheGestiones.get(clave);
-  if(!forzar&&cacheado&&ahora-cacheado.fecha<CACHE_GESTIONES_MS){renderGestiones(cacheado.valor);return;}
-  mostrarCargando("Consultando gestiones...");
-  try{
-    const res=await llamarAPI({accion:"LISTAR_GESTIONES",datos});cacheGestiones.set(clave,{fecha:Date.now(),valor:res});renderGestiones(res);
-  }catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}
-}
-
-function renderGestiones(res){
-  const contenedor=document.getElementById("resultadoGestiones");contenedor.innerHTML="";
-  if(!res.gestiones||res.gestiones.length===0){contenedor.innerHTML='<div class="card">No se encontraron gestiones para los filtros seleccionados.</div>';return;}
-  const info=document.createElement("div");info.className="card";info.innerHTML=`<strong>${res.total}</strong> gestión(es) encontrada(s)${res.limitado?"<br><small>Se muestran las primeras 500.</small>":""}`;contenedor.appendChild(info);
-  res.gestiones.forEach(g=>{const card=document.createElement("div");card.className="gestion-card";const claseEstado=g.estado==="FINALIZADO"?"estado-finalizado":"estado-proceso";card.innerHTML=`<div class="gestion-cabecera"><div><div class="gestion-id">${escaparHtml(g.idRecepcion)}</div><div class="gestion-fecha">${escaparHtml(g.fechaLlegada)}</div></div><div class="${claseEstado}">${escaparHtml(g.estado)}</div></div><div class="gestion-datos"><strong>Ruta:</strong> ${escaparHtml(g.idRuta||"-")}<br><strong>Placa:</strong> ${escaparHtml(g.placa||"-")}<br><strong>PDV/Usuario:</strong> ${escaparHtml(g.usuario||"-")}<br><strong>Área:</strong> ${escaparHtml(g.area||"-")}<br><strong>Región:</strong> ${escaparHtml(g.region||"-")}<br><strong>Encargado:</strong> ${escaparHtml(g.encargado||"-")}</div><div class="gestion-total">Sacos: ${Number(g.sacos||0)} &nbsp; | &nbsp; Bultos: ${Number(g.bultos||0)}<br>Total: ${Number(g.total||0)}</div>`;const boton=document.createElement("button");boton.className="btn-azul";boton.style.marginTop="10px";boton.textContent="VER DETALLE";boton.onclick=()=>verDetalleGestion(g.idRecepcion);card.appendChild(boton);contenedor.appendChild(card);});
-}
-
-async function verDetalleGestion(idRecepcion){const cacheado=cacheDetalleGestiones.get(idRecepcion);if(cacheado&&Date.now()-cacheado.fecha<CACHE_DETALLE_MS){renderDetalleGestion(cacheado.valor);document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.remove("oculto");window.scrollTo({top:0,behavior:"smooth"});return;}mostrarCargando("Cargando gestión...");try{const res=await llamarAPI({accion:"VER_GESTION",datos:{token:tokenSesion,idRecepcion}});cacheDetalleGestiones.set(idRecepcion,{fecha:Date.now(),valor:res});renderDetalleGestion(res);document.getElementById("pantallaGestiones").classList.add("oculto");document.getElementById("pantallaDetalleGestion").classList.remove("oculto");window.scrollTo({top:0,behavior:"smooth"});}catch(error){mostrarError(obtenerError(error));}finally{ocultarCargando();}}
-
-function renderDetalleGestion(res){
-  const r=res.resumen,contenedor=document.getElementById("contenidoDetalleGestion");
-  let html=`<div class="card"><div class="titulo-card">${escaparHtml(r.idRecepcion)}</div><div class="detalle-grid">${datoDetalle("Estado",r.estado)}${datoDetalle("Llegada",r.fechaLlegada)}${datoDetalle("Salida",r.fechaSalida||"-")}${datoDetalle("Tiempo",r.tiempoRecepcion||"-")}${datoDetalle("ID Ruta",r.idRuta)}${datoDetalle("Placa",r.placa)}${datoDetalle("DNI / RUC",r.dni)}${datoDetalle("PDV / Usuario",r.usuario)}${datoDetalle("Área",r.area)}${datoDetalle("Región",r.region)}${datoDetalle("Encargado",r.encargado)}${datoDetalle("Sacos",r.cantidadSacos)}${datoDetalle("Bultos",r.cantidadBultos)}${datoDetalle("Total",r.totalRecepcionado)}${datoDetalle("Logística inversa",r.logisticaInversa)}${datoDetalle("Cantidad inversa",r.cantidadLogisticaInversa)}</div></div>`;
-  html+=`<div class="card"><div class="titulo-card">📷 Evidencias</div><div class="galeria">${fotoGestion("Llegada de unidad","",r.fotoLlegada)}`;
-  for(let i=1;i<=4;i++)html+=fotoGestion("Precinto de llegada "+i,r["codigoPrecintoAbierto"+i],r["precintoAbierto"+i]);
-  html+=fotoGestion("Sacos / Bultos","",r.fotoCarga)+fotoGestion("Logística inversa","",r.fotoLogisticaInversa);
-  for(let i=1;i<=4;i++)html+=fotoGestion("Precinto de salida "+i,r["codigoPrecintoCerrado"+i],r["precintoCerrado"+i]);
-  html+=`</div></div><div class="card"><div class="titulo-card">Información adicional</div><strong>Observaciones</strong><div style="background:#f8fafc;padding:10px;margin-top:7px;border-radius:8px">${escaparHtml(r.observaciones||"Sin observaciones")}</div><br><strong>GPS</strong><div style="background:#f8fafc;padding:10px;margin-top:7px;border-radius:8px">Latitud: ${escaparHtml(r.latitud)}<br>Longitud: ${escaparHtml(r.longitud)}<br>Precisión: ${escaparHtml(r.precision)} m</div></div><div class="card"><div class="titulo-card">📦 Escaneos</div><div class="tabla-contenedor"><table class="tabla-detalle"><thead><tr><th>#</th><th>Fecha/Hora</th><th>Movimiento</th><th>Tipo</th><th>Código</th></tr></thead><tbody>`;
-  if(!res.detalles||res.detalles.length===0)html+='<tr><td colspan="5">Sin escaneos</td></tr>';else res.detalles.forEach(d=>{html+=`<tr><td>${Number(d.orden||0)}</td><td>${escaparHtml(d.fechaHora)}</td><td>${escaparHtml(d.tipoMovimiento)}</td><td>${escaparHtml(d.tipoBulto)}</td><td><strong>${escaparHtml(d.codigo)}</strong></td></tr>`;});
-  html+='</tbody></table></div></div>';contenedor.innerHTML=html;
-}
-
-function convertirUrlDrive(url){if(!url)return"";url=String(url).trim();let id="";const m1=url.match(/\/file\/d\/([^/]+)/);if(m1)id=m1[1];if(!id){const m2=url.match(/[?&]id=([^&]+)/);if(m2)id=m2[1];}return id?"https://drive.google.com/thumbnail?id="+encodeURIComponent(id)+"&sz=w1000":url;}
-function fotoGestion(titulo,codigo,url){if(!url)return `<div><div class="foto-titulo">${escaparHtml(titulo)}</div>${codigo?`<div class="foto-codigo">Código: ${escaparHtml(codigo)}</div>`:""}<div style="min-height:110px;display:flex;align-items:center;justify-content:center;background:#f1f5f9;border-radius:8px;color:#94a3b8;font-size:11px">Sin foto</div></div>`;const miniatura=convertirUrlDrive(url);return `<div><div class="foto-titulo">${escaparHtml(titulo)}</div>${codigo?`<div class="foto-codigo">Código: ${escaparHtml(codigo)}</div>`:""}<a href="${escaparHtml(url)}" target="_blank" rel="noopener noreferrer"><img class="foto-gestion" src="${escaparHtml(miniatura)}" loading="lazy" alt="${escaparHtml(titulo)}"></a></div>`;}
-function datoDetalle(titulo,valor){return `<div class="detalle-dato"><div class="detalle-label">${escaparHtml(titulo)}</div><div class="detalle-valor">${escaparHtml(valor===""||valor==null?"-":valor)}</div></div>`;}
-function volverListaGestiones(){document.getElementById("pantallaDetalleGestion").classList.add("oculto");document.getElementById("pantallaGestiones").classList.remove("oculto");}
-function limpiarFiltrosGestiones(){document.getElementById("filtroIdRecepcion").value="";document.getElementById("filtroRuta").value="";document.getElementById("filtroPlaca").value="";document.getElementById("filtroEstado").value="";establecerFiltrosHoy();const rol=String(usuarioActual.rol||"").trim().toUpperCase();document.getElementById("filtroEncargado").value=rol==="ENCARGADO"?(usuarioActual.encargado||""):"";buscarGestiones(true);}
-function soloNumeros(input){input.value=input.value.replace(/\D/g,"").substring(0,11);}
-function valorCampo(id){const el=document.getElementById(id);if(!el)return"";return String(el.value||"").trim().toUpperCase();}
-function capitalizarPrimera(texto){return texto?texto.charAt(0).toUpperCase()+texto.slice(1):"";}
-function mostrarMensaje(id,texto,correcto){const el=document.getElementById(id);if(!el)return;el.textContent=texto;el.className=correcto?"mensaje mensaje-ok":"mensaje mensaje-error";}
-function mostrarError(texto){mostrarMensaje("mensajeGeneral",texto,false);window.scrollTo({top:0,behavior:"smooth"});}
-function ocultarMensaje(id){const el=document.getElementById(id);if(el)el.className="oculto";}
-function mostrarCargando(texto){document.getElementById("textoCargando").textContent=texto;document.getElementById("cargando").classList.remove("oculto");}
-function ocultarCargando(){document.getElementById("cargando").classList.add("oculto");}
-function obtenerError(error){return error&&error.message?error.message:String(error||"Error inesperado.");}
-function escaparHtml(valor){return String(valor==null?"":valor).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;");}
-function vibrar(){if(navigator.vibrate)navigator.vibrate(80);}function vibrarError(){if(navigator.vibrate)navigator.vibrate([100,80,100]);}
-
-document.getElementById("codigoManual").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();agregarManual();}});
-document.getElementById("codigoManualInversa").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();agregarManualInversa();}});
-document.getElementById("loginPassword").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();login();}});
-window.addEventListener("beforeunload",()=>detenerScanner());
-window.addEventListener("load",async()=>{crearControlesPrecintos();establecerFiltrosHoy();await restaurarSesion();});
-</script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
+
