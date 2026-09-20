@@ -22,6 +22,8 @@ type RegistroPdv = {
   region?: string;
   area?: string;
   encargado_usuario?: string;
+  usuario_pdv?: string;
+  password?: string;
   estado?: string;
 };
 
@@ -124,7 +126,7 @@ Deno.serve(async (req) => {
 
       const registros = Array.isArray(body.registros) ? body.registros as RegistroPdv[] : [];
       if (!registros.length) return json({ error: "No se recibieron registros para importar." }, 400);
-      if (registros.length > 200) return json({ error: "Cada lote admite como máximo 200 registros." }, 400);
+      if (registros.length > 25) return json({ error: "Cada lote admite como máximo 25 registros con credenciales." }, 400);
 
       const { data: encargados, error: encargadosError } = await admin
         .from("perfiles")
@@ -132,75 +134,173 @@ Deno.serve(async (req) => {
         .eq("rol", "ENCARGADO")
         .eq("estado", "ACTIVO");
       if (encargadosError) throw encargadosError;
-
       const encargadoPorUsuario = new Map(
         (encargados || []).map((perfil) => [normalizarUsuario(perfil.usuario), perfil.id as string]),
       );
-      const codigosVistos = new Set<string>();
-      const resultados: Array<{ fila: number; codigo: string; resultado: string; mensaje: string }> = [];
-      const validos: Array<{
-        fila: number;
-        codigo: string;
-        nombre: string;
-        region: string | null;
-        area: string | null;
-        encargado_id: string;
-        estado: string;
-      }> = [];
 
-      registros.forEach((registro, index) => {
+      const preparados = registros.map((registro, index) => {
         const filaRecibida = Number(registro?.fila);
-        const fila = Number.isInteger(filaRecibida) && filaRecibida > 0 ? filaRecibida : index + 2;
-        const codigo = String(registro?.codigo ?? "").trim().toUpperCase();
-        const nombre = String(registro?.nombre ?? "").trim();
-        const region = String(registro?.region ?? "").trim() || null;
-        const area = String(registro?.area ?? "").trim() || null;
-        const encargadoUsuario = normalizarUsuario(registro?.encargado_usuario);
-        const estado = String(registro?.estado ?? "ACTIVO").trim().toUpperCase();
-        const errores: string[] = [];
+        return {
+          fila: Number.isInteger(filaRecibida) && filaRecibida > 0 ? filaRecibida : index + 2,
+          codigo: String(registro?.codigo ?? "").trim().toUpperCase(),
+          nombre: String(registro?.nombre ?? "").trim(),
+          region: String(registro?.region ?? "").trim() || null,
+          area: String(registro?.area ?? "").trim() || null,
+          encargado_usuario: normalizarUsuario(registro?.encargado_usuario),
+          usuario_pdv: normalizarUsuario(registro?.usuario_pdv),
+          password: String(registro?.password ?? ""),
+          estado: String(registro?.estado ?? "ACTIVO").trim().toUpperCase(),
+          errores: [] as string[],
+        };
+      });
+      const contar = (campo: "codigo" | "usuario_pdv") => preparados.reduce((mapa, registro) => {
+        const valor = registro[campo];
+        if (valor) mapa.set(valor, (mapa.get(valor) || 0) + 1);
+        return mapa;
+      }, new Map<string, number>());
+      const codigosRepetidos = contar("codigo");
+      const usuariosRepetidos = contar("usuario_pdv");
+      const codigos = [...new Set(preparados.map((registro) => registro.codigo).filter(Boolean))];
+      const usuarios = [...new Set(preparados.map((registro) => registro.usuario_pdv).filter(Boolean))];
 
-        if (!codigo) errores.push("Falta el código.");
-        else if (!/^[A-Z0-9._-]{1,50}$/.test(codigo)) errores.push("Código inválido.");
-        else if (codigosVistos.has(codigo)) errores.push("Código duplicado en el lote.");
-        if (!nombre) errores.push("Falta el nombre.");
-        if (!encargadoUsuario) errores.push("Falta el encargado.");
-        const encargadoId = encargadoPorUsuario.get(encargadoUsuario);
-        if (encargadoUsuario && !encargadoId) errores.push("El encargado no existe, no está activo o no tiene el rol ENCARGADO.");
-        if (!["ACTIVO", "INACTIVO"].includes(estado)) errores.push("Estado inválido.");
-        if (codigo) codigosVistos.add(codigo);
+      const { data: pdvsExistentes, error: pdvsError } = codigos.length
+        ? await admin.from("pdvs").select("id, codigo").in("codigo", codigos)
+        : { data: [], error: null };
+      if (pdvsError) throw pdvsError;
+      const pdvExistentePorCodigo = new Map(
+        (pdvsExistentes || []).map((pdv) => [String(pdv.codigo).toUpperCase(), pdv]),
+      );
+      const pdvIdsExistentes = [...pdvExistentePorCodigo.values()].map((pdv) => pdv.id as string);
 
-        if (errores.length || !encargadoId) {
-          resultados.push({ fila, codigo, resultado: "RECHAZADO", mensaje: errores.join(" ") });
-          return;
+      const { data: cuentasExistentes, error: cuentasError } = usuarios.length
+        ? await admin.from("perfiles").select("id, usuario, rol, pdv_id, estado").in("usuario", usuarios)
+        : { data: [], error: null };
+      if (cuentasError) throw cuentasError;
+      const cuentaPorUsuario = new Map(
+        (cuentasExistentes || []).map((perfil) => [normalizarUsuario(perfil.usuario), perfil]),
+      );
+      const { data: cuentasPdvExistentes, error: cuentasPdvError } = pdvIdsExistentes.length
+        ? await admin.from("perfiles").select("id, usuario, rol, pdv_id, estado").eq("rol", "PDV").in("pdv_id", pdvIdsExistentes)
+        : { data: [], error: null };
+      if (cuentasPdvError) throw cuentasPdvError;
+      const cuentaPorPdv = new Map(
+        (cuentasPdvExistentes || []).map((perfil) => [String(perfil.pdv_id), perfil]),
+      );
+
+      preparados.forEach((registro) => {
+        if (!registro.codigo) registro.errores.push("Falta el código.");
+        else if (!/^[A-Z0-9._-]{1,50}$/.test(registro.codigo)) registro.errores.push("Código inválido.");
+        else if ((codigosRepetidos.get(registro.codigo) || 0) > 1) registro.errores.push("Código duplicado en el lote.");
+        if (!registro.nombre) registro.errores.push("Falta el nombre.");
+
+        const encargadoId = encargadoPorUsuario.get(registro.encargado_usuario);
+        if (!registro.encargado_usuario) registro.errores.push("Falta el encargado.");
+        else if (!encargadoId) registro.errores.push("El encargado no existe, no está activo o no tiene el rol ENCARGADO.");
+
+        if (!registro.usuario_pdv) registro.errores.push("Falta el usuario PDV.");
+        else if (!/^[A-Z0-9._-]{3,30}$/.test(registro.usuario_pdv)) registro.errores.push("Usuario PDV inválido.");
+        else if ((usuariosRepetidos.get(registro.usuario_pdv) || 0) > 1) registro.errores.push("Usuario PDV duplicado en el lote.");
+        if (registro.password.length < 8 || registro.password.length > 72) {
+          registro.errores.push("La contraseña debe tener entre 8 y 72 caracteres.");
+        }
+        if (!["ACTIVO", "INACTIVO"].includes(registro.estado)) registro.errores.push("Estado inválido.");
+
+        const cuenta = cuentaPorUsuario.get(registro.usuario_pdv);
+        const pdvExistente = pdvExistentePorCodigo.get(registro.codigo);
+        const cuentaPdvExistente = pdvExistente ? cuentaPorPdv.get(String(pdvExistente.id)) : undefined;
+        if (cuenta && cuenta.rol !== "PDV") {
+          registro.errores.push("El usuario ya existe con un rol diferente de PDV.");
+        } else if (cuenta && (!pdvExistente || cuenta.pdv_id !== pdvExistente.id)) {
+          registro.errores.push("El usuario ya está relacionado con otro PDV.");
+        } else if (cuentaPdvExistente && normalizarUsuario(cuentaPdvExistente.usuario) !== registro.usuario_pdv) {
+          registro.errores.push("El PDV ya tiene una cuenta con otro usuario; use ese usuario para actualizar la contraseña.");
         }
 
-        validos.push({ fila, codigo, nombre, region, area, encargado_id: encargadoId, estado });
+        (registro as typeof registro & { encargado_id?: string }).encargado_id = encargadoId;
       });
 
+      const resultados: Array<{ fila: number; codigo: string; resultado: string; mensaje: string }> = preparados
+        .filter((registro) => registro.errores.length)
+        .map((registro) => ({ fila: registro.fila, codigo: registro.codigo, resultado: "RECHAZADO", mensaje: registro.errores.join(" ") }));
+      const validos = preparados.filter((registro) => registro.errores.length === 0) as Array<typeof preparados[number] & { encargado_id: string }>;
+
       if (validos.length) {
-        const codigos = validos.map((registro) => registro.codigo);
-        const { data: existentes, error: existentesError } = await admin
-          .from("pdvs")
-          .select("codigo")
-          .in("codigo", codigos);
-        if (existentesError) throw existentesError;
-        const codigosExistentes = new Set((existentes || []).map((pdv) => String(pdv.codigo).toUpperCase()));
-
-        const { error: upsertError } = await admin.from("pdvs").upsert(
-          validos.map(({ fila: _fila, ...registro }) => registro),
-          { onConflict: "codigo" },
-        );
-        if (upsertError) throw upsertError;
-
-        validos.forEach((registro) => {
-          const actualizado = codigosExistentes.has(registro.codigo);
-          resultados.push({
-            fila: registro.fila,
+        const { data: pdvsProcesados, error: upsertError } = await admin.from("pdvs").upsert(
+          validos.map((registro) => ({
             codigo: registro.codigo,
-            resultado: actualizado ? "ACTUALIZADO" : "CREADO",
-            mensaje: actualizado ? "PDV actualizado correctamente." : "PDV creado correctamente.",
-          });
-        });
+            nombre: registro.nombre,
+            region: registro.region,
+            area: registro.area,
+            encargado_id: registro.encargado_id,
+            estado: registro.estado,
+          })),
+          { onConflict: "codigo" },
+        ).select("id, codigo");
+        if (upsertError) throw upsertError;
+        const pdvProcesadoPorCodigo = new Map(
+          (pdvsProcesados || []).map((pdv) => [String(pdv.codigo).toUpperCase(), pdv.id as string]),
+        );
+
+        for (const registro of validos) {
+          const pdvId = pdvProcesadoPorCodigo.get(registro.codigo);
+          const cuenta = cuentaPorUsuario.get(registro.usuario_pdv);
+          const pdvActualizado = pdvExistentePorCodigo.has(registro.codigo);
+          const resultadoPdv = pdvActualizado ? "ACTUALIZADO" : "CREADO";
+          const mensajePdv = pdvActualizado ? "PDV actualizado." : "PDV creado.";
+
+          try {
+            if (!pdvId) throw new Error("No se pudo identificar el PDV procesado.");
+            if (cuenta) {
+              const { error: claveError } = await admin.auth.admin.updateUserById(cuenta.id, { password: registro.password });
+              if (claveError) throw claveError;
+              const { error: perfilEstadoError } = await admin
+                .from("perfiles")
+                .update({ estado: registro.estado })
+                .eq("id", cuenta.id);
+              if (perfilEstadoError) throw perfilEstadoError;
+              resultados.push({
+                fila: registro.fila,
+                codigo: registro.codigo,
+                resultado: resultadoPdv,
+                mensaje: `${mensajePdv} Contraseña de ${registro.usuario_pdv} actualizada.`,
+              });
+            } else {
+              const { data: nuevaCuenta, error: cuentaError } = await admin.auth.admin.createUser({
+                email: correoInterno(registro.usuario_pdv),
+                password: registro.password,
+                email_confirm: true,
+                user_metadata: {
+                  usuario: registro.usuario_pdv,
+                  nombre: registro.nombre,
+                  rol: "PDV",
+                  pdv_id: pdvId,
+                },
+              });
+              if (cuentaError) throw cuentaError;
+              if (registro.estado === "INACTIVO" && nuevaCuenta.user) {
+                const { error: perfilEstadoError } = await admin
+                  .from("perfiles")
+                  .update({ estado: "INACTIVO" })
+                  .eq("id", nuevaCuenta.user.id);
+                if (perfilEstadoError) throw perfilEstadoError;
+              }
+              resultados.push({
+                fila: registro.fila,
+                codigo: registro.codigo,
+                resultado: resultadoPdv,
+                mensaje: `${mensajePdv} Cuenta ${registro.usuario_pdv} creada.`,
+              });
+            }
+          } catch (cuentaError) {
+            const detalle = cuentaError instanceof Error ? cuentaError.message : "Error al procesar la cuenta.";
+            resultados.push({
+              fila: registro.fila,
+              codigo: registro.codigo,
+              resultado: "PARCIAL",
+              mensaje: `${mensajePdv} No se pudo crear o actualizar la cuenta: ${detalle}`,
+            });
+          }
+        }
       }
 
       resultados.sort((a, b) => a.fila - b.fila);
@@ -210,6 +310,7 @@ Deno.serve(async (req) => {
           recibidos: registros.length,
           creados: resultados.filter((row) => row.resultado === "CREADO").length,
           actualizados: resultados.filter((row) => row.resultado === "ACTUALIZADO").length,
+          parciales: resultados.filter((row) => row.resultado === "PARCIAL").length,
           rechazados: resultados.filter((row) => row.resultado === "RECHAZADO").length,
         },
         resultados,

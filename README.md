@@ -11,6 +11,18 @@ Aplicación móvil para GitHub Pages con Supabase como base de datos y autentica
 
 Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una relación individual `operación → costal → paquete`, lo que permite buscarlo y auditarlo.
 
+## Flujo de OT y estados
+
+Cada recepción y cada logística inversa se crea con una **OT obligatoria**. La OT se utiliza como el ID visible de la gestión. La guía de remisión transporte se puede adjuntar como imagen o PDF y aparece debajo de la OT en los registros. Al seleccionar el archivo se guarda de inmediato en Drive; mientras la operación no esté completada se puede reemplazar o eliminar.
+
+- `PENDIENTE`: la gestión acaba de crearse.
+- `EN_PROCESO`: ya contiene guías, costales, paquetes, precintos o evidencias.
+- `COMPLETADO`: se confirmó la descarga; desde ese momento ya no se permite modificar ni eliminar guías.
+
+Mientras la operación esté pendiente o en proceso se pueden escanear y eliminar guías, costales y paquetes. Para completar una operación se exige la guía de remisión, las evidencias correspondientes y la confirmación de descarga.
+
+Solo el usuario ADMINISTRADOR puede eliminar una operación completa mientras esté Pendiente o En proceso. Esta acción elimina también sus escaneos, costales, paquetes y evidencias asociadas de Drive. Las operaciones Completadas quedan protegidas.
+
 ## Archivos
 
 - `index.html`, `styles.css`, `app.js`: interfaz GitHub Pages.
@@ -25,6 +37,8 @@ Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una r
 2. Ir a **SQL Editor**.
 3. Crear una consulta nueva, pegar todo `supabase/schema.sql` y ejecutarla.
 4. Ir a **Authentication → Providers → Email** y desactivar el registro público de usuarios. Las cuentas se crearán desde el panel administrativo de la aplicación.
+
+Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, el estado automático y la categoría de documento en evidencias.
 
 ### Crear el primer administrador
 
@@ -69,16 +83,20 @@ El Administrador puede descargar una plantilla Excel desde **Usuarios → Carga 
 - `REGION`
 - `AREA`
 - `USUARIO_ENCARGADO`
+- `USUARIO_PDV`
+- `CONTRASENA_TEMPORAL`
 - `ESTADO`
 
-Los encargados deben existir previamente y estar activos. Antes de importar se muestra una vista previa con las filas válidas y observadas. Los códigos nuevos se crean y los códigos existentes se actualizan. El procesamiento se realiza en lotes de 200 registros mediante la función Edge `crear-usuario`.
+Los encargados deben existir previamente y estar activos. El Administrador define en el archivo el usuario y la contraseña de cada PDV; la contraseña debe tener entre 8 y 72 caracteres. Antes de importar se muestra una vista previa que oculta las contraseñas. Los códigos nuevos se crean y los códigos existentes se actualizan. Si ya existe una cuenta PDV asociada al mismo PDV y con el mismo usuario, se actualiza su contraseña; si el PDV ya tiene otro usuario, o la cuenta está relacionada con otro PDV u otro rol, la fila se rechaza. El procesamiento se realiza en lotes de 25 registros mediante la función Edge `crear-usuario`.
+
+La descarga del resultado incluye la contraseña indicada para facilitar la entrega de credenciales. Proteja ese archivo y elimínelo cuando ya no sea necesario; no use la contraseña del ejemplo de la plantilla en producción. Si el PDV se guarda pero falla la cuenta, el resultado queda marcado como `PARCIAL` para corregirlo sin perder el registro del PDV.
 
 ## 2. Configurar Google Drive
 
 1. Crear una carpeta exclusiva para evidencias.
 2. Copiar el identificador de la carpeta desde su URL.
 3. Crear un proyecto nuevo de Google Apps Script.
-4. Reemplazar el contenido por `apps-script/Code.gs`.
+4. Reemplazar el contenido por `apps-script/Code.gs` (incluye subida de imágenes/PDF y eliminación autorizada de la guía antes de completar).
 5. Sustituir `REEMPLAZAR_CON_ID_DE_CARPETA` por el identificador real.
 6. Implementar como **Aplicación web**:
    - Ejecutar como: propietario.

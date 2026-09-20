@@ -36,19 +36,21 @@ create unique index if not exists perfiles_usuario_lower_uidx
 create table if not exists public.operaciones (
   id uuid primary key default gen_random_uuid(),
   codigo text not null unique,
+  ot text not null,
   tipo text not null check (tipo in (
     'RECEPCION_CAMION',
     'INVERSA_CAMION',
     'RECEPCION_ENCOMIENDA',
     'INVERSA_ENCOMIENDA'
   )),
-  estado text not null default 'BORRADOR' check (estado in ('BORRADOR', 'FINALIZADO', 'ANULADO')),
+  estado text not null default 'PENDIENTE' check (estado in ('PENDIENTE', 'EN_PROCESO', 'COMPLETADO', 'ANULADO')),
   pdv_id uuid not null references public.pdvs(id) on delete restrict,
   created_by uuid not null references auth.users(id) on delete restrict,
   id_ruta text,
   placa text,
   empresa_encomienda text,
   numero_encomienda text,
+  guia_remision_transporte text,
   dni_ruc_responsable text,
   latitud numeric(10,7),
   longitud numeric(10,7),
@@ -121,6 +123,7 @@ create table if not exists public.evidencias (
     'CARGA_RECIBIDA',
     'LOGISTICA_INVERSA',
     'PRECINTO_SALIDA',
+    'GUIA_REMISION_TRANSPORTE',
     'EVIDENCIA_GENERAL'
   )),
   etiqueta text not null,
@@ -132,6 +135,29 @@ create table if not exists public.evidencias (
   created_at timestamptz not null default now(),
   unique (drive_file_id)
 );
+
+-- Migración idempotente para instalaciones que ya usaban BORRADOR/FINALIZADO.
+alter table public.operaciones add column if not exists ot text;
+alter table public.operaciones add column if not exists guia_remision_transporte text;
+alter table public.operaciones drop constraint if exists operaciones_estado_check;
+alter table public.evidencias drop constraint if exists evidencias_categoria_check;
+alter table public.evidencias add constraint evidencias_categoria_check
+  check (categoria in (
+    'LLEGADA_UNIDAD',
+    'INTERIOR_UNIDAD',
+    'PRECINTO_LLEGADA',
+    'CARGA_RECIBIDA',
+    'LOGISTICA_INVERSA',
+    'PRECINTO_SALIDA',
+    'GUIA_REMISION_TRANSPORTE',
+    'EVIDENCIA_GENERAL'
+  ));
+update public.operaciones set ot = codigo where ot is null or btrim(ot) = '';
+alter table public.operaciones alter column ot set not null;
+update public.operaciones set estado = 'PENDIENTE' where estado = 'BORRADOR';
+update public.operaciones set estado = 'COMPLETADO' where estado = 'FINALIZADO';
+alter table public.operaciones add constraint operaciones_estado_check
+  check (estado in ('PENDIENTE', 'EN_PROCESO', 'COMPLETADO', 'ANULADO'));
 
 create index if not exists operaciones_pdv_fecha_idx
   on public.operaciones (pdv_id, created_at desc);
@@ -172,6 +198,55 @@ drop trigger if exists operaciones_set_updated_at on public.operaciones;
 create trigger operaciones_set_updated_at
 before update on public.operaciones
 for each row execute function public.set_updated_at();
+
+create or replace function public.marcar_operacion_en_proceso()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_operacion_id uuid;
+begin
+  if TG_OP = 'DELETE' then
+    v_operacion_id := old.operacion_id;
+  else
+    v_operacion_id := new.operacion_id;
+  end if;
+  update public.operaciones
+  set estado = 'EN_PROCESO'
+  where id = v_operacion_id and estado = 'PENDIENTE';
+  if TG_OP = 'DELETE' then
+    return old;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists items_recepcion_marcar_proceso on public.items_recepcion;
+create trigger items_recepcion_marcar_proceso
+after insert or update on public.items_recepcion
+for each row execute function public.marcar_operacion_en_proceso();
+
+drop trigger if exists costales_marcar_proceso on public.costales;
+create trigger costales_marcar_proceso
+after insert or update on public.costales
+for each row execute function public.marcar_operacion_en_proceso();
+
+drop trigger if exists paquetes_marcar_proceso on public.paquetes;
+create trigger paquetes_marcar_proceso
+after insert or update on public.paquetes
+for each row execute function public.marcar_operacion_en_proceso();
+
+drop trigger if exists precintos_marcar_proceso on public.precintos;
+create trigger precintos_marcar_proceso
+after insert or update on public.precintos
+for each row execute function public.marcar_operacion_en_proceso();
+
+drop trigger if exists evidencias_marcar_proceso on public.evidencias;
+create trigger evidencias_marcar_proceso
+after insert or update on public.evidencias
+for each row execute function public.marcar_operacion_en_proceso();
 
 drop trigger if exists costales_set_updated_at on public.costales;
 create trigger costales_set_updated_at
@@ -285,7 +360,7 @@ as $$
     from public.operaciones o
     where o.id = p_operacion_id
       and public.puede_ver_pdv(o.pdv_id)
-      and (o.estado = 'BORRADOR' or public.rol_actual() = 'ADMINISTRADOR')
+      and o.estado in ('PENDIENTE', 'EN_PROCESO')
   );
 $$;
 
@@ -359,6 +434,14 @@ begin
     raise exception 'Debe registrar al menos una evidencia fotográfica.';
   end if;
 
+  if not exists (
+    select 1 from public.evidencias
+    where operacion_id = p_operacion_id
+      and categoria = 'GUIA_REMISION_TRANSPORTE'
+  ) then
+    raise exception 'Debe adjuntar la guía de remisión transporte.';
+  end if;
+
   if v_operacion.tipo in ('RECEPCION_CAMION', 'RECEPCION_ENCOMIENDA') then
     select count(*) into v_items
     from public.items_recepcion where operacion_id = p_operacion_id;
@@ -382,7 +465,7 @@ begin
   end if;
 
   update public.operaciones
-  set estado = 'FINALIZADO',
+  set estado = 'COMPLETADO',
       finalizada_at = now(),
       latitud = p_latitud,
       longitud = p_longitud,
@@ -447,12 +530,18 @@ drop policy if exists operaciones_update on public.operaciones;
 create policy operaciones_update on public.operaciones
 for update to authenticated
 using (public.puede_editar_operacion(id))
-with check (public.puede_ver_pdv(pdv_id));
+with check (
+  public.puede_ver_pdv(pdv_id)
+  and estado in ('PENDIENTE', 'EN_PROCESO')
+);
 
 drop policy if exists operaciones_delete_admin on public.operaciones;
 create policy operaciones_delete_admin on public.operaciones
 for delete to authenticated
-using (public.rol_actual() = 'ADMINISTRADOR');
+using (
+  public.rol_actual() = 'ADMINISTRADOR'
+  and estado in ('PENDIENTE', 'EN_PROCESO')
+);
 
 drop policy if exists items_select on public.items_recepcion;
 create policy items_select on public.items_recepcion
@@ -568,6 +657,7 @@ revoke all on public.pdvs, public.perfiles, public.operaciones,
 grant select on public.pdvs, public.perfiles to authenticated;
 grant update (nombre) on public.perfiles to authenticated;
 grant select, insert, delete on public.operaciones to authenticated;
+grant update (guia_remision_transporte) on public.operaciones to authenticated;
 grant select, insert, update, delete on public.items_recepcion to authenticated;
 grant select, insert, update, delete on public.costales to authenticated;
 grant select, insert, update, delete on public.paquetes to authenticated;
@@ -585,12 +675,14 @@ grant execute on function public.puede_ver_pdv(uuid) to authenticated;
 grant execute on function public.puede_editar_operacion(uuid) to authenticated;
 grant execute on function public.finalizar_operacion(uuid, numeric, numeric, numeric, text, text, jsonb) to authenticated;
 
+drop view if exists public.v_resumen_operaciones;
 create or replace view public.v_resumen_operaciones
 with (security_invoker = true)
 as
 select
   o.id,
   o.codigo,
+  o.ot,
   o.tipo,
   o.estado,
   o.pdv_id,
@@ -600,12 +692,15 @@ select
   o.placa,
   o.empresa_encomienda,
   o.numero_encomienda,
+  o.guia_remision_transporte,
   o.created_at,
   o.finalizada_at,
   (select count(*) from public.items_recepcion i where i.operacion_id = o.id) as total_recibidos,
   (select count(*) from public.costales c where c.operacion_id = o.id) as total_costales,
   (select count(*) from public.paquetes p where p.operacion_id = o.id) as total_paquetes,
-  (select count(*) from public.evidencias e where e.operacion_id = o.id) as total_evidencias
+  (select count(*) from public.evidencias e where e.operacion_id = o.id) as total_evidencias,
+  (select e.nombre_archivo from public.evidencias e where e.operacion_id = o.id and e.categoria = 'GUIA_REMISION_TRANSPORTE' order by e.created_at desc limit 1) as guia_remision_nombre,
+  (select e.drive_file_id from public.evidencias e where e.operacion_id = o.id and e.categoria = 'GUIA_REMISION_TRANSPORTE' order by e.created_at desc limit 1) as guia_remision_drive_file_id
 from public.operaciones o
 join public.pdvs d on d.id = o.pdv_id;
 

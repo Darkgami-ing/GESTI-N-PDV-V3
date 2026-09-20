@@ -94,6 +94,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .summary-card strong { display: block; color: var(--navy); font-size: 27px; margin-top: 5px; }
 .summary-card.warning { background: var(--orange-soft); border-color: #f4d6bb; }
 .summary-card.warning strong { color: var(--orange); }
+.summary-card.process { background: var(--sky); border-color: #c6deef; }
+.summary-card.process strong { color: var(--blue); }
 .summary-card.success { background: var(--green-soft); border-color: #c4eadc; }
 .summary-card.success strong { color: var(--green); }
 
@@ -111,6 +113,7 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .operation-banner strong { margin: 3px 0; font-size: 19px; }
 .status-pill { display: inline-flex !important; align-items: center; width: fit-content; padding: 6px 9px; border-radius: 999px; font-size: 10px; font-weight: 850; }
 .status-pill.draft { color: #82520e; background: #fff1c8; }
+.status-pill.process { color: #145b91; background: #dceefa; }
 .status-pill.done { color: #087452; background: #dff7ee; }
 .status-pill.cancelled { color: #9e262d; background: #ffe1e3; }
 
@@ -166,6 +169,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .general-photos { margin-top: 17px; }
 .general-photos input { font-size: 13px; }
 .general-photos > small, #parcelPhotosSection > small { display: block; margin: -8px 0 11px; color: var(--muted); }
+.document-preview { min-height: 78px; display: grid; place-items: center; overflow: hidden; margin: -4px 0 8px; padding: 10px; border: 1px dashed #bdcddd; border-radius: 10px; background: #f8fbfd; color: var(--muted); font-size: 12px; text-align: center; overflow-wrap: anywhere; }
+.document-preview img { width: 100%; max-height: 180px; object-fit: contain; }
 
 .gps-box { padding: 12px; margin-bottom: 10px; border-radius: 11px; background: #edf2f5; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .gps-box.ok { color: #087452; background: var(--green-soft); }
@@ -173,7 +178,9 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 
 .record-card { cursor: pointer; box-shadow: 0 4px 15px rgba(25, 57, 85, .05); }
 .record-side { text-align: right; }
+.record-side .status-pill { margin-bottom: 6px; }
 .record-side strong { font-size: 17px; }
+.record-document { overflow-wrap: anywhere; }
 .record-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
 .record-tag { padding: 4px 7px; border-radius: 999px; background: #edf3f7; color: var(--muted); font-size: 9px; font-weight: 800; }
 .empty-state { padding: 30px 12px; text-align: center; color: var(--muted); border: 1px dashed #cbd8e3; border-radius: 13px; background: #f8fbfd; }
@@ -195,6 +202,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .bulk-summary .ok strong { color: var(--green); }
 .bulk-summary .updated { background: var(--sky); border-color: #c6deef; }
 .bulk-summary .updated strong { color: var(--blue); }
+.bulk-summary .warning { background: var(--orange-soft); border-color: #f4d6bb; }
+.bulk-summary .warning strong { color: var(--orange); }
 .bulk-summary .bad { background: var(--red-soft); border-color: #ffcdd1; }
 .bulk-summary .bad strong { color: var(--red); }
 .bulk-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }

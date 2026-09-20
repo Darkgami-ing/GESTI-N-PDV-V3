@@ -75,9 +75,9 @@
         <div class="page-heading"><div><p class="eyebrow">Panel principal</p><h2>Operaciones logísticas</h2></div><button class="button primary small" data-view="new">Nueva operación</button></div>
         <div id="homeSummary" class="summary-grid">
           <article class="summary-card"><span>Total hoy</span><strong id="sumToday">0</strong></article>
-          <article class="summary-card warning"><span>Borradores</span><strong id="sumDraft">0</strong></article>
-          <article class="summary-card success"><span>Finalizadas</span><strong id="sumDone">0</strong></article>
-          <article class="summary-card"><span>Paquetes devueltos</span><strong id="sumPackages">0</strong></article>
+          <article class="summary-card warning"><span>Pendientes</span><strong id="sumPending">0</strong></article>
+          <article class="summary-card process"><span>En proceso</span><strong id="sumProcess">0</strong></article>
+          <article class="summary-card success"><span>Completadas</span><strong id="sumDone">0</strong></article>
         </div>
         <div class="operation-grid">
           <button class="operation-card truck" data-operation="RECEPCION_CAMION"><span class="operation-icon">🚚</span><strong>Recepción de camión exclusivo</strong><small>Unidad, precintos, sacos, fotos y GPS</small></button>
@@ -102,23 +102,34 @@
 
         <form id="operationSetup" class="card hidden">
           <div class="card-title"><span id="setupTitle">Datos de la operación</span><button type="button" class="link-button danger-text" data-action="cancel-operation">Cancelar</button></div>
+          <div class="field"><label for="operationOt">OT / ID de gestión</label><div class="scan-input"><input id="operationOt" required autocapitalize="characters" placeholder="Ingrese o escanee la OT"><button type="button" data-scan-target="operationOt" data-scan-label="OT">▣</button></div></div>
           <div id="pdvField" class="field hidden"><label for="operationPdv">PDV</label><select id="operationPdv"></select></div>
           <div id="truckFields" class="field-grid hidden">
             <div class="field"><label for="routeId">ID de ruta <span class="optional">(opcional)</span></label><div class="scan-input"><input id="routeId" autocapitalize="characters"><button type="button" data-scan-target="routeId" data-scan-label="ID de ruta">▣</button></div></div>
             <div class="field"><label for="vehiclePlate">Placa</label><input id="vehiclePlate" autocapitalize="characters" placeholder="ABC123"></div>
           </div>
           <div id="parcelFields" class="field-grid hidden">
-            <div class="field"><label for="parcelCompany">Empresa de encomienda</label><input id="parcelCompany" placeholder="Empresa transportista"></div>
-            <div class="field"><label for="parcelNumber">Número de encomienda o guía</label><div class="scan-input"><input id="parcelNumber" autocapitalize="characters"><button type="button" data-scan-target="parcelNumber" data-scan-label="Número de encomienda">▣</button></div></div>
+            <div class="field"><label for="parcelCompany">Empresa de encomienda <span class="optional">(opcional)</span></label><input id="parcelCompany" placeholder="Empresa transportista"></div>
+            <div class="field"><label for="parcelNumber">Número de encomienda o guía <span class="optional">(opcional)</span></label><div class="scan-input"><input id="parcelNumber" autocapitalize="characters"><button type="button" data-scan-target="parcelNumber" data-scan-label="Número de encomienda">▣</button></div></div>
           </div>
           <button type="submit" class="button primary full">Iniciar operación</button>
         </form>
 
         <section id="operationWorkspace" class="hidden">
-          <div class="operation-banner"><div><small>OPERACIÓN EN CURSO</small><strong id="activeOperationCode"></strong><span id="activeOperationLabel"></span></div><span class="status-pill draft">Borrador</span></div>
+          <div class="operation-banner"><div><small>OPERACIÓN EN CURSO</small><strong id="activeOperationCode"></strong><span id="activeOperationLabel"></span></div><span id="activeOperationStatus" class="status-pill draft">Pendiente</span></div>
+
+          <section id="transportGuideSection" class="card flow-section">
+            <div class="step-title"><span>1</span><div><strong>Guía de remisión transporte</strong><small>Adjunte el documento; puede reemplazarlo o eliminarlo hasta completar la operación.</small></div></div>
+            <label for="transportGuideNumber">N.° de guía de remisión <span class="optional">(opcional)</span></label>
+            <input id="transportGuideNumber" autocapitalize="characters" placeholder="Ejemplo: T001-00012345">
+            <label for="transportGuideInput">Archivo de guía de remisión *</label>
+            <input id="transportGuideInput" type="file" accept="image/*,.pdf,application/pdf">
+            <div id="transportGuidePreview" class="document-preview">Sin documento adjunto.</div>
+            <button id="removeTransportGuideButton" type="button" class="link-button danger-text hidden" data-action="remove-transport-guide">Eliminar guía adjunta</button>
+          </section>
 
           <section id="truckArrivalSection" class="card flow-section hidden">
-            <div class="step-title"><span>1</span><div><strong>Llegada de la unidad</strong><small>Fotografías y precintos de llegada</small></div></div>
+            <div class="step-title"><span>2</span><div><strong>Llegada de la unidad</strong><small>Fotografías y precintos de llegada</small></div></div>
             <div class="photo-grid">
               <div class="photo-slot" data-photo-slot="LLEGADA_UNIDAD" data-photo-label="Llegada de la unidad"><strong>Llegada de la unidad *</strong><input type="file" accept="image/*"><div class="photo-preview">Sin fotografía</div></div>
               <div class="photo-slot" data-photo-slot="INTERIOR_UNIDAD" data-photo-label="Interior de la unidad"><strong>Interior de la unidad</strong><input type="file" accept="image/*"><div class="photo-preview">Sin fotografía</div></div>
@@ -138,7 +149,7 @@
           </section>
 
           <section id="inverseSection" class="card flow-section hidden">
-            <div class="step-title"><span>2</span><div><strong>Costales y paquetes devueltos</strong><small>Abra un costal y asigne sus paquetes</small></div></div>
+            <div class="step-title"><span>2</span><div><strong>Costales y paquetes devueltos</strong><small>Abra un costal y asigne sus guías o paquetes</small></div></div>
             <div id="activeSackBox" class="active-sack empty"><span>Costal activo</span><strong id="activeSackCode">Ninguno</strong><small id="activeSackCount">Escanee un costal para comenzar</small></div>
             <div class="two-actions">
               <button type="button" class="button scan" data-scan-mode="SACK">Escanear costal</button>
@@ -176,7 +187,8 @@
             <button type="button" class="button secondary full" data-action="get-gps">Obtener ubicación GPS</button>
             <div class="field"><label for="responsibleDocument">DNI/RUC del responsable <span class="optional">(opcional)</span></label><input id="responsibleDocument" inputmode="numeric" maxlength="11"></div>
             <div class="field"><label for="operationNotes">Observaciones <span class="optional">(opcional)</span></label><textarea id="operationNotes" rows="3"></textarea></div>
-            <button type="button" class="button success full" data-action="finish-operation">Finalizar operación</button>
+            <button id="deleteActiveOperationButton" type="button" class="button danger full hidden" data-action="delete-active-operation">Eliminar borrador</button>
+            <button id="finishOperationButton" type="button" class="button success full" data-action="finish-operation">Confirmar descarga y completar</button>
           </section>
         </section>
       </section>
@@ -186,7 +198,7 @@
         <section class="card filters-card">
           <div class="filter-grid">
             <div><label for="filterType">Operación</label><select id="filterType"><option value="">Todas</option><option value="RECEPCION_CAMION">Recepción camión</option><option value="INVERSA_CAMION">Inversa camión</option><option value="RECEPCION_ENCOMIENDA">Recepción encomienda</option><option value="INVERSA_ENCOMIENDA">Inversa encomienda</option></select></div>
-            <div><label for="filterStatus">Estado</label><select id="filterStatus"><option value="">Todos</option><option value="BORRADOR">Borrador</option><option value="FINALIZADO">Finalizado</option><option value="ANULADO">Anulado</option></select></div>
+            <div><label for="filterStatus">Estado</label><select id="filterStatus"><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="EN_PROCESO">En proceso</option><option value="COMPLETADO">Completado</option><option value="ANULADO">Anulado</option></select></div>
             <div><label for="filterFrom">Desde</label><input id="filterFrom" type="date"></div>
             <div><label for="filterTo">Hasta</label><input id="filterTo" type="date"></div>
           </div>
@@ -223,7 +235,7 @@
             <span>Carga masiva de PDV</span>
             <button type="button" class="link-button" data-action="download-pdv-template">Descargar plantilla</button>
           </div>
-          <p class="helper-text">Disponible solo para Administradores. Primero deben existir las cuentas de los encargados indicados en el archivo.</p>
+          <p class="helper-text">Disponible solo para Administradores. Crea o actualiza cada PDV y su cuenta de acceso con el usuario y contraseña temporal definidos en el archivo. Los encargados indicados deben existir previamente.</p>
           <label for="bulkPdvFile">Archivo Excel o CSV</label>
           <input id="bulkPdvFile" type="file" accept=".xlsx,.xls,.csv,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel">
           <div id="bulkPdvFileInfo" class="file-info">Seleccione la plantilla completada para validar los registros.</div>

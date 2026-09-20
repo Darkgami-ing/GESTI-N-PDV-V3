@@ -14,11 +14,19 @@
     RECEPCION_ENCOMIENDA: "RE",
     INVERSA_ENCOMIENDA: "IE",
   };
+  const STATUS_LABELS = {
+    PENDIENTE: "Pendiente",
+    EN_PROCESO: "En proceso",
+    COMPLETADO: "Completado",
+    ANULADO: "Anulado",
+    BORRADOR: "Pendiente",
+    FINALIZADO: "Completado",
+  };
   const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA"]);
   const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
-  const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "ESTADO"];
+  const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "USUARIO_PDV", "CONTRASENA_TEMPORAL", "ESTADO"];
   const BULK_PDV_MAX_ROWS = 1000;
-  const BULK_PDV_BATCH_SIZE = 200;
+  const BULK_PDV_BATCH_SIZE = 25;
   const BULK_PDV_MAX_FILE_BYTES = 5 * 1024 * 1024;
 
   if (!CFG.SUPABASE_URL || !CFG.SUPABASE_PUBLISHABLE_KEY || !window.supabase) {
@@ -44,6 +52,7 @@
     packages: [],
     seals: [],
     evidences: [],
+    transportGuide: null,
     receiptItemType: "SACO",
     activeSack: null,
     photoDrafts: new Map(),
@@ -75,6 +84,8 @@
   const isReceipt = () => RECEIPT_TYPES.has(state.operation?.tipo || state.selectedType);
   const isInverse = () => INVERSE_TYPES.has(state.operation?.tipo || state.selectedType);
   const isTruckReceipt = () => (state.operation?.tipo || state.selectedType) === "RECEPCION_CAMION";
+  const statusLabel = (status) => STATUS_LABELS[status] || status || "Pendiente";
+  const statusClass = (status) => status === "COMPLETADO" || status === "FINALIZADO" ? "done" : status === "EN_PROCESO" ? "process" : status === "ANULADO" ? "cancelled" : "draft";
   const todayInput = () => {
     const date = new Date();
     const offset = date.getTimezoneOffset();
@@ -242,13 +253,15 @@
     $("#setupTitle").textContent = TYPE_LABELS[type];
     $("#truckFields").classList.toggle("hidden", !type.includes("CAMION"));
     $("#parcelFields").classList.toggle("hidden", !type.includes("ENCOMIENDA"));
+    $("#operationOt").value = "";
+    $("#transportGuideNumber").value = "";
     const choosePdv = state.profile.rol !== "PDV";
     $("#pdvField").classList.toggle("hidden", !choosePdv);
     if (!choosePdv) $("#operationPdv").value = state.profile.pdv_id || "";
   }
 
   function cancelOperationSelection() {
-    if (state.operation && !confirm("La operación permanecerá como borrador. ¿Desea salir del registro?")) return;
+    if (state.operation && !confirm("La operación permanecerá guardada como pendiente o en proceso. ¿Desea salir del registro?")) return;
     resetOperationState();
     $("#operationSetup").reset();
     $("#operationSetup").classList.add("hidden");
@@ -263,8 +276,11 @@
     const pdvId = state.profile.rol === "PDV" ? state.profile.pdv_id : $("#operationPdv").value;
     if (!pdvId) return toast("Seleccione el PDV.", "error");
 
+    const ot = normalizeCode($("#operationOt").value);
     const data = {
-      codigo: operationCode(type),
+      codigo: ot,
+      ot,
+      estado: "PENDIENTE",
       tipo: type,
       pdv_id: pdvId,
       created_by: state.profile.id,
@@ -272,12 +288,11 @@
       placa: normalizeCode($("#vehiclePlate").value) || null,
       empresa_encomienda: $("#parcelCompany").value.trim() || null,
       numero_encomienda: normalizeCode($("#parcelNumber").value) || null,
+      guia_remision_transporte: normalizeCode($("#transportGuideNumber").value) || null,
     };
 
+    if (!data.ot) return toast("Ingrese o escanee la OT.", "error");
     if (type.includes("CAMION") && !data.placa) return toast("Ingrese la placa de la unidad.", "error");
-    if (type.includes("ENCOMIENDA") && (!data.empresa_encomienda || !data.numero_encomienda)) {
-      return toast("Ingrese la empresa y el número de encomienda.", "error");
-    }
 
     showLoading("Creando operación…");
     try {
@@ -303,6 +318,7 @@
     state.packages = [];
     state.seals = [];
     state.evidences = [];
+    state.transportGuide = null;
     state.activeSack = null;
     state.photoDrafts = new Map();
     state.inversePhotos = [];
@@ -316,8 +332,30 @@
     renderGeneralPhotos("parcel");
     $$(".photo-preview").forEach((node) => { node.textContent = "Sin fotografía"; });
     $$(".photo-slot input").forEach((input) => { input.value = ""; });
+    $("#transportGuideInput").value = "";
+    $("#transportGuideNumber").value = "";
+    $("#operationOt").value = "";
     $("#gpsStatus").className = "gps-box";
     $("#gpsStatus").textContent = "Ubicación pendiente.";
+    renderTransportGuide();
+  }
+
+  function markOperationInProcess() {
+    if (!state.operation || state.operation.estado === "COMPLETADO" || state.operation.estado === "ANULADO") return;
+    if (state.operation.estado !== "EN_PROCESO") {
+      state.operation.estado = "EN_PROCESO";
+      renderOperationStatus();
+    }
+  }
+
+  function renderOperationStatus() {
+    const status = state.operation?.estado || "PENDIENTE";
+    const node = $("#activeOperationStatus");
+    if (!node) return;
+    node.className = `status-pill ${statusClass(status)}`;
+    node.textContent = statusLabel(status);
+    $("#finishOperationButton")?.classList.toggle("hidden", status === "COMPLETADO" || status === "ANULADO");
+    $("#deleteActiveOperationButton")?.classList.toggle("hidden", state.profile?.rol !== "ADMINISTRADOR" || !["PENDIENTE", "EN_PROCESO"].includes(status));
   }
 
   function renderWorkspace() {
@@ -329,6 +367,8 @@
     $("#newPanelTitle").textContent = TYPE_LABELS[type];
     $("#activeOperationCode").textContent = state.operation.codigo;
     $("#activeOperationLabel").textContent = TYPE_LABELS[type];
+    $("#transportGuideNumber").value = state.operation.guia_remision_transporte || "";
+    renderOperationStatus();
 
     $("#truckArrivalSection").classList.toggle("hidden", type !== "RECEPCION_CAMION");
     $("#receiptItemsSection").classList.toggle("hidden", !RECEIPT_TYPES.has(type));
@@ -338,13 +378,16 @@
     $("#loadPhotoSlot").classList.toggle("hidden", type !== "RECEPCION_CAMION");
     $("#itemTypeChooser").classList.toggle("hidden", type === "RECEPCION_ENCOMIENDA");
     $("#receiptItemsTitle").textContent = type === "RECEPCION_ENCOMIENDA" ? "Sacos recibidos por encomienda" : "Sacos y bultos recibidos";
-    $("#receiptStepNumber").textContent = type === "RECEPCION_CAMION" ? "2" : "1";
+    $("#receiptStepNumber").textContent = type === "RECEPCION_CAMION" ? "3" : "2";
+    $("#parcelPhotosSection .step-title > span").textContent = "2";
+    $("#truckDepartureSection .step-title > span").textContent = "4";
     if (type === "RECEPCION_ENCOMIENDA") state.receiptItemType = "SACO";
 
     createSealCards();
     renderItems();
     renderSacks();
     renderExistingEvidenceMarkers();
+    renderTransportGuide();
     renderGps();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -369,7 +412,7 @@
     const id = localStorage.getItem("controlLogisticoDraft");
     if (!id) return;
     try {
-      const { data, error } = await db.from("operaciones").select("*").eq("id", id).eq("estado", "BORRADOR").maybeSingle();
+      const { data, error } = await db.from("operaciones").select("*").eq("id", id).in("estado", ["PENDIENTE", "EN_PROCESO"]).maybeSingle();
       if (error || !data) return localStorage.removeItem("controlLogisticoDraft");
       await resumeOperation(data.id, false);
       toast(`Borrador recuperado: ${data.codigo}`);
@@ -390,7 +433,7 @@
         db.from("evidencias").select("*").eq("operacion_id", id).order("created_at"),
       ]);
       for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult]) if (result.error) throw result.error;
-      if (operationResult.data.estado !== "BORRADOR") throw new Error("La operación ya no está en borrador.");
+      if (!["PENDIENTE", "EN_PROCESO"].includes(operationResult.data.estado)) throw new Error("La operación ya no está disponible para edición.");
       resetOperationState();
       state.operation = operationResult.data;
       state.items = itemsResult.data || [];
@@ -398,6 +441,7 @@
       state.packages = packagesResult.data || [];
       state.seals = sealsResult.data || [];
       state.evidences = evidencesResult.data || [];
+      state.transportGuide = null;
       state.activeSack = state.sacks.find((item) => item.estado === "ABIERTO") || null;
       localStorage.setItem("controlLogisticoDraft", id);
       if (navigate) switchView("new");
@@ -433,6 +477,7 @@
       }).select("*").single();
       if (error) throw error;
       state.items.push(data);
+      markOperationInProcess();
       renderItems();
       vibrate(90);
       return true;
@@ -480,6 +525,7 @@
       }).select("*").single();
       if (error) throw error;
       state.sacks.push(data);
+      markOperationInProcess();
       state.activeSack = data;
       renderSacks();
       vibrate([100, 60, 100]);
@@ -512,6 +558,7 @@
       }).select("*").single();
       if (error) throw error;
       state.packages.push(data);
+      markOperationInProcess();
       renderSacks();
       vibrate(80);
       return true;
@@ -528,6 +575,7 @@
     const { data, error } = await db.from("costales").update({ estado: "CERRADO", cerrado_at: new Date().toISOString() }).eq("id", state.activeSack.id).select("*").single();
     if (error) return toast(errorMessage(error), "error");
     state.sacks = state.sacks.map((item) => item.id === data.id ? data : item);
+    markOperationInProcess();
     state.activeSack = null;
     renderSacks();
     toast("Costal cerrado.", "success");
@@ -630,7 +678,7 @@
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onload = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("No se pudo leer la fotografía."));
+      reader.onerror = () => reject(new Error("No se pudo leer el archivo."));
       reader.readAsDataURL(file);
     });
   }
@@ -664,6 +712,118 @@
       input.value = "";
     } finally {
       hideLoading();
+    }
+  }
+
+  function currentTransportGuideEvidence() {
+    return state.evidences.find((item) => item.categoria === "GUIA_REMISION_TRANSPORTE");
+  }
+
+  function renderTransportGuide() {
+    const preview = $("#transportGuidePreview");
+    const removeButton = $("#removeTransportGuideButton");
+    if (!preview || !removeButton) return;
+    const local = state.transportGuide;
+    const existing = currentTransportGuideEvidence();
+    if (local) {
+      preview.innerHTML = local.mimeType === "application/pdf"
+        ? `<strong>PDF listo:</strong> ${escapeHtml(local.fileName || "guia-remision.pdf")}`
+        : `<img src="${local.dataUrl}" alt="Guía de remisión transporte">`;
+      removeButton.classList.remove("hidden");
+      return;
+    }
+    if (existing) {
+      preview.innerHTML = `<strong>Archivo guardado:</strong> ${escapeHtml(existing.nombre_archivo || "Guía de remisión transporte")}`;
+      removeButton.classList.remove("hidden");
+      return;
+    }
+    preview.textContent = "Sin documento adjunto.";
+    removeButton.classList.add("hidden");
+  }
+
+  async function deleteStoredEvidence(evidenceId, ask = true) {
+    const evidence = state.evidences.find((item) => item.id === evidenceId);
+    if (!evidence) return;
+    if (ask && !confirm("¿Eliminar la guía de remisión adjunta?")) return;
+    showLoading("Eliminando guía…");
+    try {
+      await callDrive("ELIMINAR_EVIDENCIA", { fileId: evidence.drive_file_id });
+      const { error } = await db.from("evidencias").delete().eq("id", evidence.id);
+      if (error) throw error;
+      state.evidences = state.evidences.filter((item) => item.id !== evidence.id);
+      if (state.transportGuide?.existingId === evidence.id || state.transportGuide?.category === evidence.categoria) state.transportGuide = null;
+      renderTransportGuide();
+      toast("Guía eliminada. Puede adjuntar otra antes de completar.", "success");
+    } catch (error) {
+      toast(errorMessage(error), "error");
+      throw error;
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function handleTransportGuide(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    const isPdf = file.type === "application/pdf" || /\.pdf$/i.test(file.name);
+    if (!isPdf && !file.type.startsWith("image/")) {
+      toast("Adjunte una imagen o un archivo PDF.", "error");
+      input.value = "";
+      return;
+    }
+    if (file.size > 6 * 1024 * 1024) {
+      toast("La guía no puede superar 6 MB.", "error");
+      input.value = "";
+      return;
+    }
+    const existing = currentTransportGuideEvidence();
+    if (existing) {
+      try {
+        await deleteStoredEvidence(existing.id, false);
+      } catch (error) {
+        input.value = "";
+        return;
+      }
+    }
+    showLoading("Procesando guía…");
+    try {
+      const dataUrl = isPdf
+        ? (await fileToDataUrl(file)).replace(/^data:;base64,/, "data:application/pdf;base64,")
+        : await processImage(file);
+      state.transportGuide = {
+        dataUrl,
+        fileName: file.name,
+        mimeType: isPdf ? "application/pdf" : "image/jpeg",
+        category: "GUIA_REMISION_TRANSPORTE",
+        reference: "GUIA-TRANSPORTE",
+        label: "Guía de remisión transporte",
+        uploaded: false,
+      };
+      markOperationInProcess();
+      await uploadEvidence(state.transportGuide);
+      renderTransportGuide();
+    } catch (error) {
+      toast(errorMessage(error), "error");
+      input.value = "";
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function removeTransportGuide() {
+    if (state.transportGuide && !state.transportGuide.uploaded) {
+      state.transportGuide = null;
+      $("#transportGuideInput").value = "";
+      renderTransportGuide();
+      return;
+    }
+    const existing = currentTransportGuideEvidence();
+    if (existing) {
+      try {
+        await deleteStoredEvidence(existing.id);
+      } catch (error) {
+        // El mensaje ya fue mostrado por deleteStoredEvidence.
+      }
     }
   }
 
@@ -728,6 +888,7 @@
       categoria: photo.category,
       referenciaCodigo: photo.reference || "GENERAL",
       dataUrl: photo.dataUrl,
+      nombreArchivo: photo.fileName || "",
     });
     const { data, error } = await db.from("evidencias").insert({
       operacion_id: state.operation.id,
@@ -742,6 +903,8 @@
     if (error) throw error;
     state.evidences.push(data);
     photo.uploaded = true;
+    if (photo.category === "GUIA_REMISION_TRANSPORTE") photo.existingId = data.id;
+    markOperationInProcess();
     return data;
   }
 
@@ -753,6 +916,28 @@
       photo: state.photoDrafts.get(`PRECINTO_${stage}:${card.dataset.sealNumber}`),
       existingPhoto: state.evidences.find((item) => item.categoria === `PRECINTO_${stage}` && item.referencia_codigo === card.dataset.sealNumber),
     }));
+  }
+
+  async function syncTransportGuide() {
+    const existing = currentTransportGuideEvidence();
+    if (existing) return existing;
+    if (!state.transportGuide) throw new Error("Debe adjuntar la guía de remisión transporte.");
+    return uploadEvidence(state.transportGuide);
+  }
+
+  async function syncOperationMetadata() {
+    const numeroGuia = normalizeCode($("#transportGuideNumber").value) || null;
+    if (numeroGuia === (state.operation.guia_remision_transporte || null)) return;
+    const payload = { guia_remision_transporte: numeroGuia };
+    if (numeroGuia && state.operation.estado === "PENDIENTE") payload.estado = "EN_PROCESO";
+    const { data, error } = await db.from("operaciones")
+      .update(payload)
+      .eq("id", state.operation.id)
+      .select("*")
+      .single();
+    if (error) throw error;
+    state.operation = data;
+    renderOperationStatus();
   }
 
   async function syncTruckReceipt() {
@@ -816,10 +1001,12 @@
       if (!state.sacks.length || !state.packages.length) return toast("Registre costales y paquetes.", "error");
       if (state.sacks.some((item) => item.estado === "ABIERTO")) return toast("Cierre todos los costales.", "error");
     }
-    if (!confirm("¿Finalizar la operación? Después ya no podrá editarla.")) return;
+    if (!confirm("¿Confirmar la descarga y completar la operación? Después ya no podrá editar guías.")) return;
 
     showLoading("Subiendo evidencias…");
     try {
+      await syncOperationMetadata();
+      await syncTransportGuide();
       if (isTruckReceipt()) await syncTruckReceipt();
       else await syncGeneralEvidence();
 
@@ -840,10 +1027,50 @@
       $("#operationWorkspace").classList.add("hidden");
       $("#operationPicker").classList.remove("hidden");
       $("#newPanelTitle").textContent = "Selecciona una operación";
-      toast(`Operación ${finishedCode} finalizada.`, "success");
+      toast(`OT ${finishedCode} completada.`, "success");
       await Promise.all([loadHome(), loadRecent(), loadRecords()]);
       switchView("records");
       return data;
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function deleteOperation(id) {
+    if (state.profile?.rol !== "ADMINISTRADOR") return toast("Solo el Administrador puede eliminar borradores.", "error");
+    const confirmed = confirm("¿Eliminar definitivamente esta operación? Se borrarán sus escaneos, costales, paquetes y evidencias.");
+    if (!confirmed) return;
+    showLoading("Eliminando borrador…");
+    try {
+      const [operationResult, evidencesResult] = await Promise.all([
+        db.from("operaciones").select("id,ot,codigo,estado").eq("id", id).single(),
+        db.from("evidencias").select("id,drive_file_id").eq("operacion_id", id),
+      ]);
+      if (operationResult.error) throw operationResult.error;
+      if (evidencesResult.error) throw evidencesResult.error;
+      if (!["PENDIENTE", "EN_PROCESO"].includes(operationResult.data.estado)) {
+        throw new Error("Solo se pueden eliminar operaciones pendientes o en proceso.");
+      }
+
+      for (const evidence of evidencesResult.data || []) {
+        await callDrive("ELIMINAR_EVIDENCIA", { fileId: evidence.drive_file_id });
+      }
+
+      const { error } = await db.from("operaciones").delete().eq("id", id);
+      if (error) throw error;
+      if (state.operation?.id === id) {
+        localStorage.removeItem("controlLogisticoDraft");
+        resetOperationState();
+        $("#operationWorkspace").classList.add("hidden");
+        $("#operationSetup").classList.add("hidden");
+        $("#operationPicker").classList.remove("hidden");
+        $("#newPanelTitle").textContent = "Selecciona una operación";
+      }
+      $("#recordDialog")?.close();
+      toast(`OT ${operationResult.data.ot || operationResult.data.codigo} eliminada.`, "success");
+      await Promise.all([loadHome(), loadRecent(), loadRecords()]);
     } catch (error) {
       toast(errorMessage(error), "error");
     } finally {
@@ -960,9 +1187,9 @@
     if (error) return console.error(error);
     const rows = data || [];
     $("#sumToday").textContent = rows.length;
-    $("#sumDraft").textContent = rows.filter((row) => row.estado === "BORRADOR").length;
-    $("#sumDone").textContent = rows.filter((row) => row.estado === "FINALIZADO").length;
-    $("#sumPackages").textContent = rows.reduce((sum, row) => sum + Number(row.total_paquetes || 0), 0);
+    $("#sumPending").textContent = rows.filter((row) => row.estado === "PENDIENTE" || row.estado === "BORRADOR").length;
+    $("#sumProcess").textContent = rows.filter((row) => row.estado === "EN_PROCESO").length;
+    $("#sumDone").textContent = rows.filter((row) => row.estado === "COMPLETADO" || row.estado === "FINALIZADO").length;
   }
 
   async function loadRecent() {
@@ -990,9 +1217,9 @@
       const rows = data || [];
       renderRecordList(rows, $("#recordsList"));
       $("#recordsSummary").innerHTML = `
-        <article class="summary-card"><span>Registros</span><strong>${rows.length}</strong></article>
-        <article class="summary-card"><span>Costales</span><strong>${rows.reduce((sum, row) => sum + Number(row.total_costales || 0), 0)}</strong></article>
-        <article class="summary-card"><span>Paquetes</span><strong>${rows.reduce((sum, row) => sum + Number(row.total_paquetes || 0), 0)}</strong></article>`;
+        <article class="summary-card warning"><span>Pendientes</span><strong>${rows.filter((row) => row.estado === "PENDIENTE").length}</strong></article>
+        <article class="summary-card process"><span>En proceso</span><strong>${rows.filter((row) => row.estado === "EN_PROCESO").length}</strong></article>
+        <article class="summary-card success"><span>Completados</span><strong>${rows.filter((row) => row.estado === "COMPLETADO").length}</strong></article>`;
     } catch (error) {
       toast(errorMessage(error), "error");
     } finally {
@@ -1003,8 +1230,8 @@
   function renderRecordList(rows, target) {
     target.innerHTML = rows.length ? rows.map((row) => `
       <article class="record-card" data-record-id="${row.id}">
-        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.codigo)}</strong><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span><span class="status-pill ${row.estado === "FINALIZADO" ? "done" : row.estado === "BORRADOR" ? "draft" : "cancelled"}">${escapeHtml(row.estado)}</span></div></div>
-        <div class="record-side"><small>${row.total_costales ? "Paquetes" : "Recibidos"}</small><strong>${row.total_costales ? Number(row.total_paquetes || 0) : Number(row.total_recibidos || 0)}</strong></div>
+        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.ot || row.codigo)}</strong><small class="record-document">${escapeHtml(row.guia_remision_nombre || row.guia_remision_transporte || "Guía de remisión pendiente")}</small><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span></div></div>
+        <div class="record-side"><span class="status-pill ${statusClass(row.estado)}">${escapeHtml(statusLabel(row.estado))}</span><small>${row.total_costales ? "Paquetes" : "Recibidos"}</small><strong>${row.total_costales ? Number(row.total_paquetes || 0) : Number(row.total_recibidos || 0)}</strong></div>
       </article>`).join("") : '<div class="empty-state">No se encontraron registros.</div>';
   }
 
@@ -1023,8 +1250,8 @@
       const o = operationResult.data;
       $("#recordDialogTitle").textContent = o.codigo;
       const details = [
-        ["Operación", TYPE_LABELS[o.tipo] || o.tipo], ["Estado", o.estado], ["PDV", `${o.pdvs?.codigo || ""} ${o.pdvs?.nombre || ""}`], ["Inicio", formatDate(o.iniciada_at)],
-        ["Finalización", formatDate(o.finalizada_at)], ["Ruta", o.id_ruta || "-"], ["Placa", o.placa || "-"], ["Encomienda", o.numero_encomienda || "-"],
+        ["Operación", TYPE_LABELS[o.tipo] || o.tipo], ["Estado", statusLabel(o.estado)], ["PDV", `${o.pdvs?.codigo || ""} ${o.pdvs?.nombre || ""}`], ["Inicio", formatDate(o.iniciada_at)],
+        ["OT / ID", o.ot || o.codigo], ["Guía de remisión", o.guia_remision_transporte || "-"], ["Finalización", formatDate(o.finalizada_at)], ["Ruta", o.id_ruta || "-"], ["Placa", o.placa || "-"], ["Encomienda", o.numero_encomienda || "-"],
         ["Responsable", o.dni_ruc_responsable || "-"], ["GPS", o.latitud ? `${o.latitud}, ${o.longitud}` : "-"],
       ];
       let html = `<div class="detail-grid">${details.map(([label, value]) => `<div class="detail-cell"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div>`;
@@ -1033,7 +1260,10 @@
       if (sealsResult.data.length) html += `<section class="detail-section"><h3>Precintos</h3><div class="sack-packages">${sealsResult.data.map((seal) => `${escapeHtml(seal.etapa)} ${seal.numero}: ${escapeHtml(seal.codigo)}`).join(" · ")}</div></section>`;
       if (evidencesResult.data.length) html += `<section class="detail-section"><h3>Evidencias (${evidencesResult.data.length})</h3><div class="evidence-buttons">${evidencesResult.data.map((evidence) => `<button class="evidence-button" data-evidence-file="${escapeHtml(evidence.drive_file_id)}">${escapeHtml(evidence.etiqueta)}</button>`).join("")}</div><div id="evidenceViewer" class="photo-preview hidden" style="margin-top:10px"></div></section>`;
       if (o.observaciones) html += `<section class="detail-section"><h3>Observaciones</h3><p>${escapeHtml(o.observaciones)}</p></section>`;
-      if (o.estado === "BORRADOR") html += `<button class="button primary full" data-resume-id="${o.id}">Continuar borrador</button>`;
+      if (["PENDIENTE", "EN_PROCESO", "BORRADOR"].includes(o.estado)) {
+        html += `<button class="button primary full" data-resume-id="${o.id}">Continuar operación</button>`;
+        if (state.profile?.rol === "ADMINISTRADOR") html += `<button class="button danger full" data-delete-operation="${o.id}">Eliminar borrador</button>`;
+      }
       $("#recordDetail").innerHTML = html;
       $("#recordDialog").showModal();
     } catch (error) {
@@ -1048,7 +1278,9 @@
     try {
       const result = await callDrive("OBTENER_EVIDENCIA", { fileId });
       const viewer = $("#evidenceViewer");
-      viewer.innerHTML = `<img src="${result.dataUrl}" alt="Evidencia" style="width:100%;max-height:520px;object-fit:contain">`;
+      viewer.innerHTML = result.mimeType === "application/pdf"
+        ? `<iframe src="${result.dataUrl}" title="Documento" style="width:100%;height:520px;border:0"></iframe>`
+        : `<img src="${result.dataUrl}" alt="Evidencia" style="width:100%;max-height:520px;object-fit:contain">`;
       viewer.classList.remove("hidden");
     } catch (error) {
       toast(errorMessage(error), "error");
@@ -1118,21 +1350,24 @@
       const workbook = XLSX.utils.book_new();
       const pdvSheet = XLSX.utils.json_to_sheet([], { header: BULK_PDV_HEADERS });
       pdvSheet["!cols"] = [
-        { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 },
+        { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 20 }, { wch: 24 }, { wch: 14 },
       ];
       const instructions = [
         ["CARGA MASIVA DE PDV"],
         ["Complete la hoja PDV sin cambiar los encabezados."],
         ["Los encargados deben existir previamente, estar activos y tener rol ENCARGADO."],
         ["CODIGO_PDV debe ser único. Si ya existe, sus datos serán actualizados."],
+        ["USUARIO_PDV debe ser único y tener entre 3 y 30 caracteres."],
+        ["CONTRASENA_TEMPORAL debe tener entre 8 y 72 caracteres y será definida por el Administrador."],
+        ["Si la cuenta ya existe y corresponde al mismo PDV, su contraseña será actualizada."],
         ["ESTADO solo admite ACTIVO o INACTIVO."],
         [],
         ["EJEMPLO"],
         BULK_PDV_HEADERS,
-        ["PE07008", "CAL-08.pdv", "LIMA", "LIMA NORTE", "JESUS", "ACTIVO"],
+        ["PE07008", "CAL-08.pdv", "LIMA", "LIMA NORTE", "JESUS", "CAL08PDV", "Cambiar#2026", "ACTIVO"],
       ];
       const instructionSheet = XLSX.utils.aoa_to_sheet(instructions);
-      instructionSheet["!cols"] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 }];
+      instructionSheet["!cols"] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 20 }, { wch: 24 }, { wch: 14 }];
       XLSX.utils.book_append_sheet(workbook, pdvSheet, "PDV");
       XLSX.utils.book_append_sheet(workbook, instructionSheet, "INSTRUCCIONES");
       XLSX.writeFile(workbook, "PLANTILLA_CARGA_MASIVA_PDV.xlsx");
@@ -1158,6 +1393,8 @@
         region: String(keyed.REGION ?? "").trim(),
         area: String(keyed.AREA ?? "").trim(),
         encargado_usuario: normalizeCode(keyed.USUARIO_ENCARGADO),
+        usuario_pdv: normalizeCode(keyed.USUARIO_PDV),
+        password: String(keyed.CONTRASENA_TEMPORAL ?? ""),
         estado: normalizeCode(keyed.ESTADO || "ACTIVO"),
         errors: [],
       };
@@ -1165,6 +1402,10 @@
 
     const codeCounts = rows.reduce((counts, row) => {
       if (row.codigo) counts.set(row.codigo, (counts.get(row.codigo) || 0) + 1);
+      return counts;
+    }, new Map());
+    const userCounts = rows.reduce((counts, row) => {
+      if (row.usuario_pdv) counts.set(row.usuario_pdv, (counts.get(row.usuario_pdv) || 0) + 1);
       return counts;
     }, new Map());
 
@@ -1175,6 +1416,10 @@
       if (!row.nombre) row.errors.push("Falta NOMBRE_PDV.");
       if (!row.encargado_usuario) row.errors.push("Falta USUARIO_ENCARGADO.");
       else if (!managers.has(row.encargado_usuario)) row.errors.push("Encargado inexistente o inactivo.");
+      if (!row.usuario_pdv) row.errors.push("Falta USUARIO_PDV.");
+      else if (!/^[A-Z0-9._-]{3,30}$/.test(row.usuario_pdv)) row.errors.push("USUARIO_PDV inválido.");
+      else if (userCounts.get(row.usuario_pdv) > 1) row.errors.push("USUARIO_PDV duplicado en el archivo.");
+      if (row.password.length < 8 || row.password.length > 72) row.errors.push("La contraseña debe tener entre 8 y 72 caracteres.");
       if (!["ACTIVO", "INACTIVO"].includes(row.estado)) row.errors.push("ESTADO debe ser ACTIVO o INACTIVO.");
     });
 
@@ -1193,13 +1438,15 @@
     $("#bulkPdvPreview").classList.remove("hidden");
     $("#bulkPdvPreview").innerHTML = `
       <table class="data-table">
-        <thead><tr><th>Fila</th><th>Código</th><th>PDV</th><th>Encargado</th><th>Estado</th><th>Validación</th></tr></thead>
+        <thead><tr><th>Fila</th><th>Código</th><th>PDV</th><th>Encargado</th><th>Usuario PDV</th><th>Contraseña</th><th>Estado</th><th>Validación</th></tr></thead>
         <tbody>${rows.slice(0, 100).map((row) => `
           <tr class="${row.errors.length ? "row-error" : ""}">
             <td>${row.fila}</td>
             <td>${escapeHtml(row.codigo || "-")}</td>
             <td>${escapeHtml(row.nombre || "-")}</td>
             <td>${escapeHtml(row.encargado_usuario || "-")}</td>
+            <td>${escapeHtml(row.usuario_pdv || "-")}</td>
+            <td>${row.password ? "••••••••" : "-"}</td>
             <td>${escapeHtml(row.estado || "-")}</td>
             <td><span class="validation-pill ${row.errors.length ? "bad" : "ok"}">${escapeHtml(row.errors.length ? row.errors.join(" ") : "Válido")}</span></td>
           </tr>`).join("")}</tbody>
@@ -1250,20 +1497,22 @@
   function renderBulkPdvResults(results) {
     const created = results.filter((row) => row.resultado === "CREADO").length;
     const updated = results.filter((row) => row.resultado === "ACTUALIZADO").length;
+    const partial = results.filter((row) => row.resultado === "PARCIAL").length;
     const rejected = results.filter((row) => row.resultado === "RECHAZADO").length;
     $("#bulkPdvSummary").innerHTML = `
       <div><span>Procesados</span><strong>${results.length}</strong></div>
       <div class="ok"><span>Creados</span><strong>${created}</strong></div>
       <div class="updated"><span>Actualizados</span><strong>${updated}</strong></div>
+      <div class="warning"><span>Parciales</span><strong>${partial}</strong></div>
       <div class="bad"><span>Rechazados</span><strong>${rejected}</strong></div>`;
     $("#bulkPdvPreview").innerHTML = `
       <table class="data-table">
         <thead><tr><th>Fila</th><th>Código</th><th>Resultado</th><th>Detalle</th></tr></thead>
         <tbody>${results.map((row) => `
-          <tr class="${row.resultado === "RECHAZADO" ? "row-error" : ""}">
+          <tr class="${["RECHAZADO", "PARCIAL"].includes(row.resultado) ? "row-error" : ""}">
             <td>${row.fila}</td>
             <td>${escapeHtml(row.codigo || "-")}</td>
-            <td><span class="validation-pill ${row.resultado === "RECHAZADO" ? "bad" : "ok"}">${escapeHtml(row.resultado)}</span></td>
+            <td><span class="validation-pill ${["RECHAZADO", "PARCIAL"].includes(row.resultado) ? "bad" : "ok"}">${escapeHtml(row.resultado)}</span></td>
             <td>${escapeHtml(row.mensaje || "Procesado correctamente.")}</td>
           </tr>`).join("")}</tbody>
       </table>`;
@@ -1289,6 +1538,8 @@
           region: row.region,
           area: row.area,
           encargado_usuario: row.encargado_usuario,
+          usuario_pdv: row.usuario_pdv,
+          password: row.password,
           estado: row.estado,
         }));
         $("#loadingText").textContent = `Importando ${Math.min(index + batch.length, validRows.length)} de ${validRows.length}…`;
@@ -1301,7 +1552,8 @@
       $("#bulkPdvImportButton").disabled = true;
       $("#bulkPdvResultButton").classList.remove("hidden");
       const rejected = state.bulkPdvResults.filter((row) => row.resultado === "RECHAZADO").length;
-      showFormMessage("#bulkPdvMessage", rejected ? `Importación terminada con ${rejected} registro(s) rechazado(s).` : "Importación completada correctamente.", rejected === 0);
+      const partial = state.bulkPdvResults.filter((row) => row.resultado === "PARCIAL").length;
+      showFormMessage("#bulkPdvMessage", rejected || partial ? `Importación terminada: ${rejected} rechazado(s) y ${partial} parcial(es). Descargue el resultado para revisar.` : "Importación completada correctamente.", rejected === 0 && partial === 0);
       await loadPdvs();
     } catch (error) {
       showFormMessage("#bulkPdvMessage", errorMessage(error));
@@ -1314,15 +1566,21 @@
     try {
       if (!state.bulkPdvResults.length) throw new Error("No hay resultados para descargar.");
       const XLSX = requireSpreadsheetLibrary();
-      const rows = state.bulkPdvResults.map((row) => ({
-        FILA: row.fila,
-        CODIGO_PDV: row.codigo,
-        RESULTADO: row.resultado,
-        DETALLE: row.mensaje || "Procesado correctamente.",
-      }));
+      const sourceByRow = new Map(state.bulkPdvRows.map((row) => [row.fila, row]));
+      const rows = state.bulkPdvResults.map((row) => {
+        const source = sourceByRow.get(row.fila) || {};
+        return {
+          FILA: row.fila,
+          CODIGO_PDV: row.codigo,
+          USUARIO_PDV: source.usuario_pdv || "",
+          CONTRASENA_TEMPORAL: source.password || "",
+          RESULTADO: row.resultado,
+          DETALLE: row.mensaje || "Procesado correctamente.",
+        };
+      });
       const workbook = XLSX.utils.book_new();
       const sheet = XLSX.utils.json_to_sheet(rows);
-      sheet["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 55 }];
+      sheet["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 24 }, { wch: 18 }, { wch: 55 }];
       XLSX.utils.book_append_sheet(workbook, sheet, "RESULTADO");
       XLSX.writeFile(workbook, `RESULTADO_CARGA_PDV_${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (error) {
@@ -1379,6 +1637,19 @@
     $("#passwordForm").addEventListener("submit", changePassword);
     $("#newRole").addEventListener("change", updateRoleFields);
     $("#bulkPdvFile").addEventListener("change", readBulkPdvFile);
+    $("#transportGuideInput").addEventListener("change", (event) => handleTransportGuide(event.target));
+    $("#transportGuideNumber").addEventListener("change", async () => {
+      if (!state.operation) return;
+      showLoading("Guardando guía…");
+      try {
+        await syncOperationMetadata();
+        markOperationInProcess();
+      } catch (error) {
+        toast(errorMessage(error), "error");
+      } finally {
+        hideLoading();
+      }
+    });
     $("#inversePhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "inverse"));
     $("#parcelPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "parcel"));
 
@@ -1409,6 +1680,8 @@
         else if (action === "close-sack") await closeSack();
         else if (action === "get-gps") await getGps();
         else if (action === "finish-operation") await finishOperation();
+        else if (action === "delete-active-operation") await deleteOperation(state.operation?.id);
+        else if (action === "remove-transport-guide") await removeTransportGuide();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();
         else if (action === "refresh-users") await loadUsersPanel();
         else if (action === "download-pdv-template") downloadPdvTemplate();
@@ -1445,6 +1718,8 @@
       if (record) { await openRecord(record.dataset.recordId); return; }
       const resume = event.target.closest("[data-resume-id]");
       if (resume) { await resumeOperation(resume.dataset.resumeId); return; }
+      const deleteOperationButton = event.target.closest("[data-delete-operation]");
+      if (deleteOperationButton) { await deleteOperation(deleteOperationButton.dataset.deleteOperation); return; }
       const evidence = event.target.closest("[data-evidence-file]");
       if (evidence) await viewEvidence(evidence.dataset.evidenceFile);
     });
