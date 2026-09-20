@@ -16,9 +16,9 @@
   };
   const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA"]);
   const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
-  const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "ESTADO"];
+  const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "USUARIO_PDV", "CONTRASENA_TEMPORAL", "ESTADO"];
   const BULK_PDV_MAX_ROWS = 1000;
-  const BULK_PDV_BATCH_SIZE = 200;
+  const BULK_PDV_BATCH_SIZE = 25;
   const BULK_PDV_MAX_FILE_BYTES = 5 * 1024 * 1024;
 
   if (!CFG.SUPABASE_URL || !CFG.SUPABASE_PUBLISHABLE_KEY || !window.supabase) {
@@ -1118,21 +1118,24 @@
       const workbook = XLSX.utils.book_new();
       const pdvSheet = XLSX.utils.json_to_sheet([], { header: BULK_PDV_HEADERS });
       pdvSheet["!cols"] = [
-        { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 },
+        { wch: 18 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 20 }, { wch: 24 }, { wch: 14 },
       ];
       const instructions = [
         ["CARGA MASIVA DE PDV"],
         ["Complete la hoja PDV sin cambiar los encabezados."],
         ["Los encargados deben existir previamente, estar activos y tener rol ENCARGADO."],
         ["CODIGO_PDV debe ser único. Si ya existe, sus datos serán actualizados."],
+        ["USUARIO_PDV debe ser único y tener entre 3 y 30 caracteres."],
+        ["CONTRASENA_TEMPORAL debe tener entre 8 y 72 caracteres y será definida por el Administrador."],
+        ["Si la cuenta ya existe y corresponde al mismo PDV, su contraseña será actualizada."],
         ["ESTADO solo admite ACTIVO o INACTIVO."],
         [],
         ["EJEMPLO"],
         BULK_PDV_HEADERS,
-        ["PE07008", "CAL-08.pdv", "LIMA", "LIMA NORTE", "JESUS", "ACTIVO"],
+        ["PE07008", "CAL-08.pdv", "LIMA", "LIMA NORTE", "JESUS", "CAL08PDV", "Cambiar#2026", "ACTIVO"],
       ];
       const instructionSheet = XLSX.utils.aoa_to_sheet(instructions);
-      instructionSheet["!cols"] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 14 }];
+      instructionSheet["!cols"] = [{ wch: 90 }, { wch: 30 }, { wch: 20 }, { wch: 22 }, { wch: 24 }, { wch: 20 }, { wch: 24 }, { wch: 14 }];
       XLSX.utils.book_append_sheet(workbook, pdvSheet, "PDV");
       XLSX.utils.book_append_sheet(workbook, instructionSheet, "INSTRUCCIONES");
       XLSX.writeFile(workbook, "PLANTILLA_CARGA_MASIVA_PDV.xlsx");
@@ -1158,6 +1161,8 @@
         region: String(keyed.REGION ?? "").trim(),
         area: String(keyed.AREA ?? "").trim(),
         encargado_usuario: normalizeCode(keyed.USUARIO_ENCARGADO),
+        usuario_pdv: normalizeCode(keyed.USUARIO_PDV),
+        password: String(keyed.CONTRASENA_TEMPORAL ?? ""),
         estado: normalizeCode(keyed.ESTADO || "ACTIVO"),
         errors: [],
       };
@@ -1165,6 +1170,10 @@
 
     const codeCounts = rows.reduce((counts, row) => {
       if (row.codigo) counts.set(row.codigo, (counts.get(row.codigo) || 0) + 1);
+      return counts;
+    }, new Map());
+    const userCounts = rows.reduce((counts, row) => {
+      if (row.usuario_pdv) counts.set(row.usuario_pdv, (counts.get(row.usuario_pdv) || 0) + 1);
       return counts;
     }, new Map());
 
@@ -1175,6 +1184,10 @@
       if (!row.nombre) row.errors.push("Falta NOMBRE_PDV.");
       if (!row.encargado_usuario) row.errors.push("Falta USUARIO_ENCARGADO.");
       else if (!managers.has(row.encargado_usuario)) row.errors.push("Encargado inexistente o inactivo.");
+      if (!row.usuario_pdv) row.errors.push("Falta USUARIO_PDV.");
+      else if (!/^[A-Z0-9._-]{3,30}$/.test(row.usuario_pdv)) row.errors.push("USUARIO_PDV inválido.");
+      else if (userCounts.get(row.usuario_pdv) > 1) row.errors.push("USUARIO_PDV duplicado en el archivo.");
+      if (row.password.length < 8 || row.password.length > 72) row.errors.push("La contraseña debe tener entre 8 y 72 caracteres.");
       if (!["ACTIVO", "INACTIVO"].includes(row.estado)) row.errors.push("ESTADO debe ser ACTIVO o INACTIVO.");
     });
 
@@ -1193,13 +1206,15 @@
     $("#bulkPdvPreview").classList.remove("hidden");
     $("#bulkPdvPreview").innerHTML = `
       <table class="data-table">
-        <thead><tr><th>Fila</th><th>Código</th><th>PDV</th><th>Encargado</th><th>Estado</th><th>Validación</th></tr></thead>
+        <thead><tr><th>Fila</th><th>Código</th><th>PDV</th><th>Encargado</th><th>Usuario PDV</th><th>Contraseña</th><th>Estado</th><th>Validación</th></tr></thead>
         <tbody>${rows.slice(0, 100).map((row) => `
           <tr class="${row.errors.length ? "row-error" : ""}">
             <td>${row.fila}</td>
             <td>${escapeHtml(row.codigo || "-")}</td>
             <td>${escapeHtml(row.nombre || "-")}</td>
             <td>${escapeHtml(row.encargado_usuario || "-")}</td>
+            <td>${escapeHtml(row.usuario_pdv || "-")}</td>
+            <td>${row.password ? "••••••••" : "-"}</td>
             <td>${escapeHtml(row.estado || "-")}</td>
             <td><span class="validation-pill ${row.errors.length ? "bad" : "ok"}">${escapeHtml(row.errors.length ? row.errors.join(" ") : "Válido")}</span></td>
           </tr>`).join("")}</tbody>
@@ -1250,20 +1265,22 @@
   function renderBulkPdvResults(results) {
     const created = results.filter((row) => row.resultado === "CREADO").length;
     const updated = results.filter((row) => row.resultado === "ACTUALIZADO").length;
+    const partial = results.filter((row) => row.resultado === "PARCIAL").length;
     const rejected = results.filter((row) => row.resultado === "RECHAZADO").length;
     $("#bulkPdvSummary").innerHTML = `
       <div><span>Procesados</span><strong>${results.length}</strong></div>
       <div class="ok"><span>Creados</span><strong>${created}</strong></div>
       <div class="updated"><span>Actualizados</span><strong>${updated}</strong></div>
+      <div class="warning"><span>Parciales</span><strong>${partial}</strong></div>
       <div class="bad"><span>Rechazados</span><strong>${rejected}</strong></div>`;
     $("#bulkPdvPreview").innerHTML = `
       <table class="data-table">
         <thead><tr><th>Fila</th><th>Código</th><th>Resultado</th><th>Detalle</th></tr></thead>
         <tbody>${results.map((row) => `
-          <tr class="${row.resultado === "RECHAZADO" ? "row-error" : ""}">
+          <tr class="${["RECHAZADO", "PARCIAL"].includes(row.resultado) ? "row-error" : ""}">
             <td>${row.fila}</td>
             <td>${escapeHtml(row.codigo || "-")}</td>
-            <td><span class="validation-pill ${row.resultado === "RECHAZADO" ? "bad" : "ok"}">${escapeHtml(row.resultado)}</span></td>
+            <td><span class="validation-pill ${["RECHAZADO", "PARCIAL"].includes(row.resultado) ? "bad" : "ok"}">${escapeHtml(row.resultado)}</span></td>
             <td>${escapeHtml(row.mensaje || "Procesado correctamente.")}</td>
           </tr>`).join("")}</tbody>
       </table>`;
@@ -1289,6 +1306,8 @@
           region: row.region,
           area: row.area,
           encargado_usuario: row.encargado_usuario,
+          usuario_pdv: row.usuario_pdv,
+          password: row.password,
           estado: row.estado,
         }));
         $("#loadingText").textContent = `Importando ${Math.min(index + batch.length, validRows.length)} de ${validRows.length}…`;
@@ -1301,7 +1320,8 @@
       $("#bulkPdvImportButton").disabled = true;
       $("#bulkPdvResultButton").classList.remove("hidden");
       const rejected = state.bulkPdvResults.filter((row) => row.resultado === "RECHAZADO").length;
-      showFormMessage("#bulkPdvMessage", rejected ? `Importación terminada con ${rejected} registro(s) rechazado(s).` : "Importación completada correctamente.", rejected === 0);
+      const partial = state.bulkPdvResults.filter((row) => row.resultado === "PARCIAL").length;
+      showFormMessage("#bulkPdvMessage", rejected || partial ? `Importación terminada: ${rejected} rechazado(s) y ${partial} parcial(es). Descargue el resultado para revisar.` : "Importación completada correctamente.", rejected === 0 && partial === 0);
       await loadPdvs();
     } catch (error) {
       showFormMessage("#bulkPdvMessage", errorMessage(error));
@@ -1314,15 +1334,21 @@
     try {
       if (!state.bulkPdvResults.length) throw new Error("No hay resultados para descargar.");
       const XLSX = requireSpreadsheetLibrary();
-      const rows = state.bulkPdvResults.map((row) => ({
-        FILA: row.fila,
-        CODIGO_PDV: row.codigo,
-        RESULTADO: row.resultado,
-        DETALLE: row.mensaje || "Procesado correctamente.",
-      }));
+      const sourceByRow = new Map(state.bulkPdvRows.map((row) => [row.fila, row]));
+      const rows = state.bulkPdvResults.map((row) => {
+        const source = sourceByRow.get(row.fila) || {};
+        return {
+          FILA: row.fila,
+          CODIGO_PDV: row.codigo,
+          USUARIO_PDV: source.usuario_pdv || "",
+          CONTRASENA_TEMPORAL: source.password || "",
+          RESULTADO: row.resultado,
+          DETALLE: row.mensaje || "Procesado correctamente.",
+        };
+      });
       const workbook = XLSX.utils.book_new();
       const sheet = XLSX.utils.json_to_sheet(rows);
-      sheet["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 18 }, { wch: 55 }];
+      sheet["!cols"] = [{ wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 24 }, { wch: 18 }, { wch: 55 }];
       XLSX.utils.book_append_sheet(workbook, sheet, "RESULTADO");
       XLSX.writeFile(workbook, `RESULTADO_CARGA_PDV_${new Date().toISOString().slice(0, 10)}.xlsx`);
     } catch (error) {
