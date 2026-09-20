@@ -195,6 +195,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .bulk-summary .ok strong { color: var(--green); }
 .bulk-summary .updated { background: var(--sky); border-color: #c6deef; }
 .bulk-summary .updated strong { color: var(--blue); }
+.bulk-summary .warning { background: var(--orange-soft); border-color: #f4d6bb; }
+.bulk-summary .warning strong { color: var(--orange); }
 .bulk-summary .bad { background: var(--red-soft); border-color: #ffcdd1; }
 .bulk-summary .bad strong { color: var(--red); }
 .bulk-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
