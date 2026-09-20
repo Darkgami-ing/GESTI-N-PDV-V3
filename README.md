@@ -69,9 +69,13 @@ El Administrador puede descargar una plantilla Excel desde **Usuarios → Carga 
 - `REGION`
 - `AREA`
 - `USUARIO_ENCARGADO`
+- `USUARIO_PDV`
+- `CONTRASENA_TEMPORAL`
 - `ESTADO`
 
-Los encargados deben existir previamente y estar activos. Antes de importar se muestra una vista previa con las filas válidas y observadas. Los códigos nuevos se crean y los códigos existentes se actualizan. El procesamiento se realiza en lotes de 200 registros mediante la función Edge `crear-usuario`.
+Los encargados deben existir previamente y estar activos. El Administrador define en el archivo el usuario y la contraseña de cada PDV; la contraseña debe tener entre 8 y 72 caracteres. Antes de importar se muestra una vista previa que oculta las contraseñas. Los códigos nuevos se crean y los códigos existentes se actualizan. Si ya existe una cuenta PDV asociada al mismo PDV y con el mismo usuario, se actualiza su contraseña; si el PDV ya tiene otro usuario, o la cuenta está relacionada con otro PDV u otro rol, la fila se rechaza. El procesamiento se realiza en lotes de 25 registros mediante la función Edge `crear-usuario`.
+
+La descarga del resultado incluye la contraseña indicada para facilitar la entrega de credenciales. Proteja ese archivo y elimínelo cuando ya no sea necesario; no use la contraseña del ejemplo de la plantilla en producción. Si el PDV se guarda pero falla la cuenta, el resultado queda marcado como `PARCIAL` para corregirlo sin perder el registro del PDV.
 
 ## 2. Configurar Google Drive
 
