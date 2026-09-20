@@ -15,6 +15,16 @@ type Perfil = {
   estado: "ACTIVO" | "INACTIVO";
 };
 
+type RegistroPdv = {
+  fila?: number;
+  codigo?: string;
+  nombre?: string;
+  region?: string;
+  area?: string;
+  encargado_usuario?: string;
+  estado?: string;
+};
+
 function json(data: unknown, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
@@ -106,6 +116,105 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const accion = String(body.accion ?? "CREAR_USUARIO").toUpperCase();
+
+    if (accion === "IMPORTAR_PDVS") {
+      if (solicitante.rol !== "ADMINISTRADOR") {
+        return json({ error: "Solo el Administrador puede realizar cargas masivas de PDV." }, 403);
+      }
+
+      const registros = Array.isArray(body.registros) ? body.registros as RegistroPdv[] : [];
+      if (!registros.length) return json({ error: "No se recibieron registros para importar." }, 400);
+      if (registros.length > 200) return json({ error: "Cada lote admite como máximo 200 registros." }, 400);
+
+      const { data: encargados, error: encargadosError } = await admin
+        .from("perfiles")
+        .select("id, usuario, rol, estado")
+        .eq("rol", "ENCARGADO")
+        .eq("estado", "ACTIVO");
+      if (encargadosError) throw encargadosError;
+
+      const encargadoPorUsuario = new Map(
+        (encargados || []).map((perfil) => [normalizarUsuario(perfil.usuario), perfil.id as string]),
+      );
+      const codigosVistos = new Set<string>();
+      const resultados: Array<{ fila: number; codigo: string; resultado: string; mensaje: string }> = [];
+      const validos: Array<{
+        fila: number;
+        codigo: string;
+        nombre: string;
+        region: string | null;
+        area: string | null;
+        encargado_id: string;
+        estado: string;
+      }> = [];
+
+      registros.forEach((registro, index) => {
+        const filaRecibida = Number(registro?.fila);
+        const fila = Number.isInteger(filaRecibida) && filaRecibida > 0 ? filaRecibida : index + 2;
+        const codigo = String(registro?.codigo ?? "").trim().toUpperCase();
+        const nombre = String(registro?.nombre ?? "").trim();
+        const region = String(registro?.region ?? "").trim() || null;
+        const area = String(registro?.area ?? "").trim() || null;
+        const encargadoUsuario = normalizarUsuario(registro?.encargado_usuario);
+        const estado = String(registro?.estado ?? "ACTIVO").trim().toUpperCase();
+        const errores: string[] = [];
+
+        if (!codigo) errores.push("Falta el código.");
+        else if (!/^[A-Z0-9._-]{1,50}$/.test(codigo)) errores.push("Código inválido.");
+        else if (codigosVistos.has(codigo)) errores.push("Código duplicado en el lote.");
+        if (!nombre) errores.push("Falta el nombre.");
+        if (!encargadoUsuario) errores.push("Falta el encargado.");
+        const encargadoId = encargadoPorUsuario.get(encargadoUsuario);
+        if (encargadoUsuario && !encargadoId) errores.push("El encargado no existe, no está activo o no tiene el rol ENCARGADO.");
+        if (!["ACTIVO", "INACTIVO"].includes(estado)) errores.push("Estado inválido.");
+        if (codigo) codigosVistos.add(codigo);
+
+        if (errores.length || !encargadoId) {
+          resultados.push({ fila, codigo, resultado: "RECHAZADO", mensaje: errores.join(" ") });
+          return;
+        }
+
+        validos.push({ fila, codigo, nombre, region, area, encargado_id: encargadoId, estado });
+      });
+
+      if (validos.length) {
+        const codigos = validos.map((registro) => registro.codigo);
+        const { data: existentes, error: existentesError } = await admin
+          .from("pdvs")
+          .select("codigo")
+          .in("codigo", codigos);
+        if (existentesError) throw existentesError;
+        const codigosExistentes = new Set((existentes || []).map((pdv) => String(pdv.codigo).toUpperCase()));
+
+        const { error: upsertError } = await admin.from("pdvs").upsert(
+          validos.map(({ fila: _fila, ...registro }) => registro),
+          { onConflict: "codigo" },
+        );
+        if (upsertError) throw upsertError;
+
+        validos.forEach((registro) => {
+          const actualizado = codigosExistentes.has(registro.codigo);
+          resultados.push({
+            fila: registro.fila,
+            codigo: registro.codigo,
+            resultado: actualizado ? "ACTUALIZADO" : "CREADO",
+            mensaje: actualizado ? "PDV actualizado correctamente." : "PDV creado correctamente.",
+          });
+        });
+      }
+
+      resultados.sort((a, b) => a.fila - b.fila);
+      return json({
+        ok: true,
+        resumen: {
+          recibidos: registros.length,
+          creados: resultados.filter((row) => row.resultado === "CREADO").length,
+          actualizados: resultados.filter((row) => row.resultado === "ACTUALIZADO").length,
+          rechazados: resultados.filter((row) => row.resultado === "RECHAZADO").length,
+        },
+        resultados,
+      });
+    }
 
     if (accion === "CREAR_PDV") {
       const codigo = String(body.codigo ?? "").trim().toUpperCase();
@@ -201,4 +310,3 @@ Deno.serve(async (req) => {
     return json({ error: message }, 400);
   }
 });
-
