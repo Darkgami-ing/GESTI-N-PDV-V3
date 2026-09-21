@@ -1078,8 +1078,29 @@
     }
   }
 
+  function getZXingBrowser() {
+    // @zxing/browser publica el UMD como ZXingBrowser. Se conserva ZXing
+    // como respaldo para instalaciones antiguas que todavía lo exponen así.
+    return window.ZXingBrowser || window.ZXing || null;
+  }
+
+  async function listVideoInputDevices(zxing) {
+    const browserReader = zxing?.BrowserCodeReader;
+    if (browserReader && typeof browserReader.listVideoInputDevices === "function") {
+      return browserReader.listVideoInputDevices();
+    }
+
+    // Respaldo para navegadores/paquetes que no incluyen el método estático.
+    if (!navigator.mediaDevices?.enumerateDevices) {
+      throw new Error("El navegador no permite enumerar las cámaras.");
+    }
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    return devices.filter((device) => device.kind === "videoinput");
+  }
+
   async function startScanner(mode, inputId = "", label = "Código") {
-    if (!window.ZXing) return toast("El lector no pudo cargarse. Use el ingreso manual.", "error");
+    const zxing = getZXingBrowser();
+    if (!zxing?.BrowserMultiFormatReader) return toast("El lector no pudo cargarse. Use el ingreso manual.", "error");
     stopScanner(false);
     state.scanner.mode = mode;
     state.scanner.inputId = inputId;
@@ -1091,9 +1112,9 @@
     $("#scannerModal").classList.remove("hidden");
 
     try {
-      const reader = new ZXing.BrowserMultiFormatReader();
+      const reader = new zxing.BrowserMultiFormatReader();
       state.scanner.reader = reader;
-      state.scanner.devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+      state.scanner.devices = await listVideoInputDevices(zxing);
       if (!state.scanner.devices.length) throw new Error("No se detectó una cámara.");
       const preferred = state.scanner.devices.findIndex((device) => /back|rear|environment|trasera/i.test(device.label));
       state.scanner.deviceIndex = preferred >= 0 ? preferred : state.scanner.devices.length - 1;
@@ -1166,9 +1187,11 @@
   async function changeCamera() {
     if (state.scanner.devices.length < 2) return toast("No se detectó otra cámara.");
     try {
+      const zxing = getZXingBrowser();
+      if (!zxing?.BrowserMultiFormatReader) throw new Error("El lector no pudo cargarse. Use el ingreso manual.");
       state.scanner.reader?.reset();
       state.scanner.deviceIndex = (state.scanner.deviceIndex + 1) % state.scanner.devices.length;
-      state.scanner.reader = new ZXing.BrowserMultiFormatReader();
+      state.scanner.reader = new zxing.BrowserMultiFormatReader();
       await decodeWithCurrentCamera();
     } catch (error) {
       toast(errorMessage(error), "error");
