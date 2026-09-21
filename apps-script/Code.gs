@@ -67,9 +67,7 @@ function validarSesion_(accessToken) {
 }
 
 function subirEvidencia_(body, usuario) {
-  if (CARPETA_EVIDENCIAS_ID === '1faKzi1w9CCEiyW_vblefi5O82mIhjHL2') {
-    throw new Error('Falta configurar CARPETA_EVIDENCIAS_ID.');
-  }
+  const carpeta = obtenerCarpetaEvidencias_();
 
   const dataUrl = String(body.dataUrl || '');
   const match = dataUrl.match(/^data:([\w.+-]+\/[\w.+-]+);base64,(.+)$/);
@@ -95,7 +93,7 @@ function subirEvidencia_(body, usuario) {
   const nombre = [operacion, categoria, referencia, marca].join('_') + '.' + extension;
 
   const blob = Utilities.newBlob(bytes, mimeType, nombre);
-  const archivo = DriveApp.getFolderById(CARPETA_EVIDENCIAS_ID).createFile(blob);
+  const archivo = carpeta.createFile(blob);
   archivo.setDescription(JSON.stringify({
     usuarioId: usuario.id,
     codigoOperacion: String(body.codigoOperacion || ''),
@@ -110,6 +108,29 @@ function subirEvidencia_(body, usuario) {
     nombre: archivo.getName(),
     mimeType: archivo.getMimeType()
   });
+}
+
+/**
+ * Ejecutar manualmente desde el editor de Apps Script para comprobar
+ * que la cuenta de la implementación puede acceder a la carpeta.
+ */
+function verificarConfiguracionCarpeta() {
+  const carpeta = obtenerCarpetaEvidencias_();
+  const resultado = { ok: true, id: carpeta.getId(), nombre: carpeta.getName() };
+  Logger.log(JSON.stringify(resultado));
+  return resultado;
+}
+
+function obtenerCarpetaEvidencias_() {
+  const id = String(CARPETA_EVIDENCIAS_ID || '').trim();
+  if (!/^[A-Za-z0-9_-]{20,}$/.test(id) || id === 'REEMPLAZAR_CON_ID_DE_CARPETA') {
+    throw new Error('CARPETA_EVIDENCIAS_ID no válido. Pegue solo el ID de la carpeta.');
+  }
+  try {
+    return DriveApp.getFolderById(id);
+  } catch (error) {
+    throw new Error('La cuenta que ejecuta Apps Script no tiene acceso a la carpeta de evidencias. Comparta la carpeta con esa cuenta como Editor.');
+  }
 }
 
 function obtenerEvidencia_(body, usuario) {
