@@ -12,7 +12,9 @@
   <link rel="preconnect" href="https://cdn.sheetjs.com" crossorigin>
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="https://unpkg.com/@zxing/library@0.21.3/umd/index.min.js"></script>
+  <!-- La capa de cámara vive en @zxing/browser; @zxing/library no expone
+       BrowserCodeReader.listVideoInputDevices en su UMD. -->
+  <script src="https://unpkg.com/@zxing/browser@0.2.1/umd/index.min.js"></script>
   <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js"></script>
 </head>
 <body>
