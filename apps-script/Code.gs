@@ -9,7 +9,9 @@
  * No colocar una Secret key ni service_role en este archivo.
  */
 
-const CARPETA_EVIDENCIAS_ID = '1dWqZSe6XbwAOhIt05fPXK5M7r96-e-k-';
+// Carpeta "CONTROL LOGÍSTICO - EVIDENCIAS".
+// La cuenta que ejecuta la implementación web debe tener acceso de editor.
+const CARPETA_EVIDENCIAS_ID = '1faKzi1w9CCEiyW_vblefi5O82mIhjHL2';
 const SUPABASE_URL = 'https://qtgcpmpbtfhvoasncmkg.supabase.co';
 const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_tj-kyp78upcwyrLbhMTqaA_l3lfRpt8';
 const MAX_BYTES_SUBIDA = 6 * 1024 * 1024;
@@ -65,7 +67,7 @@ function validarSesion_(accessToken) {
 }
 
 function subirEvidencia_(body, usuario) {
-  if (CARPETA_EVIDENCIAS_ID === '1dWqZSe6XbwAOhIt05fPXK5M7r96-e-k-') {
+  if (CARPETA_EVIDENCIAS_ID === 'REEMPLAZAR_CON_ID_DE_CARPETA') {
     throw new Error('Falta configurar CARPETA_EVIDENCIAS_ID.');
   }
 
