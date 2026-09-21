@@ -1078,10 +1078,34 @@
     }
   }
 
+  let scannerLibraryPromise = null;
+
   function getZXingBrowser() {
     // @zxing/browser publica el UMD como ZXingBrowser. Se conserva ZXing
     // como respaldo para instalaciones antiguas que todavía lo exponen así.
     return window.ZXingBrowser || window.ZXing || null;
+  }
+
+  function loadScannerLibrary() {
+    const loaded = getZXingBrowser();
+    if (loaded?.BrowserMultiFormatReader) return Promise.resolve(loaded);
+    if (scannerLibraryPromise) return scannerLibraryPromise;
+
+    scannerLibraryPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/@zxing/browser@0.2.1/umd/zxing-browser.min.js";
+      script.async = true;
+      script.dataset.zxingFallback = "true";
+      script.onload = () => {
+        const zxing = getZXingBrowser();
+        if (zxing?.BrowserMultiFormatReader) resolve(zxing);
+        else reject(new Error("La biblioteca de cámara no expuso el lector.") );
+      };
+      script.onerror = () => reject(new Error("No se pudo descargar la biblioteca del lector."));
+      document.head.appendChild(script);
+    });
+
+    return scannerLibraryPromise;
   }
 
   async function listVideoInputDevices(zxing) {
@@ -1099,8 +1123,14 @@
   }
 
   async function startScanner(mode, inputId = "", label = "Código") {
-    const zxing = getZXingBrowser();
-    if (!zxing?.BrowserMultiFormatReader) return toast("El lector no pudo cargarse. Use el ingreso manual.", "error");
+    let zxing = getZXingBrowser();
+    if (!zxing?.BrowserMultiFormatReader) {
+      try {
+        zxing = await loadScannerLibrary();
+      } catch (error) {
+        return toast(`${errorMessage(error)} Use el ingreso manual.`, "error");
+      }
+    }
     stopScanner(false);
     state.scanner.mode = mode;
     state.scanner.inputId = inputId;
