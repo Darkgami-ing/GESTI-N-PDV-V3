@@ -1234,15 +1234,33 @@
 
   async function loadHome() {
     if (!state.profile) return;
-    const start = `${todayInput()}T00:00:00`;
-    const end = `${todayInput()}T23:59:59`;
-    const { data, error } = await db.from("v_resumen_operaciones").select("*").gte("created_at", start).lte("created_at", end);
-    if (error) return console.error(error);
-    const rows = data || [];
-    $("#sumToday").textContent = rows.length;
-    $("#sumPending").textContent = rows.filter((row) => row.estado === "PENDIENTE" || row.estado === "BORRADOR").length;
-    $("#sumProcess").textContent = rows.filter((row) => row.estado === "EN_PROCESO").length;
-    $("#sumDone").textContent = rows.filter((row) => row.estado === "COMPLETADO" || row.estado === "FINALIZADO").length;
+    const today = todayInput();
+    // Lima permanece en UTC-5. Usamos un límite exclusivo para no perder
+    // registros creados cerca de medianoche.
+    const start = new Date(`${today}T00:00:00-05:00`);
+    const end = new Date(start.getTime() + 24 * 60 * 60 * 1000);
+    const count = (status) => {
+      let query = db.from("operaciones").select("id", { count: "exact", head: true });
+      if (status) query = query.eq("estado", status);
+      return query;
+    };
+
+    const [todayResult, pendingResult, processResult, doneResult] = await Promise.all([
+      count().gte("created_at", start.toISOString()).lt("created_at", end.toISOString()),
+      count("PENDIENTE"),
+      count("EN_PROCESO"),
+      count("COMPLETADO"),
+    ]);
+    const failed = [todayResult, pendingResult, processResult, doneResult].find((result) => result.error);
+    if (failed) {
+      console.error("No se pudo cargar el resumen:", failed.error);
+      toast(`No se pudo cargar el resumen: ${failed.error.message}`, "error");
+      return;
+    }
+    $("#sumToday").textContent = todayResult.count ?? 0;
+    $("#sumPending").textContent = pendingResult.count ?? 0;
+    $("#sumProcess").textContent = processResult.count ?? 0;
+    $("#sumDone").textContent = doneResult.count ?? 0;
   }
 
   async function loadRecent() {
