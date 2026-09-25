@@ -63,6 +63,20 @@ create table if not exists public.operaciones (
   updated_at timestamptz not null default now()
 );
 
+-- Historial de correcciones realizadas por el Administrador.
+create table if not exists public.auditoria_cambios (
+  id uuid primary key default gen_random_uuid(),
+  operacion_id uuid not null references public.operaciones(id) on delete cascade,
+  entidad text not null,
+  registro_id uuid not null,
+  campo text not null,
+  valor_anterior text,
+  valor_nuevo text,
+  resumen text not null,
+  cambiado_por uuid not null references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now()
+);
+
 create table if not exists public.items_recepcion (
   id uuid primary key default gen_random_uuid(),
   operacion_id uuid not null references public.operaciones(id) on delete cascade,
@@ -98,7 +112,8 @@ create table if not exists public.paquetes (
   escaneado_por uuid not null references auth.users(id) on delete restrict,
   escaneado_at timestamptz not null default now(),
   created_at timestamptz not null default now(),
-  unique (operacion_id, codigo)
+  unique (operacion_id, codigo),
+  constraint paquetes_codigo_jpe_check check (upper(btrim(codigo)) like 'JPE%')
 );
 
 -- Sacos vacíos retornados. Los sacos con código se registran uno a uno;
@@ -166,6 +181,9 @@ create table if not exists public.evidencias (
 alter table public.operaciones add column if not exists ot text;
 alter table public.operaciones add column if not exists guia_remision_transporte text;
 alter table public.operaciones drop constraint if exists operaciones_estado_check;
+alter table public.paquetes drop constraint if exists paquetes_codigo_jpe_check;
+alter table public.paquetes add constraint paquetes_codigo_jpe_check
+  check (upper(btrim(codigo)) like 'JPE%') not valid;
 alter table public.evidencias drop constraint if exists evidencias_categoria_check;
 alter table public.evidencias add constraint evidencias_categoria_check
   check (categoria in (
@@ -200,6 +218,8 @@ create index if not exists paquetes_operacion_idx
   on public.paquetes (operacion_id, escaneado_at);
 create index if not exists evidencias_operacion_idx
   on public.evidencias (operacion_id, created_at);
+create index if not exists auditoria_cambios_operacion_idx
+  on public.auditoria_cambios (operacion_id, created_at desc);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -396,6 +416,21 @@ as $$
   );
 $$;
 
+create or replace function public.puede_editar_registro_admin(p_operacion_id uuid)
+returns boolean
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select public.rol_actual() = 'ADMINISTRADOR'
+    and exists (
+      select 1 from public.operaciones o
+      where o.id = p_operacion_id
+        and public.puede_ver_pdv(o.pdv_id)
+    );
+$$;
+
 create or replace function public.validar_costal_paquete()
 returns trigger
 language plpgsql
@@ -406,6 +441,12 @@ declare
   v_operacion uuid;
   v_estado text;
 begin
+  -- Cambiar solamente el código de un paquete ya cerrado es una
+  -- corrección administrativa válida; la relación con el costal no cambia.
+  if TG_OP = 'UPDATE' and new.costal_id = old.costal_id and new.operacion_id = old.operacion_id then
+    return new;
+  end if;
+
   select c.operacion_id, c.estado
     into v_operacion, v_estado
   from public.costales c
@@ -453,6 +494,92 @@ drop trigger if exists sacos_vacios_validar_operacion on public.sacos_vacios;
 create trigger sacos_vacios_validar_operacion
 before insert or update on public.sacos_vacios
 for each row execute function public.validar_saco_vacio_operacion();
+
+create or replace function public.registrar_cambio_admin()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_old jsonb := to_jsonb(old);
+  v_new jsonb := to_jsonb(new);
+  v_value_old jsonb;
+  v_value_new jsonb;
+  v_key text;
+  v_operacion_id uuid;
+  v_registro_id uuid;
+  v_old_text text;
+  v_new_text text;
+begin
+  if auth.uid() is null or public.rol_actual() <> 'ADMINISTRADOR' then
+    return new;
+  end if;
+
+  if TG_TABLE_NAME = 'operaciones' then
+    v_operacion_id := (v_new ->> 'id')::uuid;
+  else
+    v_operacion_id := (v_new ->> 'operacion_id')::uuid;
+  end if;
+  v_registro_id := (v_new ->> 'id')::uuid;
+
+  for v_key in select key from jsonb_each(v_new) loop
+    if v_key in ('created_at', 'updated_at') then
+      continue;
+    end if;
+    v_value_old := v_old -> v_key;
+    v_value_new := v_new -> v_key;
+    if v_value_old is distinct from v_value_new then
+      v_old_text := case when v_value_old is null or v_value_old = 'null'::jsonb then null else trim(both '"' from v_value_old::text) end;
+      v_new_text := case when v_value_new is null or v_value_new = 'null'::jsonb then null else trim(both '"' from v_value_new::text) end;
+      insert into public.auditoria_cambios (
+        operacion_id, entidad, registro_id, campo, valor_anterior, valor_nuevo, resumen, cambiado_por
+      ) values (
+        v_operacion_id,
+        upper(TG_TABLE_NAME),
+        v_registro_id,
+        v_key,
+        v_old_text,
+        v_new_text,
+        format('%s: %s → %s', v_key, coalesce(v_old_text, '(vacío)'), coalesce(v_new_text, '(vacío)')),
+        auth.uid()
+      );
+    end if;
+  end loop;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists operaciones_auditar_cambio_admin on public.operaciones;
+create trigger operaciones_auditar_cambio_admin
+after update on public.operaciones
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists items_recepcion_auditar_cambio_admin on public.items_recepcion;
+create trigger items_recepcion_auditar_cambio_admin
+after update on public.items_recepcion
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists costales_auditar_cambio_admin on public.costales;
+create trigger costales_auditar_cambio_admin
+after update on public.costales
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists paquetes_auditar_cambio_admin on public.paquetes;
+create trigger paquetes_auditar_cambio_admin
+after update on public.paquetes
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists sacos_vacios_auditar_cambio_admin on public.sacos_vacios;
+create trigger sacos_vacios_auditar_cambio_admin
+after update on public.sacos_vacios
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists precintos_auditar_cambio_admin on public.precintos;
+create trigger precintos_auditar_cambio_admin
+after update on public.precintos
+for each row execute function public.registrar_cambio_admin();
 
 create or replace function public.finalizar_operacion(
   p_operacion_id uuid,
@@ -560,6 +687,7 @@ alter table public.paquetes enable row level security;
 alter table public.sacos_vacios enable row level security;
 alter table public.precintos enable row level security;
 alter table public.evidencias enable row level security;
+alter table public.auditoria_cambios enable row level security;
 
 drop policy if exists pdvs_select on public.pdvs;
 create policy pdvs_select on public.pdvs
@@ -601,10 +729,13 @@ with check (created_by = auth.uid() and public.puede_ver_pdv(pdv_id));
 drop policy if exists operaciones_update on public.operaciones;
 create policy operaciones_update on public.operaciones
 for update to authenticated
-using (public.puede_editar_operacion(id))
+using (public.puede_editar_operacion(id) or public.puede_editar_registro_admin(id))
 with check (
   public.puede_ver_pdv(pdv_id)
-  and estado in ('PENDIENTE', 'EN_PROCESO')
+  and (
+    estado in ('PENDIENTE', 'EN_PROCESO')
+    or public.rol_actual() = 'ADMINISTRADOR'
+  )
 );
 
 drop policy if exists operaciones_delete_admin on public.operaciones;
@@ -634,8 +765,8 @@ with check (
 drop policy if exists items_update on public.items_recepcion;
 create policy items_update on public.items_recepcion
 for update to authenticated
-using (public.puede_editar_operacion(operacion_id))
-with check (public.puede_editar_operacion(operacion_id));
+using (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+with check (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id));
 
 drop policy if exists items_delete on public.items_recepcion;
 create policy items_delete on public.items_recepcion
@@ -658,8 +789,8 @@ with check (creado_por = auth.uid() and public.puede_editar_operacion(operacion_
 drop policy if exists costales_update on public.costales;
 create policy costales_update on public.costales
 for update to authenticated
-using (public.puede_editar_operacion(operacion_id))
-with check (public.puede_editar_operacion(operacion_id));
+using (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+with check (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id));
 
 drop policy if exists costales_delete on public.costales;
 create policy costales_delete on public.costales
@@ -682,8 +813,8 @@ with check (escaneado_por = auth.uid() and public.puede_editar_operacion(operaci
 drop policy if exists paquetes_update on public.paquetes;
 create policy paquetes_update on public.paquetes
 for update to authenticated
-using (public.puede_editar_operacion(operacion_id))
-with check (public.puede_editar_operacion(operacion_id));
+using (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+with check (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id));
 
 drop policy if exists paquetes_delete on public.paquetes;
 create policy paquetes_delete on public.paquetes
@@ -709,8 +840,8 @@ with check (
 drop policy if exists sacos_vacios_update on public.sacos_vacios;
 create policy sacos_vacios_update on public.sacos_vacios
 for update to authenticated
-using (public.puede_editar_operacion(operacion_id))
-with check (public.puede_editar_operacion(operacion_id));
+using (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+with check (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id));
 
 drop policy if exists sacos_vacios_delete on public.sacos_vacios;
 create policy sacos_vacios_delete on public.sacos_vacios
@@ -728,8 +859,11 @@ using (exists (
 drop policy if exists precintos_write on public.precintos;
 create policy precintos_write on public.precintos
 for all to authenticated
-using (public.puede_editar_operacion(operacion_id))
-with check (registrado_por = auth.uid() and public.puede_editar_operacion(operacion_id));
+using (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+with check (
+  public.puede_editar_registro_admin(operacion_id)
+  or (registrado_por = auth.uid() and public.puede_editar_operacion(operacion_id))
+);
 
 drop policy if exists evidencias_select on public.evidencias;
 create policy evidencias_select on public.evidencias
@@ -749,30 +883,47 @@ create policy evidencias_delete on public.evidencias
 for delete to authenticated
 using (public.puede_editar_operacion(operacion_id));
 
+drop policy if exists auditoria_cambios_select on public.auditoria_cambios;
+create policy auditoria_cambios_select on public.auditoria_cambios
+for select to authenticated
+using (public.rol_actual() = 'ADMINISTRADOR');
+
 revoke all on public.pdvs, public.perfiles, public.operaciones,
   public.items_recepcion, public.costales, public.paquetes, public.sacos_vacios,
-  public.precintos, public.evidencias from anon;
+  public.precintos, public.evidencias, public.auditoria_cambios from anon;
 
 grant select on public.pdvs, public.perfiles to authenticated;
 grant update (nombre) on public.perfiles to authenticated;
 grant select, insert, delete on public.operaciones to authenticated;
-grant update (guia_remision_transporte) on public.operaciones to authenticated;
+grant update (
+  ot,
+  guia_remision_transporte,
+  id_ruta,
+  placa,
+  empresa_encomienda,
+  numero_encomienda,
+  dni_ruc_responsable,
+  observaciones
+) on public.operaciones to authenticated;
 grant select, insert, update, delete on public.items_recepcion to authenticated;
 grant select, insert, update, delete on public.costales to authenticated;
 grant select, insert, update, delete on public.paquetes to authenticated;
 grant select, insert, update, delete on public.sacos_vacios to authenticated;
 grant select, insert, update, delete on public.precintos to authenticated;
 grant select, insert, delete on public.evidencias to authenticated;
+grant select on public.auditoria_cambios to authenticated;
 revoke execute on function public.rol_actual() from public, anon;
 revoke execute on function public.pdv_actual() from public, anon;
 revoke execute on function public.puede_ver_pdv(uuid) from public, anon;
 revoke execute on function public.puede_editar_operacion(uuid) from public, anon;
+revoke execute on function public.puede_editar_registro_admin(uuid) from public, anon;
 revoke execute on function public.finalizar_operacion(uuid, numeric, numeric, numeric, text, text, jsonb) from public, anon;
 
 grant execute on function public.rol_actual() to authenticated;
 grant execute on function public.pdv_actual() to authenticated;
 grant execute on function public.puede_ver_pdv(uuid) to authenticated;
 grant execute on function public.puede_editar_operacion(uuid) to authenticated;
+grant execute on function public.puede_editar_registro_admin(uuid) to authenticated;
 grant execute on function public.finalizar_operacion(uuid, numeric, numeric, numeric, text, text, jsonb) to authenticated;
 
 drop view if exists public.v_resumen_operaciones;
@@ -808,3 +959,25 @@ from public.operaciones o
 join public.pdvs d on d.id = o.pdv_id;
 
 grant select on public.v_resumen_operaciones to authenticated;
+
+drop view if exists public.v_auditoria_cambios;
+create or replace view public.v_auditoria_cambios
+with (security_invoker = true)
+as
+select
+  a.id,
+  a.operacion_id,
+  a.entidad,
+  a.registro_id,
+  a.campo,
+  a.valor_anterior,
+  a.valor_nuevo,
+  a.resumen,
+  a.cambiado_por,
+  p.usuario as cambiado_por_usuario,
+  p.nombre as cambiado_por_nombre,
+  a.created_at
+from public.auditoria_cambios a
+left join public.perfiles p on p.id = a.cambiado_por;
+
+grant select on public.v_auditoria_cambios to authenticated;
