@@ -656,6 +656,10 @@
       return false;
     }
     if (!code) return false;
+    if (!code.startsWith("JPE")) {
+      toast("El código del paquete debe comenzar con JPE.", "error");
+      return false;
+    }
     if (state.packages.some((item) => normalizeCode(item.codigo) === code)) {
       toast(`El paquete ${code} ya fue escaneado.`, "error");
       return false;
@@ -1438,10 +1442,114 @@
       </article>`).join("") : '<div class="empty-state">No se encontraron registros.</div>';
   }
 
+  function renderAdminEditor(operation, items, sacks, packages, seals, emptySacks) {
+    if (state.profile?.rol !== "ADMINISTRADOR") return "";
+    const field = (label, key, value, extra = "") => `<div class="field"><label>${label}</label><input data-admin-operation-field="${key}" value="${escapeHtml(value || "")}" ${extra}></div>`;
+    const itemEditor = items.length ? `<div class="admin-edit-list">${items.map((item) => `<div class="admin-edit-row"><small>${escapeHtml(item.tipo.replaceAll("_", " "))} · ${formatDate(item.escaneado_at)}</small><input data-admin-item-code="${item.id}" value="${escapeHtml(item.codigo)}" placeholder="Código"><select data-admin-item-type="${item.id}"><option value="SACO" ${item.tipo === "SACO" ? "selected" : ""}>Saco</option><option value="BULTO_SUELTO" ${item.tipo === "BULTO_SUELTO" ? "selected" : ""}>Bulto suelto</option></select></div>`).join("")}</div>` : '<div class="empty-state">No hay sacos o bultos registrados.</div>';
+    const sackEditor = sacks.length ? `<div class="admin-edit-list">${sacks.map((sack) => `<div class="admin-edit-row"><small>Costal ${Number(sack.orden) || ""} · ${escapeHtml(sack.estado)}</small><input data-admin-sack-code="${sack.id}" value="${escapeHtml(sack.codigo)}" placeholder="Código del costal"></div>`).join("")}</div>` : '<div class="empty-state">No hay costales registrados.</div>';
+    const packageEditor = packages.length ? `<div class="admin-edit-list">${packages.map((item) => { const sack = sacks.find((candidate) => candidate.id === item.costal_id); return `<div class="admin-edit-row"><small>Costal: ${escapeHtml(sack?.codigo || "-")}</small><input data-admin-package-code="${item.id}" data-admin-package-original="${escapeHtml(item.codigo)}" value="${escapeHtml(item.codigo)}" placeholder="Código JPE..."></div>`; }).join("")}</div>` : '<div class="empty-state">No hay paquetes registrados.</div>';
+    const emptyEditor = emptySacks.length ? `<div class="admin-edit-list">${emptySacks.map((item) => `<div class="admin-edit-row admin-empty-row"><select data-admin-empty-type="${item.id}"><option value="CON_CODIGO" ${item.tipo === "CON_CODIGO" ? "selected" : ""}>Con código</option><option value="SIN_CODIGO" ${item.tipo === "SIN_CODIGO" ? "selected" : ""}>Sin código</option></select><input data-admin-empty-code="${item.id}" value="${escapeHtml(item.codigo || "")}" placeholder="Código"><input data-admin-empty-quantity="${item.id}" type="number" min="1" value="${Number(item.cantidad || 1)}"><input data-admin-empty-observation="${item.id}" value="${escapeHtml(item.observacion || "")}" placeholder="Observación"></div>`).join("")}</div>` : '<div class="empty-state">No hay sacos vacíos registrados.</div>';
+    const sealEditor = seals.length ? `<div class="admin-edit-list">${seals.map((seal) => `<div class="admin-edit-row"><small>Precinto ${escapeHtml(seal.etapa)} ${Number(seal.numero)}</small><input data-admin-seal-code="${seal.id}" value="${escapeHtml(seal.codigo)}" placeholder="Código del precinto"></div>`).join("")}</div>` : '<div class="empty-state">No hay precintos registrados.</div>';
+    return `<section class="detail-section admin-edit-section">
+      <div class="admin-edit-title"><div><h3>Editar información registrada</h3><small>Disponible únicamente para Administrador. Las correcciones quedan auditadas.</small></div><span class="status-pill process">ADMIN</span></div>
+      <div class="field-grid">
+        ${field("OT / ID", "ot", operation.ot || operation.codigo, "required autocapitalize=\"characters\"")}
+        ${field("N.° guía de remisión", "guia_remision_transporte", operation.guia_remision_transporte)}
+        ${field("ID de ruta", "id_ruta", operation.id_ruta)}
+        ${field("Placa", "placa", operation.placa)}
+        ${field("Empresa de encomienda", "empresa_encomienda", operation.empresa_encomienda)}
+        ${field("N.° de encomienda", "numero_encomienda", operation.numero_encomienda)}
+        ${field("DNI/RUC responsable", "dni_ruc_responsable", operation.dni_ruc_responsable)}
+      </div>
+      <div class="field"><label>Observaciones</label><textarea data-admin-operation-field="observaciones" rows="3">${escapeHtml(operation.observaciones || "")}</textarea></div>
+      <h4 class="admin-edit-subtitle">Sacos y bultos recibidos</h4>${itemEditor}
+      <h4 class="admin-edit-subtitle">Costales</h4>${sackEditor}
+      <h4 class="admin-edit-subtitle">Paquetes <small>(deben comenzar con JPE)</small></h4>${packageEditor}
+      <h4 class="admin-edit-subtitle">Sacos vacíos retornados</h4>${emptyEditor}
+      <h4 class="admin-edit-subtitle">Precintos</h4>${sealEditor}
+      <button type="button" class="button primary full" data-action="save-admin-record" data-admin-operation-id="${operation.id}">Guardar correcciones y registrar auditoría</button>
+    </section>`;
+  }
+
+  async function saveAdminRecord(operationId) {
+    if (state.profile?.rol !== "ADMINISTRADOR") return toast("Solo el Administrador puede modificar registros.", "error");
+    const operationField = (key) => $(`[data-admin-operation-field="${key}"]`);
+    const ot = normalizeCode(operationField("ot")?.value);
+    if (!ot) return toast("La OT no puede quedar vacía.", "error");
+
+    const packageUpdates = $$('[data-admin-package-code]').map((input) => ({ id: input.dataset.adminPackageCode, codigo: normalizeCode(input.value), original: normalizeCode(input.dataset.adminPackageOriginal) }));
+    const invalidPackage = packageUpdates.find((item) => item.codigo !== item.original && !item.codigo.startsWith("JPE"));
+    if (invalidPackage) return toast("Todos los códigos de paquetes deben comenzar con JPE.", "error");
+    const itemUpdates = $$('[data-admin-item-code]').map((input) => ({ id: input.dataset.adminItemCode, codigo: normalizeCode(input.value), tipo: $(`[data-admin-item-type="${input.dataset.adminItemCode}"]`).value }));
+    if (itemUpdates.some((item) => !item.codigo)) return toast("Los códigos de sacos o bultos no pueden quedar vacíos.", "error");
+    const sackUpdates = $$('[data-admin-sack-code]').map((input) => ({ id: input.dataset.adminSackCode, codigo: normalizeCode(input.value) }));
+    if (sackUpdates.some((item) => !item.codigo)) return toast("Los códigos de costales no pueden quedar vacíos.", "error");
+    const sealUpdates = $$('[data-admin-seal-code]').map((input) => ({ id: input.dataset.adminSealCode, codigo: normalizeCode(input.value) }));
+    if (sealUpdates.some((item) => !item.codigo)) return toast("Los códigos de precintos no pueden quedar vacíos.", "error");
+
+    const emptyUpdates = $$('[data-admin-empty-type]').map((select) => {
+      const id = select.dataset.adminEmptyType;
+      const type = select.value;
+      const code = normalizeCode($(`[data-admin-empty-code="${id}"]`)?.value);
+      const quantity = Number.parseInt($(`[data-admin-empty-quantity="${id}"]`)?.value, 10);
+      const observation = $(`[data-admin-empty-observation="${id}"]`)?.value.trim() || null;
+      return { id, tipo: type, codigo: type === "CON_CODIGO" ? code : null, cantidad: type === "CON_CODIGO" ? 1 : quantity, observacion: observation };
+    });
+    const invalidEmpty = emptyUpdates.find((item) => (item.tipo === "CON_CODIGO" && (!item.codigo || item.cantidad !== 1)) || (item.tipo === "SIN_CODIGO" && (!Number.isInteger(item.cantidad) || item.cantidad < 1)));
+    if (invalidEmpty) return toast("Revise los datos de los sacos vacíos.", "error");
+
+    showLoading("Guardando correcciones…");
+    try {
+      const operationPayload = {
+        ot,
+        guia_remision_transporte: normalizeCode(operationField("guia_remision_transporte")?.value) || null,
+        id_ruta: normalizeCode(operationField("id_ruta")?.value) || null,
+        placa: normalizeCode(operationField("placa")?.value) || null,
+        empresa_encomienda: operationField("empresa_encomienda")?.value.trim() || null,
+        numero_encomienda: normalizeCode(operationField("numero_encomienda")?.value) || null,
+        dni_ruc_responsable: operationField("dni_ruc_responsable")?.value.trim() || null,
+        observaciones: operationField("observaciones")?.value.trim() || null,
+      };
+      let result = await db.from("operaciones").update(operationPayload).eq("id", operationId).select("id").single();
+      if (result.error) throw result.error;
+
+      for (const item of itemUpdates) {
+        const id = item.id;
+        result = await db.from("items_recepcion").update({
+          codigo: item.codigo,
+          tipo: item.tipo,
+        }).eq("id", id).eq("operacion_id", operationId);
+        if (result.error) throw result.error;
+      }
+      for (const item of sackUpdates) {
+        result = await db.from("costales").update({ codigo: item.codigo }).eq("id", item.id).eq("operacion_id", operationId);
+        if (result.error) throw result.error;
+      }
+      for (const item of packageUpdates.filter((candidate) => candidate.codigo !== candidate.original)) {
+        result = await db.from("paquetes").update({ codigo: item.codigo }).eq("id", item.id).eq("operacion_id", operationId);
+        if (result.error) throw result.error;
+      }
+      for (const item of emptyUpdates) {
+        result = await db.from("sacos_vacios").update({ tipo: item.tipo, codigo: item.codigo, cantidad: item.cantidad, observacion: item.observacion }).eq("id", item.id).eq("operacion_id", operationId);
+        if (result.error) throw result.error;
+      }
+      for (const item of sealUpdates) {
+        result = await db.from("precintos").update({ codigo: item.codigo }).eq("id", item.id).eq("operacion_id", operationId);
+        if (result.error) throw result.error;
+      }
+      toast("Correcciones guardadas y auditadas.", "success");
+      await openRecord(operationId);
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
   async function openRecord(id) {
     showLoading("Cargando detalle…");
     try {
-      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult] = await Promise.all([
+      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult, auditResult] = await Promise.all([
         db.from("operaciones").select("*,pdvs:pdv_id(codigo,nombre)").eq("id", id).single(),
         db.from("items_recepcion").select("*").eq("operacion_id", id).order("orden"),
         db.from("costales").select("*").eq("operacion_id", id).order("orden"),
@@ -1449,8 +1557,9 @@
         db.from("precintos").select("*").eq("operacion_id", id).order("etapa").order("numero"),
         db.from("evidencias").select("*").eq("operacion_id", id).order("created_at"),
         db.from("sacos_vacios").select("*").eq("operacion_id", id).order("created_at"),
+        db.from("v_auditoria_cambios").select("*").eq("operacion_id", id).order("created_at", { ascending: false }).limit(200),
       ]);
-      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult]) if (result.error) throw result.error;
+      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult, auditResult]) if (result.error) throw result.error;
       const o = operationResult.data;
       $("#recordDialogTitle").textContent = o.codigo;
       const details = [
@@ -1471,12 +1580,18 @@
       if (sealsResult.data.length) html += `<section class="detail-section"><h3>Precintos</h3><div class="sack-packages">${sealsResult.data.map((seal) => `${escapeHtml(seal.etapa)} ${seal.numero}: ${escapeHtml(seal.codigo)}`).join(" · ")}</div></section>`;
       if (evidencesResult.data.length) html += `<section class="detail-section"><h3>Evidencias (${evidencesResult.data.length})</h3><div class="evidence-buttons">${evidencesResult.data.map((evidence) => `<button class="evidence-button" data-evidence-file="${escapeHtml(evidence.drive_file_id)}">${escapeHtml(evidence.etiqueta)}</button>`).join("")}</div><div id="evidenceViewer" class="photo-preview hidden" style="margin-top:10px"></div></section>`;
       if (o.observaciones) html += `<section class="detail-section"><h3>Observaciones</h3><p>${escapeHtml(o.observaciones)}</p></section>`;
+      if (state.profile?.rol === "ADMINISTRADOR") {
+        html += renderAdminEditor(o, itemsResult.data, sacksResult.data, packagesResult.data, sealsResult.data, emptySacksResult.data);
+        html += auditResult.data.length
+          ? `<section class="detail-section audit-section"><div class="admin-edit-title"><div><h3>Resumen de cambios administrativos (${auditResult.data.length})</h3><small>Historial de correcciones realizadas sobre esta operación.</small></div></div><div class="audit-list">${auditResult.data.map((change) => `<div class="audit-entry"><small>${formatDate(change.created_at)} · ${escapeHtml(change.cambiado_por_nombre || change.cambiado_por_usuario || change.cambiado_por || "Administrador")}</small><strong>${escapeHtml(change.resumen)}</strong></div>`).join("")}</div></section>`
+          : `<section class="detail-section audit-section"><div class="admin-edit-title"><div><h3>Resumen de cambios administrativos</h3><small>Aún no hay correcciones registradas.</small></div></div></section>`;
+      }
       if (["PENDIENTE", "EN_PROCESO", "BORRADOR"].includes(o.estado)) {
         html += `<button class="button primary full" data-resume-id="${o.id}">Continuar operación</button>`;
         if (state.profile?.rol === "ADMINISTRADOR") html += `<button class="button danger full" data-delete-operation="${o.id}">Eliminar borrador</button>`;
       }
       $("#recordDetail").innerHTML = html;
-      $("#recordDialog").showModal();
+      if (!$("#recordDialog").open) $("#recordDialog").showModal();
     } catch (error) {
       toast(errorMessage(error), "error");
     } finally {
@@ -1895,6 +2010,7 @@
         else if (action === "get-gps") await getGps();
         else if (action === "finish-operation") await finishOperation();
         else if (action === "delete-active-operation") await deleteOperation(state.operation?.id);
+        else if (action === "save-admin-record") await saveAdminRecord(actionButton.dataset.adminOperationId);
         else if (action === "remove-transport-guide") await removeTransportGuide();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();
         else if (action === "refresh-users") await loadUsersPanel();
