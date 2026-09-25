@@ -24,6 +24,7 @@
   };
   const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA"]);
   const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
+  const EMPTY_SACK_TYPES = new Set(["RECEPCION_CAMION", "INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
   const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "USUARIO_PDV", "CONTRASENA_TEMPORAL", "ESTADO"];
   const BULK_PDV_MAX_ROWS = 1000;
   const BULK_PDV_BATCH_SIZE = 25;
@@ -52,12 +53,14 @@
     packages: [],
     seals: [],
     evidences: [],
+    emptySacks: [],
     transportGuide: null,
     receiptItemType: "SACO",
     activeSack: null,
     photoDrafts: new Map(),
     inversePhotos: [],
     parcelPhotos: [],
+    emptySackPhotos: [],
     gps: null,
     scanner: {
       reader: null,
@@ -83,6 +86,7 @@
     .replaceAll("'", "&#039;");
   const isReceipt = () => RECEIPT_TYPES.has(state.operation?.tipo || state.selectedType);
   const isInverse = () => INVERSE_TYPES.has(state.operation?.tipo || state.selectedType);
+  const hasEmptySackControl = () => EMPTY_SACK_TYPES.has(state.operation?.tipo || state.selectedType);
   const isTruckReceipt = () => (state.operation?.tipo || state.selectedType) === "RECEPCION_CAMION";
   const statusLabel = (status) => STATUS_LABELS[status] || status || "Pendiente";
   const statusClass = (status) => status === "COMPLETADO" || status === "FINALIZADO" ? "done" : status === "EN_PROCESO" ? "process" : status === "ANULADO" ? "cancelled" : "draft";
@@ -318,11 +322,13 @@
     state.packages = [];
     state.seals = [];
     state.evidences = [];
+    state.emptySacks = [];
     state.transportGuide = null;
     state.activeSack = null;
     state.photoDrafts = new Map();
     state.inversePhotos = [];
     state.parcelPhotos = [];
+    state.emptySackPhotos = [];
     state.gps = null;
     state.receiptItemType = "SACO";
     stopScanner();
@@ -330,8 +336,14 @@
     renderSacks();
     renderGeneralPhotos("inverse");
     renderGeneralPhotos("parcel");
+    renderGeneralPhotos("empty");
+    renderEmptySacks();
     $$(".photo-preview").forEach((node) => { node.textContent = "Sin fotografía"; });
     $$(".photo-slot input").forEach((input) => { input.value = ""; });
+    $("#emptySackPhotoInput").value = "";
+    $("#manualEmptySackCode").value = "";
+    $("#manualEmptySackQuantity").value = "1";
+    $("#manualEmptySackObservation").value = "";
     $("#transportGuideInput").value = "";
     $("#transportGuideNumber").value = "";
     $("#operationOt").value = "";
@@ -373,6 +385,7 @@
     $("#truckArrivalSection").classList.toggle("hidden", type !== "RECEPCION_CAMION");
     $("#receiptItemsSection").classList.toggle("hidden", !RECEIPT_TYPES.has(type));
     $("#inverseSection").classList.toggle("hidden", !INVERSE_TYPES.has(type));
+    $("#emptySacksSection").classList.toggle("hidden", !EMPTY_SACK_TYPES.has(type));
     $("#truckDepartureSection").classList.toggle("hidden", type !== "RECEPCION_CAMION");
     $("#parcelPhotosSection").classList.toggle("hidden", type !== "RECEPCION_ENCOMIENDA");
     $("#loadPhotoSlot").classList.toggle("hidden", type !== "RECEPCION_CAMION");
@@ -382,10 +395,15 @@
     $("#parcelPhotosSection .step-title > span").textContent = "2";
     $("#truckDepartureSection .step-title > span").textContent = "4";
     if (type === "RECEPCION_ENCOMIENDA") state.receiptItemType = "SACO";
+    setEmptySackType("CON_CODIGO");
 
     createSealCards();
     renderItems();
     renderSacks();
+    renderEmptySacks();
+    renderGeneralPhotos("inverse");
+    renderGeneralPhotos("parcel");
+    renderGeneralPhotos("empty");
     renderExistingEvidenceMarkers();
     renderTransportGuide();
     renderGps();
@@ -424,15 +442,16 @@
   async function resumeOperation(id, navigate = true) {
     showLoading("Recuperando borrador…");
     try {
-      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult] = await Promise.all([
+      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult] = await Promise.all([
         db.from("operaciones").select("*").eq("id", id).single(),
         db.from("items_recepcion").select("*").eq("operacion_id", id).order("orden"),
         db.from("costales").select("*").eq("operacion_id", id).order("orden"),
         db.from("paquetes").select("*").eq("operacion_id", id).order("orden"),
         db.from("precintos").select("*").eq("operacion_id", id).order("numero"),
         db.from("evidencias").select("*").eq("operacion_id", id).order("created_at"),
+        db.from("sacos_vacios").select("*").eq("operacion_id", id).order("created_at"),
       ]);
-      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult]) if (result.error) throw result.error;
+      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult]) if (result.error) throw result.error;
       if (!["PENDIENTE", "EN_PROCESO"].includes(operationResult.data.estado)) throw new Error("La operación ya no está disponible para edición.");
       resetOperationState();
       state.operation = operationResult.data;
@@ -441,6 +460,7 @@
       state.packages = packagesResult.data || [];
       state.seals = sealsResult.data || [];
       state.evidences = evidencesResult.data || [];
+      state.emptySacks = emptySacksResult.data || [];
       state.transportGuide = null;
       state.activeSack = state.sacks.find((item) => item.estado === "ABIERTO") || null;
       localStorage.setItem("controlLogisticoDraft", id);
@@ -502,6 +522,99 @@
     list.innerHTML = state.items.length ? state.items.map((item) => `
       <div class="scan-item"><div class="scan-item-main"><small>${escapeHtml(item.tipo.replaceAll("_", " "))} · ${formatDate(item.escaneado_at)}</small><strong>${escapeHtml(item.codigo)}</strong></div><button class="delete-button" data-delete-item="${item.id}" aria-label="Eliminar">×</button></div>
     `).join("") : '<div class="empty-state">Aún no hay códigos escaneados.</div>';
+  }
+
+  function emptySackCounts() {
+    const withCode = state.emptySacks.filter((item) => item.tipo === "CON_CODIGO").reduce((total, item) => total + Number(item.cantidad || 0), 0);
+    const withoutCode = state.emptySacks.filter((item) => item.tipo === "SIN_CODIGO").reduce((total, item) => total + Number(item.cantidad || 0), 0);
+    return { withCode, withoutCode, total: withCode + withoutCode };
+  }
+
+  function setEmptySackType(type) {
+    const selected = type === "SIN_CODIGO" ? "SIN_CODIGO" : "CON_CODIGO";
+    $("#emptySackCodePanel")?.classList.toggle("hidden", selected !== "CON_CODIGO");
+    $("#emptySackNoCodePanel")?.classList.toggle("hidden", selected !== "SIN_CODIGO");
+    $$('[data-empty-sack-type]').forEach((button) => button.classList.toggle("active", button.dataset.emptySackType === selected));
+  }
+
+  async function addEmptySackCode(raw) {
+    const code = normalizeCode(raw);
+    if (!hasEmptySackControl() || !state.operation || !code) return false;
+    if (state.emptySacks.some((item) => item.tipo === "CON_CODIGO" && normalizeCode(item.codigo) === code)) {
+      toast(`El saco vacío ${code} ya fue registrado.`, "error");
+      return false;
+    }
+    try {
+      const { data, error } = await db.from("sacos_vacios").insert({
+        operacion_id: state.operation.id,
+        tipo: "CON_CODIGO",
+        codigo: code,
+        cantidad: 1,
+        registrado_por: state.profile.id,
+      }).select("*").single();
+      if (error) throw error;
+      state.emptySacks.push(data);
+      markOperationInProcess();
+      renderEmptySacks();
+      vibrate(90);
+      return true;
+    } catch (error) {
+      toast(errorMessage(error), "error");
+      return false;
+    }
+  }
+
+  async function addEmptySackWithoutCode() {
+    if (!hasEmptySackControl() || !state.operation) return false;
+    const quantity = Number.parseInt($("#manualEmptySackQuantity").value, 10);
+    const observation = $("#manualEmptySackObservation").value.trim();
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      toast("Ingrese una cantidad válida de sacos sin código.", "error");
+      return false;
+    }
+    try {
+      const { data, error } = await db.from("sacos_vacios").insert({
+        operacion_id: state.operation.id,
+        tipo: "SIN_CODIGO",
+        codigo: null,
+        cantidad: quantity,
+        observacion: observation || null,
+        registrado_por: state.profile.id,
+      }).select("*").single();
+      if (error) throw error;
+      state.emptySacks.push(data);
+      markOperationInProcess();
+      $("#manualEmptySackQuantity").value = "1";
+      $("#manualEmptySackObservation").value = "";
+      renderEmptySacks();
+      vibrate([80, 50, 80]);
+      return true;
+    } catch (error) {
+      toast(errorMessage(error), "error");
+      return false;
+    }
+  }
+
+  async function deleteEmptySack(id) {
+    if (!confirm("¿Eliminar este registro de sacos vacíos?")) return;
+    const { error } = await db.from("sacos_vacios").delete().eq("id", id);
+    if (error) return toast(errorMessage(error), "error");
+    state.emptySacks = state.emptySacks.filter((item) => item.id !== id);
+    renderEmptySacks();
+  }
+
+  function renderEmptySacks() {
+    const list = $("#emptySackList");
+    if (!list) return;
+    const counts = emptySackCounts();
+    $("#emptySackTotalCount").textContent = String(counts.total);
+    $("#emptySackCodeCount").textContent = String(counts.withCode);
+    $("#emptySackNoCodeCount").textContent = String(counts.withoutCode);
+    list.innerHTML = state.emptySacks.length ? state.emptySacks.map((item) => {
+      const label = item.tipo === "CON_CODIGO" ? escapeHtml(item.codigo) : `${Number(item.cantidad || 0)} saco(s) sin código`;
+      const detail = item.tipo === "CON_CODIGO" ? "Con código" : `Sin código${item.observacion ? ` · ${escapeHtml(item.observacion)}` : ""}`;
+      return `<div class="scan-item"><div class="scan-item-main"><small>${detail} · ${formatDate(item.created_at)}</small><strong>${label}</strong></div><button class="delete-button" data-delete-empty-sack="${item.id}" aria-label="Eliminar">×</button></div>`;
+    }).join("") : '<div class="empty-state">Aún no hay sacos vacíos registrados.</div>';
   }
 
   async function openSack(raw) {
@@ -836,6 +949,7 @@
       const processed = [];
       for (const file of files) processed.push({ dataUrl: await processImage(file), uploaded: false });
       if (kind === "inverse") state.inversePhotos = processed;
+      else if (kind === "empty") state.emptySackPhotos = processed;
       else state.parcelPhotos = processed;
       renderGeneralPhotos(kind);
     } catch (error) {
@@ -846,14 +960,19 @@
   }
 
   function renderGeneralPhotos(kind) {
-    const photos = kind === "inverse" ? state.inversePhotos : state.parcelPhotos;
-    const target = kind === "inverse" ? $("#inversePhotoPreview") : $("#parcelPhotoPreview");
+    const photos = kind === "inverse" ? state.inversePhotos : kind === "empty" ? state.emptySackPhotos : state.parcelPhotos;
+    const target = kind === "inverse" ? $("#inversePhotoPreview") : kind === "empty" ? $("#emptySackPhotoPreview") : $("#parcelPhotoPreview");
     if (!target) return;
+    if (!photos.length && kind === "empty" && state.evidences.some((item) => item.categoria === "SACOS_VACIOS")) {
+      target.innerHTML = '<div class="photo-preview">Fotografías guardadas en Drive</div>';
+      return;
+    }
     target.innerHTML = photos.map((photo, index) => `<div class="photo-slot"><div class="photo-preview"><img src="${photo.dataUrl}" alt="Evidencia ${index + 1}"></div><button type="button" class="link-button danger-text" data-remove-photo="${kind}:${index}">Quitar</button></div>`).join("");
   }
 
   function removeGeneralPhoto(kind, index) {
     if (kind === "inverse") state.inversePhotos.splice(index, 1);
+    else if (kind === "empty") state.emptySackPhotos.splice(index, 1);
     else state.parcelPhotos.splice(index, 1);
     renderGeneralPhotos(kind);
   }
@@ -993,6 +1112,17 @@
     }
   }
 
+  async function syncEmptySackEvidence() {
+    if (!hasEmptySackControl()) return;
+    const counts = emptySackCounts();
+    if (!counts.total) return;
+    const existing = state.evidences.filter((item) => item.categoria === "SACOS_VACIOS");
+    if (!state.emptySackPhotos.length && !existing.length) throw new Error("Debe adjuntar al menos una fotografía de los sacos vacíos retornados.");
+    for (let index = 0; index < state.emptySackPhotos.length; index += 1) {
+      await uploadEvidence({ ...state.emptySackPhotos[index], category: "SACOS_VACIOS", reference: `SACOS-VACIOS-${index + 1}`, label: `Evidencia de sacos vacíos ${index + 1}` });
+    }
+  }
+
   async function finishOperation() {
     if (!state.operation) return;
     if (!state.gps) return toast("Obtenga la ubicación GPS antes de finalizar.", "error");
@@ -1009,6 +1139,7 @@
       await syncTransportGuide();
       if (isTruckReceipt()) await syncTruckReceipt();
       else await syncGeneralEvidence();
+      await syncEmptySackEvidence();
 
       showLoading("Finalizando operación…");
       const { data, error } = await db.rpc("finalizar_operacion", {
@@ -1182,6 +1313,7 @@
     } else if (state.scanner.mode === "RECEIPT_ITEM") ok = await addReceiptCode(code);
     else if (state.scanner.mode === "SACK") ok = await openSack(code);
     else if (state.scanner.mode === "PACKAGE") ok = await addPackage(code);
+    else if (state.scanner.mode === "EMPTY_SACK") ok = await addEmptySackCode(code);
 
     const status = $("#scannerStatus");
     status.className = `scanner-status ${ok ? "ok" : "error"}`;
@@ -1309,15 +1441,16 @@
   async function openRecord(id) {
     showLoading("Cargando detalle…");
     try {
-      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult] = await Promise.all([
+      const [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult] = await Promise.all([
         db.from("operaciones").select("*,pdvs:pdv_id(codigo,nombre)").eq("id", id).single(),
         db.from("items_recepcion").select("*").eq("operacion_id", id).order("orden"),
         db.from("costales").select("*").eq("operacion_id", id).order("orden"),
         db.from("paquetes").select("*").eq("operacion_id", id).order("orden"),
         db.from("precintos").select("*").eq("operacion_id", id).order("etapa").order("numero"),
         db.from("evidencias").select("*").eq("operacion_id", id).order("created_at"),
+        db.from("sacos_vacios").select("*").eq("operacion_id", id).order("created_at"),
       ]);
-      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult]) if (result.error) throw result.error;
+      for (const result of [operationResult, itemsResult, sacksResult, packagesResult, sealsResult, evidencesResult, emptySacksResult]) if (result.error) throw result.error;
       const o = operationResult.data;
       $("#recordDialogTitle").textContent = o.codigo;
       const details = [
@@ -1328,6 +1461,13 @@
       let html = `<div class="detail-grid">${details.map(([label, value]) => `<div class="detail-cell"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div>`;
       if (itemsResult.data.length) html += `<section class="detail-section"><h3>Sacos y bultos (${itemsResult.data.length})</h3><div class="sack-packages">${itemsResult.data.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></section>`;
       if (sacksResult.data.length) html += `<section class="detail-section"><h3>Costales y paquetes</h3>${sacksResult.data.map((sack) => { const packages = packagesResult.data.filter((item) => item.costal_id === sack.id); return `<div class="sack-card"><div class="sack-head"><strong>${escapeHtml(sack.codigo)}</strong><span class="record-tag">${packages.length} paquetes</span></div><div class="sack-packages">${packages.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></div>`; }).join("")}</section>`;
+      if (emptySacksResult.data.length) {
+        const withCode = emptySacksResult.data.filter((item) => item.tipo === "CON_CODIGO");
+        const withoutCode = emptySacksResult.data.filter((item) => item.tipo === "SIN_CODIGO");
+        const totalWithCode = withCode.reduce((total, item) => total + Number(item.cantidad || 0), 0);
+        const totalWithoutCode = withoutCode.reduce((total, item) => total + Number(item.cantidad || 0), 0);
+        html += `<section class="detail-section"><h3>Sacos vacíos retornados (${totalWithCode + totalWithoutCode})</h3><p>Con código: ${totalWithCode} · Sin código: ${totalWithoutCode}</p><div class="sack-packages">${emptySacksResult.data.map((item) => item.tipo === "CON_CODIGO" ? escapeHtml(item.codigo) : `${Number(item.cantidad || 0)} sin código${item.observacion ? ` (${escapeHtml(item.observacion)})` : ""}`).join(" · ")}</div></section>`;
+      }
       if (sealsResult.data.length) html += `<section class="detail-section"><h3>Precintos</h3><div class="sack-packages">${sealsResult.data.map((seal) => `${escapeHtml(seal.etapa)} ${seal.numero}: ${escapeHtml(seal.codigo)}`).join(" · ")}</div></section>`;
       if (evidencesResult.data.length) html += `<section class="detail-section"><h3>Evidencias (${evidencesResult.data.length})</h3><div class="evidence-buttons">${evidencesResult.data.map((evidence) => `<button class="evidence-button" data-evidence-file="${escapeHtml(evidence.drive_file_id)}">${escapeHtml(evidence.etiqueta)}</button>`).join("")}</div><div id="evidenceViewer" class="photo-preview hidden" style="margin-top:10px"></div></section>`;
       if (o.observaciones) html += `<section class="detail-section"><h3>Observaciones</h3><p>${escapeHtml(o.observaciones)}</p></section>`;
@@ -1723,6 +1863,7 @@
     });
     $("#inversePhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "inverse"));
     $("#parcelPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "parcel"));
+    $("#emptySackPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "empty"));
 
     document.addEventListener("change", (event) => {
       if (event.target.matches(".photo-slot input[type=file], .seal-photo")) handlePhotoSlot(event.target);
@@ -1748,6 +1889,8 @@
         else if (action === "add-receipt-manual") { if (await addReceiptCode($("#manualReceiptCode").value)) $("#manualReceiptCode").value = ""; }
         else if (action === "add-sack-manual") { if (await openSack($("#manualSackCode").value)) $("#manualSackCode").value = ""; }
         else if (action === "add-package-manual") { if (await addPackage($("#manualPackageCode").value)) $("#manualPackageCode").value = ""; }
+        else if (action === "add-empty-sack-manual") { if (await addEmptySackCode($("#manualEmptySackCode").value)) $("#manualEmptySackCode").value = ""; }
+        else if (action === "add-empty-sack-no-code") await addEmptySackWithoutCode();
         else if (action === "close-sack") await closeSack();
         else if (action === "get-gps") await getGps();
         else if (action === "finish-operation") await finishOperation();
@@ -1766,7 +1909,11 @@
       const itemTypeButton = event.target.closest("[data-item-type]");
       if (itemTypeButton) { setItemType(itemTypeButton.dataset.itemType); return; }
       const scanModeButton = event.target.closest("[data-scan-mode]");
-      if (scanModeButton) { await startScanner(scanModeButton.dataset.scanMode, "", scanModeButton.dataset.scanMode === "SACK" ? "costal" : scanModeButton.dataset.scanMode === "PACKAGE" ? "paquete" : "saco o bulto"); return; }
+      if (scanModeButton) {
+        const labels = { SACK: "costal", PACKAGE: "paquete", EMPTY_SACK: "saco vacío con código", RECEIPT_ITEM: "saco o bulto" };
+        await startScanner(scanModeButton.dataset.scanMode, "", labels[scanModeButton.dataset.scanMode] || "código");
+        return;
+      }
       const scanTargetButton = event.target.closest("[data-scan-target]");
       if (scanTargetButton) { await startScanner("INPUT", scanTargetButton.dataset.scanTarget, scanTargetButton.dataset.scanLabel); return; }
       const scanSealButton = event.target.closest("[data-scan-seal]");
@@ -1783,6 +1930,10 @@
       if (deleteSackButton) { await deleteSack(deleteSackButton.dataset.deleteSack); return; }
       const deletePackageButton = event.target.closest("[data-delete-package]");
       if (deletePackageButton) { await deletePackage(deletePackageButton.dataset.deletePackage); return; }
+      const deleteEmptySackButton = event.target.closest("[data-delete-empty-sack]");
+      if (deleteEmptySackButton) { await deleteEmptySack(deleteEmptySackButton.dataset.deleteEmptySack); return; }
+      const emptySackTypeButton = event.target.closest("[data-empty-sack-type]");
+      if (emptySackTypeButton) { setEmptySackType(emptySackTypeButton.dataset.emptySackType); return; }
       const removePhotoButton = event.target.closest("[data-remove-photo]");
       if (removePhotoButton) { const [kind, index] = removePhotoButton.dataset.removePhoto.split(":"); removeGeneralPhoto(kind, Number(index)); return; }
       const record = event.target.closest("[data-record-id]");
@@ -1795,11 +1946,11 @@
       if (evidence) await viewEvidence(evidence.dataset.evidenceFile);
     });
 
-    for (const id of ["manualReceiptCode", "manualSackCode", "manualPackageCode"]) {
+    for (const id of ["manualReceiptCode", "manualSackCode", "manualPackageCode", "manualEmptySackCode"]) {
       document.getElementById(id).addEventListener("keydown", (event) => {
         if (event.key !== "Enter") return;
         event.preventDefault();
-        const action = id === "manualReceiptCode" ? "add-receipt-manual" : id === "manualSackCode" ? "add-sack-manual" : "add-package-manual";
+        const action = id === "manualReceiptCode" ? "add-receipt-manual" : id === "manualSackCode" ? "add-sack-manual" : id === "manualPackageCode" ? "add-package-manual" : "add-empty-sack-manual";
         document.querySelector(`[data-action="${action}"]`).click();
       });
     }

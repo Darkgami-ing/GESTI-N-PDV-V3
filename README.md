@@ -9,6 +9,8 @@ Aplicación móvil para GitHub Pages con Supabase como base de datos y autentica
 3. Recepción de encomiendas: escaneo de sacos, fotografías y GPS.
 4. Logística inversa por encomienda: costales identificados por código de barras y paquetes asociados a cada costal.
 
+En recepción de camión exclusivo, logística inversa de camión y logística inversa por encomienda también se controlan los **sacos vacíos retornados**. Los sacos con código se escanean (o se ingresan manualmente) sin permitir duplicados; los sacos sin código se registran por cantidad y observación. Cuando se registra al menos uno, la operación exige hasta tres fotografías de evidencia, guardadas en Drive.
+
 Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una relación individual `operación → costal → paquete`, lo que permite buscarlo y auditarlo.
 
 ## Flujo de OT y estados
@@ -38,7 +40,7 @@ Solo el usuario ADMINISTRADOR puede eliminar una operación completa mientras es
 3. Crear una consulta nueva, pegar todo `supabase/schema.sql` y ejecutarla.
 4. Ir a **Authentication → Providers → Email** y desactivar el registro público de usuarios. Las cuentas se crearán desde el panel administrativo de la aplicación.
 
-Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, el estado automático y la categoría de documento en evidencias.
+Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, el estado automático, la categoría de documento en evidencias y la tabla `sacos_vacios` con sus políticas RLS.
 
 ### Crear el primer administrador
 

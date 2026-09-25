@@ -101,6 +101,31 @@ create table if not exists public.paquetes (
   unique (operacion_id, codigo)
 );
 
+-- Sacos vacíos retornados. Los sacos con código se registran uno a uno;
+-- los que no tienen código se registran por cantidad y observación.
+create table if not exists public.sacos_vacios (
+  id uuid primary key default gen_random_uuid(),
+  operacion_id uuid not null references public.operaciones(id) on delete cascade,
+  tipo text not null check (tipo in ('CON_CODIGO', 'SIN_CODIGO')),
+  codigo text,
+  cantidad integer not null default 1 check (cantidad > 0),
+  observacion text,
+  registrado_por uuid not null references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  constraint sacos_vacios_tipo_datos_check check (
+    (tipo = 'CON_CODIGO' and codigo is not null and btrim(codigo) <> '' and cantidad = 1)
+    or
+    (tipo = 'SIN_CODIGO' and (codigo is null or btrim(codigo) = '') and cantidad >= 1)
+  )
+);
+
+create unique index if not exists sacos_vacios_operacion_codigo_uidx
+  on public.sacos_vacios (operacion_id, codigo)
+  where codigo is not null and btrim(codigo) <> '';
+
+create index if not exists sacos_vacios_operacion_idx
+  on public.sacos_vacios (operacion_id, created_at);
+
 create table if not exists public.precintos (
   id uuid primary key default gen_random_uuid(),
   operacion_id uuid not null references public.operaciones(id) on delete cascade,
@@ -124,7 +149,8 @@ create table if not exists public.evidencias (
     'LOGISTICA_INVERSA',
     'PRECINTO_SALIDA',
     'GUIA_REMISION_TRANSPORTE',
-    'EVIDENCIA_GENERAL'
+    'EVIDENCIA_GENERAL',
+    'SACOS_VACIOS'
   )),
   etiqueta text not null,
   referencia_codigo text,
@@ -150,7 +176,8 @@ alter table public.evidencias add constraint evidencias_categoria_check
     'LOGISTICA_INVERSA',
     'PRECINTO_SALIDA',
     'GUIA_REMISION_TRANSPORTE',
-    'EVIDENCIA_GENERAL'
+    'EVIDENCIA_GENERAL',
+    'SACOS_VACIOS'
   ));
 update public.operaciones set ot = codigo where ot is null or btrim(ot) = '';
 alter table public.operaciones alter column ot set not null;
@@ -236,6 +263,11 @@ for each row execute function public.marcar_operacion_en_proceso();
 drop trigger if exists paquetes_marcar_proceso on public.paquetes;
 create trigger paquetes_marcar_proceso
 after insert or update on public.paquetes
+for each row execute function public.marcar_operacion_en_proceso();
+
+drop trigger if exists sacos_vacios_marcar_proceso on public.sacos_vacios;
+create trigger sacos_vacios_marcar_proceso
+after insert or update on public.sacos_vacios
 for each row execute function public.marcar_operacion_en_proceso();
 
 drop trigger if exists precintos_marcar_proceso on public.precintos;
@@ -396,6 +428,32 @@ create trigger paquetes_validar_costal
 before insert or update on public.paquetes
 for each row execute function public.validar_costal_paquete();
 
+create or replace function public.validar_saco_vacio_operacion()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_tipo text;
+begin
+  select o.tipo into v_tipo
+  from public.operaciones o
+  where o.id = new.operacion_id;
+
+  if v_tipo is null or v_tipo not in ('RECEPCION_CAMION', 'INVERSA_CAMION', 'INVERSA_ENCOMIENDA') then
+    raise exception 'Los sacos vacíos solo aplican a recepción de camión e inversas.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists sacos_vacios_validar_operacion on public.sacos_vacios;
+create trigger sacos_vacios_validar_operacion
+before insert or update on public.sacos_vacios
+for each row execute function public.validar_saco_vacio_operacion();
+
 create or replace function public.finalizar_operacion(
   p_operacion_id uuid,
   p_latitud numeric,
@@ -416,6 +474,7 @@ declare
   v_costales integer;
   v_paquetes integer;
   v_costales_abiertos integer;
+  v_sacos_vacios integer;
   v_evidencias integer;
 begin
   select * into v_operacion
@@ -440,6 +499,18 @@ begin
       and categoria = 'GUIA_REMISION_TRANSPORTE'
   ) then
     raise exception 'Debe adjuntar la guía de remisión transporte.';
+  end if;
+
+  select coalesce(sum(cantidad), 0) into v_sacos_vacios
+  from public.sacos_vacios
+  where operacion_id = p_operacion_id;
+
+  if v_sacos_vacios > 0 and not exists (
+    select 1 from public.evidencias
+    where operacion_id = p_operacion_id
+      and categoria = 'SACOS_VACIOS'
+  ) then
+    raise exception 'Debe adjuntar evidencia fotográfica de los sacos vacíos retornados.';
   end if;
 
   if v_operacion.tipo in ('RECEPCION_CAMION', 'RECEPCION_ENCOMIENDA') then
@@ -486,6 +557,7 @@ alter table public.operaciones enable row level security;
 alter table public.items_recepcion enable row level security;
 alter table public.costales enable row level security;
 alter table public.paquetes enable row level security;
+alter table public.sacos_vacios enable row level security;
 alter table public.precintos enable row level security;
 alter table public.evidencias enable row level security;
 
@@ -618,6 +690,33 @@ create policy paquetes_delete on public.paquetes
 for delete to authenticated
 using (public.puede_editar_operacion(operacion_id));
 
+drop policy if exists sacos_vacios_select on public.sacos_vacios;
+create policy sacos_vacios_select on public.sacos_vacios
+for select to authenticated
+using (exists (
+  select 1 from public.operaciones o
+  where o.id = operacion_id and public.puede_ver_pdv(o.pdv_id)
+));
+
+drop policy if exists sacos_vacios_insert on public.sacos_vacios;
+create policy sacos_vacios_insert on public.sacos_vacios
+for insert to authenticated
+with check (
+  registrado_por = auth.uid()
+  and public.puede_editar_operacion(operacion_id)
+);
+
+drop policy if exists sacos_vacios_update on public.sacos_vacios;
+create policy sacos_vacios_update on public.sacos_vacios
+for update to authenticated
+using (public.puede_editar_operacion(operacion_id))
+with check (public.puede_editar_operacion(operacion_id));
+
+drop policy if exists sacos_vacios_delete on public.sacos_vacios;
+create policy sacos_vacios_delete on public.sacos_vacios
+for delete to authenticated
+using (public.puede_editar_operacion(operacion_id));
+
 drop policy if exists precintos_select on public.precintos;
 create policy precintos_select on public.precintos
 for select to authenticated
@@ -651,7 +750,7 @@ for delete to authenticated
 using (public.puede_editar_operacion(operacion_id));
 
 revoke all on public.pdvs, public.perfiles, public.operaciones,
-  public.items_recepcion, public.costales, public.paquetes,
+  public.items_recepcion, public.costales, public.paquetes, public.sacos_vacios,
   public.precintos, public.evidencias from anon;
 
 grant select on public.pdvs, public.perfiles to authenticated;
@@ -661,6 +760,7 @@ grant update (guia_remision_transporte) on public.operaciones to authenticated;
 grant select, insert, update, delete on public.items_recepcion to authenticated;
 grant select, insert, update, delete on public.costales to authenticated;
 grant select, insert, update, delete on public.paquetes to authenticated;
+grant select, insert, update, delete on public.sacos_vacios to authenticated;
 grant select, insert, update, delete on public.precintos to authenticated;
 grant select, insert, delete on public.evidencias to authenticated;
 revoke execute on function public.rol_actual() from public, anon;
@@ -698,6 +798,9 @@ select
   (select count(*) from public.items_recepcion i where i.operacion_id = o.id) as total_recibidos,
   (select count(*) from public.costales c where c.operacion_id = o.id) as total_costales,
   (select count(*) from public.paquetes p where p.operacion_id = o.id) as total_paquetes,
+  (select coalesce(sum(sv.cantidad), 0) from public.sacos_vacios sv where sv.operacion_id = o.id) as total_sacos_vacios,
+  (select coalesce(sum(sv.cantidad) filter (where sv.tipo = 'CON_CODIGO'), 0) from public.sacos_vacios sv where sv.operacion_id = o.id) as sacos_vacios_con_codigo,
+  (select coalesce(sum(sv.cantidad) filter (where sv.tipo = 'SIN_CODIGO'), 0) from public.sacos_vacios sv where sv.operacion_id = o.id) as sacos_vacios_sin_codigo,
   (select count(*) from public.evidencias e where e.operacion_id = o.id) as total_evidencias,
   (select e.nombre_archivo from public.evidencias e where e.operacion_id = o.id and e.categoria = 'GUIA_REMISION_TRANSPORTE' order by e.created_at desc limit 1) as guia_remision_nombre,
   (select e.drive_file_id from public.evidencias e where e.operacion_id = o.id and e.categoria = 'GUIA_REMISION_TRANSPORTE' order by e.created_at desc limit 1) as guia_remision_drive_file_id
