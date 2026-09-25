@@ -171,6 +171,34 @@
             </div>
           </section>
 
+          <section id="emptySacksSection" class="card flow-section hidden">
+            <div class="step-title"><span>+</span><div><strong>Sacos vacíos retornados</strong><small>Registre los sacos con código y los que no tienen código.</small></div></div>
+            <div id="emptySackTypeChooser" class="segment-control">
+              <button type="button" class="active" data-empty-sack-type="CON_CODIGO">Con código</button>
+              <button type="button" data-empty-sack-type="SIN_CODIGO">Sin código</button>
+            </div>
+            <div id="emptySackCodePanel">
+              <button type="button" class="button scan full" data-scan-mode="EMPTY_SACK">Abrir lector para saco vacío</button>
+              <div class="manual-row"><input id="manualEmptySackCode" autocapitalize="characters" placeholder="Código de saco vacío"><button type="button" class="button secondary" data-action="add-empty-sack-manual">Agregar</button></div>
+            </div>
+            <div id="emptySackNoCodePanel" class="hidden">
+              <div class="field-grid">
+                <div class="field"><label for="manualEmptySackQuantity">Cantidad</label><input id="manualEmptySackQuantity" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+                <div class="field"><label for="manualEmptySackObservation">Observación <span class="optional">(opcional)</span></label><input id="manualEmptySackObservation" placeholder="Ej. saco roto o sin etiqueta"></div>
+              </div>
+              <button type="button" class="button secondary full" data-action="add-empty-sack-no-code">Registrar sacos sin código</button>
+            </div>
+            <div class="counter-row"><span>Total retornados</span><strong id="emptySackTotalCount">0</strong></div>
+            <div class="counter-row"><span>Con código / sin código</span><strong><span id="emptySackCodeCount">0</span> / <span id="emptySackNoCodeCount">0</span></strong></div>
+            <div id="emptySackList" class="scan-list"></div>
+            <div id="emptySackPhotos" class="general-photos" data-category="SACOS_VACIOS">
+              <div class="section-subtitle">Evidencias de sacos vacíos <span class="required-mark">*</span></div>
+              <input id="emptySackPhotoInput" type="file" accept="image/*" multiple>
+              <small>Adjunte hasta 3 fotografías de los sacos retornados.</small>
+              <div id="emptySackPhotoPreview" class="photo-grid"></div>
+            </div>
+          </section>
+
           <section id="truckDepartureSection" class="card flow-section hidden">
             <div class="step-title"><span>3</span><div><strong>Salida de la unidad</strong><small>Precintos de salida</small></div></div>
             <div id="departureSeals" class="seal-grid"></div>
