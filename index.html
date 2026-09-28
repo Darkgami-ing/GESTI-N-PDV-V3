@@ -68,6 +68,7 @@
         <button class="nav-item active" data-view="home"><span>⌂</span>Inicio</button>
         <button class="nav-item" data-view="new"><span>＋</span>Nueva</button>
         <button class="nav-item" data-view="records"><span>▤</span>Registros</button>
+        <button id="returnsNav" class="nav-item hidden" data-view="returns"><span>↩</span>Devoluciones</button>
         <button id="usersNav" class="nav-item hidden" data-view="users"><span>♙</span>Usuarios</button>
       </nav>
 
@@ -237,6 +238,38 @@
         </section>
         <div id="recordsSummary" class="summary-grid three"></div>
         <div id="recordsList" class="record-list"><div class="empty-state">Utilice los filtros para consultar.</div></div>
+      </section>
+
+      <section id="returnsPanel" class="panel">
+        <div class="page-heading">
+          <div><p class="eyebrow">Administrador y Encargado</p><h2>Recepción de devoluciones</h2></div>
+          <button type="button" class="button secondary small" data-action="new-devolucion">Nueva recepción</button>
+        </div>
+        <form id="devolucionForm" class="card">
+          <div class="card-title"><span>Registrar devolución recibida</span><span class="status-pill done">Independiente</span></div>
+          <p class="helper-text">Escanee la OT de la logística inversa y registre lo recibido físicamente. La OT quedará marcada como recepcionada en los módulos de logística inversa.</p>
+          <div class="field">
+            <label for="devolucionOt">OT de devolución</label>
+            <div class="scan-input"><input id="devolucionOt" required autocapitalize="characters" placeholder="Ingrese o escanee la OT"><button type="button" data-scan-target="devolucionOt" data-scan-label="OT de devolución">▣</button></div>
+          </div>
+          <button type="button" class="button secondary full" data-action="load-devolucion-ot">Consultar OT</button>
+          <div id="devolucionOtStatus" class="form-message hidden"></div>
+          <div class="field"><label for="devolucionFecha">Fecha y hora de ejecución</label><input id="devolucionFecha" type="datetime-local" required></div>
+
+          <div class="return-grid">
+            <div class="return-row"><strong>Paquetes con código</strong><input id="devolucionPaquetesConCodigo" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="Cantidad de paquetes con código"><input id="devolucionObsPaquetesConCodigo" placeholder="Observación (opcional)" aria-label="Observación de paquetes con código"></div>
+            <div class="return-row"><strong>Paquetes sin código</strong><input id="devolucionPaquetesSinCodigo" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="Cantidad de paquetes sin código"><input id="devolucionObsPaquetesSinCodigo" placeholder="Observación (opcional)" aria-label="Observación de paquetes sin código"></div>
+            <div class="return-row"><strong>Costales con código</strong><input id="devolucionCostalesConCodigo" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="Cantidad de costales con código"><input id="devolucionObsCostalesConCodigo" placeholder="Observación (opcional)" aria-label="Observación de costales con código"></div>
+            <div class="return-row"><strong>Costales sin código</strong><input id="devolucionCostalesSinCodigo" type="number" min="0" step="1" value="0" inputmode="numeric" aria-label="Cantidad de costales sin código"><input id="devolucionObsCostalesSinCodigo" placeholder="Observación (opcional)" aria-label="Observación de costales sin código"></div>
+          </div>
+          <div class="field"><label for="devolucionObservaciones">Observaciones generales <span class="optional">(opcional)</span></label><textarea id="devolucionObservaciones" rows="3" placeholder="Incidencias, diferencias o comentarios de la recepción"></textarea></div>
+          <div id="devolucionPhotoSlot" class="photo-slot single"><strong>Foto de la recepción *</strong><input id="devolucionPhotoInput" type="file" accept="image/*"><div id="devolucionPhotoPreview" class="photo-preview">Sin fotografía</div></div>
+          <button type="submit" class="button success full">Guardar recepción</button>
+        </form>
+        <section class="card">
+          <div class="card-title"><span>Recepciones recientes</span><button type="button" class="link-button" data-action="refresh-devoluciones">Actualizar</button></div>
+          <div id="devolucionesList" class="record-list"><div class="empty-state">No hay recepciones registradas.</div></div>
+        </section>
       </section>
 
       <section id="usersPanel" class="panel">

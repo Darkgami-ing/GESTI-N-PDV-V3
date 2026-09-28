@@ -168,21 +168,44 @@ function verificarAccesoEvidencia_(fileId, accessToken) {
 
 function obtenerRegistroEvidencia_(fileId, accessToken) {
   const filtro = encodeURIComponent(fileId);
-  const url = SUPABASE_URL + '/rest/v1/evidencias?drive_file_id=eq.' + filtro + '&select=id,categoria,operacion_id&limit=1';
-  const respuesta = UrlFetchApp.fetch(url, {
-    method: 'get',
-    headers: {
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-      Authorization: 'Bearer ' + accessToken,
-      Accept: 'application/json'
+  const consultas = [
+    {
+      tabla: 'evidencias',
+      select: 'id,categoria,operacion_id',
+      categoria: null
     },
-    muteHttpExceptions: true
-  });
+    {
+      tabla: 'evidencias_recepciones_devoluciones',
+      select: 'id,drive_file_id,recepcion_devolucion_id',
+      categoria: 'RECEPCION_DEVOLUCION'
+    }
+  ];
 
-  if (respuesta.getResponseCode() !== 200) throw new Error('No se pudo validar la evidencia.');
-  const filas = JSON.parse(respuesta.getContentText() || '[]');
-  if (!filas.length) throw new Error('No tiene permiso para ver esta evidencia.');
-  return filas[0];
+  for (const consulta of consultas) {
+    const url = SUPABASE_URL + '/rest/v1/' + consulta.tabla
+      + '?drive_file_id=eq.' + filtro
+      + '&select=' + encodeURIComponent(consulta.select)
+      + '&limit=1';
+    const respuesta = UrlFetchApp.fetch(url, {
+      method: 'get',
+      headers: {
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: 'Bearer ' + accessToken,
+        Accept: 'application/json'
+      },
+      muteHttpExceptions: true
+    });
+
+    if (respuesta.getResponseCode() !== 200) throw new Error('No se pudo validar la evidencia.');
+    const filas = JSON.parse(respuesta.getContentText() || '[]');
+    if (filas.length) {
+      const registro = filas[0];
+      if (consulta.categoria) registro.categoria = consulta.categoria;
+      return registro;
+    }
+  }
+
+  throw new Error('No tiene permiso para ver esta evidencia.');
 }
 
 function limpiarNombre_(valor) {

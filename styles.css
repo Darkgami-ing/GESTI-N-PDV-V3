@@ -184,6 +184,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .record-document { overflow-wrap: anywhere; }
 .record-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 7px; }
 .record-tag { padding: 4px 7px; border-radius: 999px; background: #edf3f7; color: var(--muted); font-size: 9px; font-weight: 800; }
+.reception-state.done { color: #087452; background: var(--green-soft); }
+.reception-state.pending { color: #82520e; background: #fff1c8; }
 .empty-state { padding: 30px 12px; text-align: center; color: var(--muted); border: 1px dashed #cbd8e3; border-radius: 13px; background: #f8fbfd; }
 .filters-card { padding-bottom: 3px; }
 .two-column { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
@@ -193,6 +195,10 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .user-data small { margin-top: 3px; color: var(--muted); }
 
 .helper-text { margin: -7px 0 16px; color: var(--muted); font-size: 12px; line-height: 1.55; }
+.return-grid { display: grid; gap: 8px; margin: 15px 0; }
+.return-row { display: grid; grid-template-columns: minmax(155px, .8fr) 110px minmax(0, 1.2fr); align-items: center; gap: 8px; padding: 9px; border: 1px solid var(--line); border-radius: 11px; background: #f7fafc; }
+.return-row strong { color: var(--navy); font-size: 12px; }
+.return-row input { min-width: 0; margin: 0; padding: 9px; font-size: 12px; background: white; }
 .file-info { margin: -6px 0 14px; padding: 10px 12px; border-radius: 10px; color: var(--muted); background: #f1f5f8; font-size: 12px; overflow-wrap: anywhere; }
 .bulk-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 12px 0; }
 .bulk-summary > div { padding: 11px; border: 1px solid var(--line); border-radius: 11px; background: #f7fafc; }
@@ -301,4 +307,6 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
   .compact-grid .operation-card { min-height: 105px; padding: 13px; }
   .compact-grid .operation-icon { width: 36px; height: 36px; font-size: 18px; }
   .admin-edit-row, .admin-empty-row { grid-template-columns: 1fr; }
+  .return-row { grid-template-columns: 1fr 90px; }
+  .return-row input:last-child { grid-column: 1 / -1; }
 }
