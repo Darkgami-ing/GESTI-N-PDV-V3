@@ -44,6 +44,7 @@ create table if not exists public.operaciones (
     'INVERSA_ENCOMIENDA'
   )),
   estado text not null default 'PENDIENTE' check (estado in ('PENDIENTE', 'EN_PROCESO', 'COMPLETADO', 'ANULADO')),
+  estado_recepcion_devolucion text not null default 'PENDIENTE' check (estado_recepcion_devolucion in ('PENDIENTE', 'RECEPCIONADO')),
   pdv_id uuid not null references public.pdvs(id) on delete restrict,
   created_by uuid not null references auth.users(id) on delete restrict,
   id_ruta text,
@@ -75,6 +76,40 @@ create table if not exists public.auditoria_cambios (
   resumen text not null,
   cambiado_por uuid not null references auth.users(id) on delete restrict,
   created_at timestamptz not null default now()
+);
+
+-- Registro independiente de la recepción física de una devolución.
+create table if not exists public.recepciones_devoluciones (
+  id uuid primary key default gen_random_uuid(),
+  ot_devolucion text not null,
+  operacion_inversa_id uuid not null references public.operaciones(id) on delete cascade,
+  fecha_ejecucion timestamptz not null default now(),
+  cantidad_paquetes_con_codigo integer not null default 0 check (cantidad_paquetes_con_codigo >= 0),
+  observacion_paquetes_con_codigo text,
+  cantidad_paquetes_sin_codigo integer not null default 0 check (cantidad_paquetes_sin_codigo >= 0),
+  observacion_paquetes_sin_codigo text,
+  cantidad_costales_con_codigo integer not null default 0 check (cantidad_costales_con_codigo >= 0),
+  observacion_costales_con_codigo text,
+  cantidad_costales_sin_codigo integer not null default 0 check (cantidad_costales_sin_codigo >= 0),
+  observacion_costales_sin_codigo text,
+  observaciones text,
+  estado text not null default 'RECEPCIONADO' check (estado in ('RECEPCIONADO', 'ANULADO')),
+  registrado_por uuid not null references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  unique (ot_devolucion),
+  unique (operacion_inversa_id)
+);
+
+create table if not exists public.evidencias_recepciones_devoluciones (
+  id uuid primary key default gen_random_uuid(),
+  recepcion_devolucion_id uuid not null references public.recepciones_devoluciones(id) on delete cascade,
+  drive_file_id text not null unique,
+  nombre_archivo text,
+  mime_type text,
+  registrado_por uuid not null references auth.users(id) on delete restrict,
+  created_at timestamptz not null default now(),
+  unique (recepcion_devolucion_id)
 );
 
 create table if not exists public.items_recepcion (
@@ -180,7 +215,14 @@ create table if not exists public.evidencias (
 -- Migración idempotente para instalaciones que ya usaban BORRADOR/FINALIZADO.
 alter table public.operaciones add column if not exists ot text;
 alter table public.operaciones add column if not exists guia_remision_transporte text;
+alter table public.operaciones add column if not exists estado_recepcion_devolucion text default 'PENDIENTE';
 alter table public.operaciones drop constraint if exists operaciones_estado_check;
+alter table public.operaciones drop constraint if exists operaciones_estado_recepcion_devolucion_check;
+update public.operaciones set estado_recepcion_devolucion = 'PENDIENTE' where estado_recepcion_devolucion is null;
+alter table public.operaciones alter column estado_recepcion_devolucion set default 'PENDIENTE';
+alter table public.operaciones alter column estado_recepcion_devolucion set not null;
+alter table public.operaciones add constraint operaciones_estado_recepcion_devolucion_check
+  check (estado_recepcion_devolucion in ('PENDIENTE', 'RECEPCIONADO'));
 alter table public.paquetes drop constraint if exists paquetes_codigo_jpe_check;
 alter table public.paquetes add constraint paquetes_codigo_jpe_check
   check (upper(btrim(codigo)) like 'JPE%') not valid;
@@ -220,6 +262,10 @@ create index if not exists evidencias_operacion_idx
   on public.evidencias (operacion_id, created_at);
 create index if not exists auditoria_cambios_operacion_idx
   on public.auditoria_cambios (operacion_id, created_at desc);
+create index if not exists recepciones_devoluciones_fecha_idx
+  on public.recepciones_devoluciones (fecha_ejecucion desc);
+create index if not exists recepciones_devoluciones_operacion_idx
+  on public.recepciones_devoluciones (operacion_inversa_id);
 
 create or replace function public.set_updated_at()
 returns trigger
@@ -304,6 +350,65 @@ drop trigger if exists costales_set_updated_at on public.costales;
 create trigger costales_set_updated_at
 before update on public.costales
 for each row execute function public.set_updated_at();
+
+drop trigger if exists recepciones_devoluciones_set_updated_at on public.recepciones_devoluciones;
+create trigger recepciones_devoluciones_set_updated_at
+before update on public.recepciones_devoluciones
+for each row execute function public.set_updated_at();
+
+create or replace function public.validar_recepcion_devolucion_operacion()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_tipo text;
+  v_ot text;
+begin
+  select o.tipo, o.ot
+    into v_tipo, v_ot
+  from public.operaciones o
+  where o.id = new.operacion_inversa_id;
+
+  if v_tipo is null or v_tipo not in ('INVERSA_CAMION', 'INVERSA_ENCOMIENDA') then
+    raise exception 'La recepción de devolución solo puede asociarse a una logística inversa.';
+  end if;
+
+  if upper(btrim(new.ot_devolucion)) <> upper(btrim(v_ot)) then
+    raise exception 'La OT de recepción no coincide con la OT de la logística inversa.';
+  end if;
+
+  return new;
+end;
+$$;
+
+drop trigger if exists recepciones_devoluciones_validar_operacion on public.recepciones_devoluciones;
+create trigger recepciones_devoluciones_validar_operacion
+before insert or update on public.recepciones_devoluciones
+for each row execute function public.validar_recepcion_devolucion_operacion();
+
+create or replace function public.marcar_operacion_recepcionada()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  update public.operaciones
+  set estado_recepcion_devolucion = case
+    when new.estado = 'RECEPCIONADO' then 'RECEPCIONADO'
+    else 'PENDIENTE'
+  end
+  where id = new.operacion_inversa_id;
+  return new;
+end;
+$$;
+
+drop trigger if exists recepciones_devoluciones_marcar_operacion on public.recepciones_devoluciones;
+create trigger recepciones_devoluciones_marcar_operacion
+after insert or update on public.recepciones_devoluciones
+for each row execute function public.marcar_operacion_recepcionada();
 
 create or replace function public.crear_perfil_desde_auth()
 returns trigger
@@ -518,6 +623,8 @@ begin
 
   if TG_TABLE_NAME = 'operaciones' then
     v_operacion_id := (v_new ->> 'id')::uuid;
+  elsif TG_TABLE_NAME = 'recepciones_devoluciones' then
+    v_operacion_id := (v_new ->> 'operacion_inversa_id')::uuid;
   else
     v_operacion_id := (v_new ->> 'operacion_id')::uuid;
   end if;
@@ -579,6 +686,11 @@ for each row execute function public.registrar_cambio_admin();
 drop trigger if exists precintos_auditar_cambio_admin on public.precintos;
 create trigger precintos_auditar_cambio_admin
 after update on public.precintos
+for each row execute function public.registrar_cambio_admin();
+
+drop trigger if exists recepciones_devoluciones_auditar_cambio_admin on public.recepciones_devoluciones;
+create trigger recepciones_devoluciones_auditar_cambio_admin
+after update on public.recepciones_devoluciones
 for each row execute function public.registrar_cambio_admin();
 
 create or replace function public.finalizar_operacion(
@@ -688,6 +800,8 @@ alter table public.sacos_vacios enable row level security;
 alter table public.precintos enable row level security;
 alter table public.evidencias enable row level security;
 alter table public.auditoria_cambios enable row level security;
+alter table public.recepciones_devoluciones enable row level security;
+alter table public.evidencias_recepciones_devoluciones enable row level security;
 
 drop policy if exists pdvs_select on public.pdvs;
 create policy pdvs_select on public.pdvs
@@ -888,9 +1002,52 @@ create policy auditoria_cambios_select on public.auditoria_cambios
 for select to authenticated
 using (public.rol_actual() = 'ADMINISTRADOR');
 
+drop policy if exists recepciones_devoluciones_admin on public.recepciones_devoluciones;
+drop policy if exists recepciones_devoluciones_operacion on public.recepciones_devoluciones;
+create policy recepciones_devoluciones_operacion on public.recepciones_devoluciones
+for all to authenticated
+using (
+  public.rol_actual() in ('ADMINISTRADOR', 'ENCARGADO')
+  and exists (
+    select 1 from public.operaciones o
+    where o.id = operacion_inversa_id and public.puede_ver_pdv(o.pdv_id)
+  )
+)
+with check (
+  public.rol_actual() in ('ADMINISTRADOR', 'ENCARGADO')
+  and exists (
+    select 1 from public.operaciones o
+    where o.id = operacion_inversa_id and public.puede_ver_pdv(o.pdv_id)
+  )
+);
+
+drop policy if exists evidencias_recepciones_devoluciones_admin on public.evidencias_recepciones_devoluciones;
+drop policy if exists evidencias_recepciones_devoluciones_operacion on public.evidencias_recepciones_devoluciones;
+create policy evidencias_recepciones_devoluciones_operacion on public.evidencias_recepciones_devoluciones
+for all to authenticated
+using (
+  public.rol_actual() in ('ADMINISTRADOR', 'ENCARGADO')
+  and exists (
+    select 1
+    from public.recepciones_devoluciones rd
+    join public.operaciones o on o.id = rd.operacion_inversa_id
+    where rd.id = recepcion_devolucion_id and public.puede_ver_pdv(o.pdv_id)
+  )
+)
+with check (
+  public.rol_actual() in ('ADMINISTRADOR', 'ENCARGADO')
+  and exists (
+    select 1
+    from public.recepciones_devoluciones rd
+    join public.operaciones o on o.id = rd.operacion_inversa_id
+    where rd.id = recepcion_devolucion_id and public.puede_ver_pdv(o.pdv_id)
+  )
+);
+
 revoke all on public.pdvs, public.perfiles, public.operaciones,
   public.items_recepcion, public.costales, public.paquetes, public.sacos_vacios,
-  public.precintos, public.evidencias, public.auditoria_cambios from anon;
+  public.precintos, public.evidencias, public.auditoria_cambios,
+  public.recepciones_devoluciones, public.evidencias_recepciones_devoluciones from anon;
 
 grant select on public.pdvs, public.perfiles to authenticated;
 grant update (nombre) on public.perfiles to authenticated;
@@ -912,6 +1069,8 @@ grant select, insert, update, delete on public.sacos_vacios to authenticated;
 grant select, insert, update, delete on public.precintos to authenticated;
 grant select, insert, delete on public.evidencias to authenticated;
 grant select on public.auditoria_cambios to authenticated;
+grant select, insert, update on public.recepciones_devoluciones to authenticated;
+grant select, insert, delete on public.evidencias_recepciones_devoluciones to authenticated;
 revoke execute on function public.rol_actual() from public, anon;
 revoke execute on function public.pdv_actual() from public, anon;
 revoke execute on function public.puede_ver_pdv(uuid) from public, anon;
@@ -936,6 +1095,7 @@ select
   o.ot,
   o.tipo,
   o.estado,
+  o.estado_recepcion_devolucion,
   o.pdv_id,
   d.codigo as pdv_codigo,
   d.nombre as pdv_nombre,
@@ -959,6 +1119,51 @@ from public.operaciones o
 join public.pdvs d on d.id = o.pdv_id;
 
 grant select on public.v_resumen_operaciones to authenticated;
+
+drop view if exists public.v_recepciones_devoluciones;
+create or replace view public.v_recepciones_devoluciones
+with (security_invoker = true)
+as
+select
+  rd.id,
+  rd.ot_devolucion,
+  rd.operacion_inversa_id,
+  rd.fecha_ejecucion,
+  rd.cantidad_paquetes_con_codigo,
+  rd.observacion_paquetes_con_codigo,
+  rd.cantidad_paquetes_sin_codigo,
+  rd.observacion_paquetes_sin_codigo,
+  rd.cantidad_costales_con_codigo,
+  rd.observacion_costales_con_codigo,
+  rd.cantidad_costales_sin_codigo,
+  rd.observacion_costales_sin_codigo,
+  rd.observaciones,
+  rd.estado,
+  rd.registrado_por,
+  rd.created_at,
+  rd.updated_at,
+  o.codigo as operacion_codigo,
+  o.ot as operacion_ot,
+  o.tipo as operacion_tipo,
+  o.estado as operacion_estado,
+  o.estado_recepcion_devolucion,
+  d.codigo as pdv_codigo,
+  d.nombre as pdv_nombre,
+  e.drive_file_id,
+  e.nombre_archivo as evidencia_nombre,
+  e.mime_type as evidencia_mime_type
+from public.recepciones_devoluciones rd
+join public.operaciones o on o.id = rd.operacion_inversa_id
+join public.pdvs d on d.id = o.pdv_id
+left join lateral (
+  select evidence.drive_file_id, evidence.nombre_archivo, evidence.mime_type
+  from public.evidencias_recepciones_devoluciones evidence
+  where evidence.recepcion_devolucion_id = rd.id
+  order by evidence.created_at desc
+  limit 1
+) e on true;
+
+grant select on public.v_recepciones_devoluciones to authenticated;
 
 drop view if exists public.v_auditoria_cambios;
 create or replace view public.v_auditoria_cambios
