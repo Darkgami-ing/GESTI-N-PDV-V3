@@ -62,6 +62,12 @@
     parcelPhotos: [],
     emptySackPhotos: [],
     gps: null,
+    devolucion: {
+      inverseOperation: null,
+      reception: null,
+      evidence: null,
+      photoDraft: null,
+    },
     scanner: {
       reader: null,
       devices: [],
@@ -94,6 +100,12 @@
     const date = new Date();
     const offset = date.getTimezoneOffset();
     return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 10);
+  };
+  const localDateTimeValue = (value) => {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return "";
+    const offset = date.getTimezoneOffset();
+    return new Date(date.getTime() - offset * 60000).toISOString().slice(0, 16);
   };
   const formatDate = (value) => value
     ? new Intl.DateTimeFormat("es-PE", { dateStyle: "short", timeStyle: "short", timeZone: CFG.TIME_ZONE || "America/Lima" }).format(new Date(value))
@@ -155,6 +167,7 @@
     $("#accountInfo").innerHTML = `<strong>${escapeHtml(p.nombre)}</strong><small>${escapeHtml(p.usuario)} · ${escapeHtml(p.rol)}</small>${p.pdv_nombre ? `<small>${escapeHtml(p.pdv_nombre)}</small>` : ""}`;
     const canManage = ["ADMINISTRADOR", "ENCARGADO"].includes(p.rol);
     $("#usersNav").classList.toggle("hidden", !canManage);
+    $("#returnsNav").classList.toggle("hidden", !["ADMINISTRADOR", "ENCARGADO"].includes(p.rol));
     $("#managerPdvField").classList.toggle("hidden", p.rol !== "ADMINISTRADOR");
     $("#bulkPdvCard").classList.toggle("hidden", p.rol !== "ADMINISTRADOR");
     if (p.rol === "ENCARGADO") {
@@ -227,6 +240,23 @@
     }
   }
 
+  function resetDevolucionState() {
+    state.devolucion = {
+      inverseOperation: null,
+      reception: null,
+      evidence: null,
+      photoDraft: null,
+    };
+    const form = $("#devolucionForm");
+    if (!form) return;
+    form.reset();
+    $("#devolucionFecha").value = localDateTimeValue();
+    $("#devolucionOtStatus").className = "form-message hidden";
+    $("#devolucionOtStatus").textContent = "";
+    $("#devolucionPhotoPreview").textContent = "Sin fotografía";
+    $("#devolucionPhotoInput").value = "";
+  }
+
   function clearState() {
     state.session = null;
     state.profile = null;
@@ -234,15 +264,20 @@
     state.users = [];
     state.bulkPdvRows = [];
     state.bulkPdvResults = [];
+    resetDevolucionState();
     resetOperationState();
   }
 
   function switchView(name) {
+    if (name === "returns" && !["ADMINISTRADOR", "ENCARGADO"].includes(state.profile?.rol)) {
+      name = "home";
+    }
     $$(".panel").forEach((panel) => panel.classList.remove("active"));
     $$(".nav-item").forEach((button) => button.classList.toggle("active", button.dataset.view === name));
     $(`#${name}Panel`)?.classList.add("active");
     if (name === "records") loadRecords();
     if (name === "users") loadUsersPanel();
+    if (name === "returns") loadDevoluciones();
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
@@ -1434,10 +1469,255 @@
     }
   }
 
+  function setDevolucionMessage(message, ok = false) {
+    const node = $("#devolucionOtStatus");
+    if (!node) return;
+    node.textContent = message;
+    node.className = `form-message ${ok ? "success" : "error"}`;
+  }
+
+  function renderDevolucionPhoto() {
+    const preview = $("#devolucionPhotoPreview");
+    if (!preview) return;
+    const draft = state.devolucion.photoDraft;
+    const evidence = state.devolucion.evidence;
+    if (draft?.dataUrl) {
+      preview.innerHTML = `<img src="${draft.dataUrl}" alt="Foto de recepción de devolución">`;
+    } else if (evidence) {
+      preview.textContent = `Fotografía guardada en Drive${evidence.nombre_archivo ? ` · ${evidence.nombre_archivo}` : ""}`;
+    } else {
+      preview.textContent = "Sin fotografía";
+    }
+  }
+
+  function setDevolucionQuantity(id, value) {
+    const node = $(id);
+    if (node) node.value = Number.isInteger(Number(value)) ? Number(value) : 0;
+  }
+
+  function populateDevolucionForm(reception) {
+    const row = reception || {};
+    $("#devolucionFecha").value = localDateTimeValue(row.fecha_ejecucion);
+    setDevolucionQuantity("#devolucionPaquetesConCodigo", row.cantidad_paquetes_con_codigo);
+    setDevolucionQuantity("#devolucionPaquetesSinCodigo", row.cantidad_paquetes_sin_codigo);
+    setDevolucionQuantity("#devolucionCostalesConCodigo", row.cantidad_costales_con_codigo);
+    setDevolucionQuantity("#devolucionCostalesSinCodigo", row.cantidad_costales_sin_codigo);
+    $("#devolucionObsPaquetesConCodigo").value = row.observacion_paquetes_con_codigo || "";
+    $("#devolucionObsPaquetesSinCodigo").value = row.observacion_paquetes_sin_codigo || "";
+    $("#devolucionObsCostalesConCodigo").value = row.observacion_costales_con_codigo || "";
+    $("#devolucionObsCostalesSinCodigo").value = row.observacion_costales_sin_codigo || "";
+    $("#devolucionObservaciones").value = row.observaciones || "";
+    renderDevolucionPhoto();
+  }
+
+  async function handleDevolucionPhoto(input) {
+    const file = input.files?.[0];
+    if (!file) return;
+    if (file.size > 6 * 1024 * 1024) {
+      toast("La foto no puede superar 6 MB.", "error");
+      input.value = "";
+      return;
+    }
+    showLoading("Procesando fotografía…");
+    try {
+      state.devolucion.photoDraft = {
+        dataUrl: await processImage(file),
+        fileName: file.name,
+        mimeType: "image/jpeg",
+      };
+      renderDevolucionPhoto();
+    } catch (error) {
+      toast(errorMessage(error), "error");
+      input.value = "";
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function findDevolucionOperation(ot) {
+    const { data, error } = await db.from("operaciones")
+      .select("id,codigo,ot,tipo,estado,estado_recepcion_devolucion,pdv_id,pdvs:pdv_id(codigo,nombre)")
+      .eq("ot", ot)
+      .in("tipo", ["INVERSA_CAMION", "INVERSA_ENCOMIENDA"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async function loadDevolucionOt(silent = false) {
+    if (!["ADMINISTRADOR", "ENCARGADO"].includes(state.profile?.rol)) return toast("Este módulo está disponible para Administrador y Encargado.", "error");
+    const ot = normalizeCode($("#devolucionOt").value);
+    $("#devolucionOt").value = ot;
+    if (!ot) return setDevolucionMessage("Ingrese o escanee una OT.");
+    if (!silent) showLoading("Consultando OT de devolución…");
+    try {
+      const operation = await findDevolucionOperation(ot);
+      if (!operation) throw new Error("No se encontró una logística inversa con esa OT.");
+      const receptionResult = await db.from("recepciones_devoluciones")
+        .select("*")
+        .eq("operacion_inversa_id", operation.id)
+        .maybeSingle();
+      if (receptionResult.error) throw receptionResult.error;
+      let evidence = null;
+      if (receptionResult.data) {
+        const evidenceResult = await db.from("evidencias_recepciones_devoluciones")
+          .select("*")
+          .eq("recepcion_devolucion_id", receptionResult.data.id)
+          .maybeSingle();
+        if (evidenceResult.error) throw evidenceResult.error;
+        evidence = evidenceResult.data;
+      }
+      state.devolucion = { inverseOperation: operation, reception: receptionResult.data, evidence, photoDraft: null };
+      populateDevolucionForm(receptionResult.data);
+      const pdv = operation.pdvs ? ` · PDV ${operation.pdvs.codigo}` : "";
+      setDevolucionMessage(
+        receptionResult.data
+          ? `Recepción ya registrada para ${ot}${pdv}. Puede actualizar cantidades, observaciones o reemplazar la foto.`
+          : `OT encontrada: ${TYPE_LABELS[operation.tipo]}${pdv}. La recepción quedará pendiente hasta guardar.`,
+        true,
+      );
+      return operation;
+    } catch (error) {
+      state.devolucion.inverseOperation = null;
+      state.devolucion.reception = null;
+      state.devolucion.evidence = null;
+      setDevolucionMessage(errorMessage(error));
+      throw error;
+    } finally {
+      if (!silent) hideLoading();
+    }
+  }
+
+  function nonNegativeInteger(value, label) {
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) throw new Error(`${label} debe ser un número entero igual o mayor que cero.`);
+    return parsed;
+  }
+
+  async function saveDevolucion(event) {
+    event.preventDefault();
+    if (!["ADMINISTRADOR", "ENCARGADO"].includes(state.profile?.rol)) return toast("Este módulo está disponible para Administrador y Encargado.", "error");
+    showLoading("Guardando recepción de devolución…");
+    try {
+      if (!state.devolucion.inverseOperation) await loadDevolucionOt(true);
+      const operation = state.devolucion.inverseOperation;
+      if (!operation) throw new Error("Consulte primero una OT de logística inversa.");
+      const fecha = new Date($("#devolucionFecha").value);
+      if (Number.isNaN(fecha.getTime())) throw new Error("Ingrese una fecha y hora válidas.");
+      if (!state.devolucion.photoDraft && !state.devolucion.evidence) {
+        throw new Error("Debe adjuntar la foto de la recepción.");
+      }
+
+      const payload = {
+        ot_devolucion: operation.ot,
+        operacion_inversa_id: operation.id,
+        fecha_ejecucion: fecha.toISOString(),
+        cantidad_paquetes_con_codigo: nonNegativeInteger($("#devolucionPaquetesConCodigo").value, "Paquetes con código"),
+        observacion_paquetes_con_codigo: $("#devolucionObsPaquetesConCodigo").value.trim() || null,
+        cantidad_paquetes_sin_codigo: nonNegativeInteger($("#devolucionPaquetesSinCodigo").value, "Paquetes sin código"),
+        observacion_paquetes_sin_codigo: $("#devolucionObsPaquetesSinCodigo").value.trim() || null,
+        cantidad_costales_con_codigo: nonNegativeInteger($("#devolucionCostalesConCodigo").value, "Costales con código"),
+        observacion_costales_con_codigo: $("#devolucionObsCostalesConCodigo").value.trim() || null,
+        cantidad_costales_sin_codigo: nonNegativeInteger($("#devolucionCostalesSinCodigo").value, "Costales sin código"),
+        observacion_costales_sin_codigo: $("#devolucionObsCostalesSinCodigo").value.trim() || null,
+        observaciones: $("#devolucionObservaciones").value.trim() || null,
+        estado: "RECEPCIONADO",
+      };
+
+      let receptionResult;
+      if (state.devolucion.reception) {
+        receptionResult = await db.from("recepciones_devoluciones")
+          .update(payload)
+          .eq("id", state.devolucion.reception.id)
+          .select("*")
+          .single();
+      } else {
+        receptionResult = await db.from("recepciones_devoluciones")
+          .insert({ ...payload, registrado_por: state.profile.id })
+          .select("*")
+          .single();
+      }
+      if (receptionResult.error) throw receptionResult.error;
+
+      let evidence = state.devolucion.evidence;
+      if (state.devolucion.photoDraft) {
+        if (evidence) {
+          await callDrive("ELIMINAR_EVIDENCIA", { fileId: evidence.drive_file_id });
+          const { error } = await db.from("evidencias_recepciones_devoluciones").delete().eq("id", evidence.id);
+          if (error) throw error;
+        }
+        const driveResult = await callDrive("SUBIR_EVIDENCIA", {
+          codigoOperacion: operation.ot,
+          categoria: "RECEPCION_DEVOLUCION",
+          referenciaCodigo: operation.ot,
+          dataUrl: state.devolucion.photoDraft.dataUrl,
+          nombreArchivo: state.devolucion.photoDraft.fileName,
+        });
+        const evidenceResult = await db.from("evidencias_recepciones_devoluciones").insert({
+          recepcion_devolucion_id: receptionResult.data.id,
+          drive_file_id: driveResult.fileId,
+          nombre_archivo: driveResult.nombre,
+          mime_type: driveResult.mimeType,
+          registrado_por: state.profile.id,
+        }).select("*").single();
+        if (evidenceResult.error) throw evidenceResult.error;
+        evidence = evidenceResult.data;
+      }
+
+      state.devolucion.reception = receptionResult.data;
+      state.devolucion.evidence = evidence;
+      state.devolucion.photoDraft = null;
+      $("#devolucionPhotoInput").value = "";
+      renderDevolucionPhoto();
+      setDevolucionMessage(`Recepción de la OT ${operation.ot} guardada y marcada como recepcionada.`, true);
+      toast("Recepción de devolución guardada.", "success");
+      await Promise.all([loadDevoluciones(), loadRecords(), loadRecent()]);
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  async function loadDevoluciones() {
+    if (!["ADMINISTRADOR", "ENCARGADO"].includes(state.profile?.rol)) return;
+    showLoading("Cargando recepciones de devoluciones…");
+    try {
+      const { data, error } = await db.from("v_recepciones_devoluciones")
+        .select("*")
+        .order("fecha_ejecucion", { ascending: false })
+        .limit(200);
+      if (error) throw error;
+      renderDevoluciones(data || []);
+    } catch (error) {
+      toast(errorMessage(error), "error");
+    } finally {
+      hideLoading();
+    }
+  }
+
+  function renderDevoluciones(rows) {
+    const target = $("#devolucionesList");
+    if (!target) return;
+    target.innerHTML = rows.length ? rows.map((row) => {
+      const totalPaquetes = Number(row.cantidad_paquetes_con_codigo || 0) + Number(row.cantidad_paquetes_sin_codigo || 0);
+      const totalCostales = Number(row.cantidad_costales_con_codigo || 0) + Number(row.cantidad_costales_sin_codigo || 0);
+      return `<article class="record-card" data-devolucion-ot="${escapeHtml(row.ot_devolucion)}">
+        <div class="record-main"><small>${formatDate(row.fecha_ejecucion)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>OT ${escapeHtml(row.ot_devolucion)}</strong><small class="record-document">${escapeHtml(row.pdv_nombre || "PDV no disponible")}</small><div class="record-meta"><span class="record-tag">Paquetes: ${totalPaquetes}</span><span class="record-tag">Costales: ${totalCostales}</span></div></div>
+        <div class="record-side"><span class="status-pill ${row.estado === "RECEPCIONADO" ? "done" : "cancelled"}">${escapeHtml(row.estado === "RECEPCIONADO" ? "Recepcionado" : "Anulado")}</span><small>${row.drive_file_id ? "Foto adjunta" : "Sin foto"}</small></div>
+      </article>`;
+    }).join("") : '<div class="empty-state">No hay recepciones registradas.</div>';
+  }
+
   function renderRecordList(rows, target) {
+    const receptionBadge = (row) => INVERSE_TYPES.has(row.tipo)
+      ? `<span class="record-tag reception-state ${row.estado_recepcion_devolucion === "RECEPCIONADO" ? "done" : "pending"}">Recepción devolución: ${row.estado_recepcion_devolucion === "RECEPCIONADO" ? "Recepcionado" : "Pendiente"}</span>`
+      : "";
     target.innerHTML = rows.length ? rows.map((row) => `
       <article class="record-card" data-record-id="${row.id}">
-        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.ot || row.codigo)}</strong><small class="record-document">${escapeHtml(row.guia_remision_nombre || row.guia_remision_transporte || "Guía de remisión pendiente")}</small><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span></div></div>
+        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.ot || row.codigo)}</strong><small class="record-document">${escapeHtml(row.guia_remision_nombre || row.guia_remision_transporte || "Guía de remisión pendiente")}</small><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span>${receptionBadge(row)}</div></div>
         <div class="record-side"><span class="status-pill ${statusClass(row.estado)}">${escapeHtml(statusLabel(row.estado))}</span><small>${row.total_costales ? "Paquetes" : "Recibidos"}</small><strong>${row.total_costales ? Number(row.total_paquetes || 0) : Number(row.total_recibidos || 0)}</strong></div>
       </article>`).join("") : '<div class="empty-state">No se encontraron registros.</div>';
   }
@@ -1566,6 +1846,7 @@
         ["Operación", TYPE_LABELS[o.tipo] || o.tipo], ["Estado", statusLabel(o.estado)], ["PDV", `${o.pdvs?.codigo || ""} ${o.pdvs?.nombre || ""}`], ["Inicio", formatDate(o.iniciada_at)],
         ["OT / ID", o.ot || o.codigo], ["Guía de remisión", o.guia_remision_transporte || "-"], ["Finalización", formatDate(o.finalizada_at)], ["Ruta", o.id_ruta || "-"], ["Placa", o.placa || "-"], ["Encomienda", o.numero_encomienda || "-"],
         ["Responsable", o.dni_ruc_responsable || "-"], ["GPS", o.latitud ? `${o.latitud}, ${o.longitud}` : "-"],
+        ...(INVERSE_TYPES.has(o.tipo) ? [["Recepción devolución", o.estado_recepcion_devolucion === "RECEPCIONADO" ? "Recepcionado" : "Pendiente"]] : []),
       ];
       let html = `<div class="detail-grid">${details.map(([label, value]) => `<div class="detail-cell"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div>`;
       if (itemsResult.data.length) html += `<section class="detail-section"><h3>Sacos y bultos (${itemsResult.data.length})</h3><div class="sack-packages">${itemsResult.data.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></section>`;
@@ -1958,6 +2239,7 @@
   function registerEvents() {
     $("#loginForm").addEventListener("submit", login);
     $("#operationSetup").addEventListener("submit", startOperation);
+    $("#devolucionForm").addEventListener("submit", saveDevolucion);
     $("#pdvForm").addEventListener("submit", createPdv);
     $("#userForm").addEventListener("submit", createUser);
     $("#passwordForm").addEventListener("submit", changePassword);
@@ -1979,6 +2261,7 @@
     $("#inversePhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "inverse"));
     $("#parcelPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "parcel"));
     $("#emptySackPhotoInput").addEventListener("change", (event) => handleGeneralPhotos(event.target, "empty"));
+    $("#devolucionPhotoInput").addEventListener("change", (event) => handleDevolucionPhoto(event.target));
 
     document.addEventListener("change", (event) => {
       if (event.target.matches(".photo-slot input[type=file], .seal-photo")) handlePhotoSlot(event.target);
@@ -2001,6 +2284,8 @@
         else if (action === "close-dialog") document.getElementById(actionButton.dataset.dialog)?.close();
         else if (action === "logout") await logout();
         else if (action === "cancel-operation") cancelOperationSelection();
+        else if (action === "new-devolucion") { resetDevolucionState(); switchView("returns"); $("#devolucionOt").focus(); }
+        else if (action === "load-devolucion-ot") await loadDevolucionOt();
         else if (action === "add-receipt-manual") { if (await addReceiptCode($("#manualReceiptCode").value)) $("#manualReceiptCode").value = ""; }
         else if (action === "add-sack-manual") { if (await openSack($("#manualSackCode").value)) $("#manualSackCode").value = ""; }
         else if (action === "add-package-manual") { if (await addPackage($("#manualPackageCode").value)) $("#manualPackageCode").value = ""; }
@@ -2013,6 +2298,7 @@
         else if (action === "save-admin-record") await saveAdminRecord(actionButton.dataset.adminOperationId);
         else if (action === "remove-transport-guide") await removeTransportGuide();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();
+        else if (action === "refresh-devoluciones") await loadDevoluciones();
         else if (action === "refresh-users") await loadUsersPanel();
         else if (action === "download-pdv-template") downloadPdvTemplate();
         else if (action === "import-pdvs") await importBulkPdvs();
@@ -2054,6 +2340,8 @@
       if (removePhotoButton) { const [kind, index] = removePhotoButton.dataset.removePhoto.split(":"); removeGeneralPhoto(kind, Number(index)); return; }
       const record = event.target.closest("[data-record-id]");
       if (record) { await openRecord(record.dataset.recordId); return; }
+      const devolucion = event.target.closest("[data-devolucion-ot]");
+      if (devolucion) { $("#devolucionOt").value = devolucion.dataset.devolucionOt; await loadDevolucionOt(); return; }
       const resume = event.target.closest("[data-resume-id]");
       if (resume) { await resumeOperation(resume.dataset.resumeId); return; }
       const deleteOperationButton = event.target.closest("[data-delete-operation]");
@@ -2070,6 +2358,11 @@
         document.querySelector(`[data-action="${action}"]`).click();
       });
     }
+    $("#devolucionOt").addEventListener("keydown", (event) => {
+      if (event.key !== "Enter") return;
+      event.preventDefault();
+      $("[data-action=load-devolucion-ot]").click();
+    });
     window.addEventListener("beforeunload", () => stopScanner(false));
   }
 
