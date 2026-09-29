@@ -41,7 +41,9 @@ create table if not exists public.operaciones (
     'RECEPCION_CAMION',
     'INVERSA_CAMION',
     'RECEPCION_ENCOMIENDA',
-    'INVERSA_ENCOMIENDA'
+    'INVERSA_ENCOMIENDA',
+    'RECOJO_ALMACEN',
+    'INVERSA_RECOJO_ALMACEN'
   )),
   estado text not null default 'PENDIENTE' check (estado in ('PENDIENTE', 'EN_PROCESO', 'COMPLETADO', 'ANULADO')),
   estado_recepcion_devolucion text not null default 'PENDIENTE' check (estado_recepcion_devolucion in ('PENDIENTE', 'RECEPCIONADO')),
@@ -216,6 +218,16 @@ create table if not exists public.evidencias (
 alter table public.operaciones add column if not exists ot text;
 alter table public.operaciones add column if not exists guia_remision_transporte text;
 alter table public.operaciones add column if not exists estado_recepcion_devolucion text default 'PENDIENTE';
+alter table public.operaciones drop constraint if exists operaciones_tipo_check;
+alter table public.operaciones add constraint operaciones_tipo_check
+  check (tipo in (
+    'RECEPCION_CAMION',
+    'INVERSA_CAMION',
+    'RECEPCION_ENCOMIENDA',
+    'INVERSA_ENCOMIENDA',
+    'RECOJO_ALMACEN',
+    'INVERSA_RECOJO_ALMACEN'
+  ));
 alter table public.operaciones drop constraint if exists operaciones_estado_check;
 alter table public.operaciones drop constraint if exists operaciones_estado_recepcion_devolucion_check;
 update public.operaciones set estado_recepcion_devolucion = 'PENDIENTE' where estado_recepcion_devolucion is null;
@@ -371,7 +383,7 @@ begin
   from public.operaciones o
   where o.id = new.operacion_inversa_id;
 
-  if v_tipo is null or v_tipo not in ('INVERSA_CAMION', 'INVERSA_ENCOMIENDA') then
+  if v_tipo is null or v_tipo not in ('INVERSA_CAMION', 'INVERSA_ENCOMIENDA', 'INVERSA_RECOJO_ALMACEN') then
     raise exception 'La recepción de devolución solo puede asociarse a una logística inversa.';
   end if;
 
@@ -587,7 +599,7 @@ begin
   from public.operaciones o
   where o.id = new.operacion_id;
 
-  if v_tipo is null or v_tipo not in ('RECEPCION_CAMION', 'INVERSA_CAMION', 'INVERSA_ENCOMIENDA') then
+  if v_tipo is null or v_tipo not in ('RECEPCION_CAMION', 'INVERSA_CAMION', 'INVERSA_ENCOMIENDA', 'INVERSA_RECOJO_ALMACEN') then
     raise exception 'Los sacos vacíos solo aplican a recepción de camión e inversas.';
   end if;
 
@@ -732,11 +744,12 @@ begin
     raise exception 'Debe registrar al menos una evidencia fotográfica.';
   end if;
 
-  if not exists (
-    select 1 from public.evidencias
-    where operacion_id = p_operacion_id
-      and categoria = 'GUIA_REMISION_TRANSPORTE'
-  ) then
+  if v_operacion.tipo not in ('RECOJO_ALMACEN', 'INVERSA_RECOJO_ALMACEN')
+     and not exists (
+       select 1 from public.evidencias
+       where operacion_id = p_operacion_id
+         and categoria = 'GUIA_REMISION_TRANSPORTE'
+     ) then
     raise exception 'Debe adjuntar la guía de remisión transporte.';
   end if;
 
@@ -752,7 +765,7 @@ begin
     raise exception 'Debe adjuntar evidencia fotográfica de los sacos vacíos retornados.';
   end if;
 
-  if v_operacion.tipo in ('RECEPCION_CAMION', 'RECEPCION_ENCOMIENDA') then
+  if v_operacion.tipo in ('RECEPCION_CAMION', 'RECEPCION_ENCOMIENDA', 'RECOJO_ALMACEN') then
     select count(*) into v_items
     from public.items_recepcion where operacion_id = p_operacion_id;
     if v_items = 0 then
