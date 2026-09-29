@@ -87,6 +87,8 @@
           <button class="operation-card reverse" data-operation="INVERSA_CAMION"><span class="operation-icon">↩</span><strong>Logística inversa de camión</strong><small>Costales y paquetes asociados</small></button>
           <button class="operation-card parcel" data-operation="RECEPCION_ENCOMIENDA"><span class="operation-icon">▣</span><strong>Recepción de encomiendas</strong><small>Escaneo de sacos y evidencias</small></button>
           <button class="operation-card reverse-parcel" data-operation="INVERSA_ENCOMIENDA"><span class="operation-icon">⇆</span><strong>Logística inversa por encomienda</strong><small>Costales y paquetes devueltos</small></button>
+          <button class="operation-card warehouse" data-operation="RECOJO_ALMACEN"><span class="operation-icon">⌂</span><strong>Recojo en almacén</strong><small>Escaneo de sacos y evidencias, sin guía de remisión</small></button>
+          <button class="operation-card warehouse-reverse" data-operation="INVERSA_RECOJO_ALMACEN"><span class="operation-icon">↪</span><strong>Logística inversa de recojo</strong><small>Costales y paquetes devueltos, sin guía de remisión</small></button>
         </div>
         <section class="card">
           <div class="card-title"><span>Actividad reciente</span><button class="link-button" data-view="records">Ver todos</button></div>
@@ -101,6 +103,8 @@
           <button class="operation-card reverse" data-operation="INVERSA_CAMION"><span class="operation-icon">↩</span><strong>Inversa camión</strong></button>
           <button class="operation-card parcel" data-operation="RECEPCION_ENCOMIENDA"><span class="operation-icon">▣</span><strong>Recepción encomienda</strong></button>
           <button class="operation-card reverse-parcel" data-operation="INVERSA_ENCOMIENDA"><span class="operation-icon">⇆</span><strong>Inversa encomienda</strong></button>
+          <button class="operation-card warehouse" data-operation="RECOJO_ALMACEN"><span class="operation-icon">⌂</span><strong>Recojo almacén</strong></button>
+          <button class="operation-card warehouse-reverse" data-operation="INVERSA_RECOJO_ALMACEN"><span class="operation-icon">↪</span><strong>Inversa recojo almacén</strong></button>
         </div>
 
         <form id="operationSetup" class="card hidden">
@@ -229,7 +233,7 @@
         <div class="page-heading"><div><p class="eyebrow">Consulta</p><h2>Registros</h2></div><button class="button secondary small" data-action="refresh-records">Actualizar</button></div>
         <section class="card filters-card">
           <div class="filter-grid">
-            <div><label for="filterType">Operación</label><select id="filterType"><option value="">Todas</option><option value="RECEPCION_CAMION">Recepción camión</option><option value="INVERSA_CAMION">Inversa camión</option><option value="RECEPCION_ENCOMIENDA">Recepción encomienda</option><option value="INVERSA_ENCOMIENDA">Inversa encomienda</option></select></div>
+            <div><label for="filterType">Operación</label><select id="filterType"><option value="">Todas</option><option value="RECEPCION_CAMION">Recepción camión</option><option value="INVERSA_CAMION">Inversa camión</option><option value="RECEPCION_ENCOMIENDA">Recepción encomienda</option><option value="INVERSA_ENCOMIENDA">Inversa encomienda</option><option value="RECOJO_ALMACEN">Recojo en almacén</option><option value="INVERSA_RECOJO_ALMACEN">Inversa recojo almacén</option></select></div>
             <div><label for="filterStatus">Estado</label><select id="filterStatus"><option value="">Todos</option><option value="PENDIENTE">Pendiente</option><option value="EN_PROCESO">En proceso</option><option value="COMPLETADO">Completado</option><option value="ANULADO">Anulado</option></select></div>
             <div><label for="filterFrom">Desde</label><input id="filterFrom" type="date"></div>
             <div><label for="filterTo">Hasta</label><input id="filterTo" type="date"></div>
