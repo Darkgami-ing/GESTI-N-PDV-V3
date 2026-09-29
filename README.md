@@ -9,6 +9,8 @@ Aplicación móvil para GitHub Pages con Supabase como base de datos y autentica
 3. Recepción de encomiendas: escaneo de sacos, fotografías y GPS.
 4. Logística inversa por encomienda: costales identificados por código de barras y paquetes asociados a cada costal.
 5. Recepción de devoluciones: módulo independiente para Administrador y Encargado. Se consulta la OT de una logística inversa, se registra fecha/hora, cantidades de paquetes y costales con/sin código, observaciones y una fotografía.
+6. Recojo en almacén: escaneo de sacos, fotografías, GPS y observaciones, sin guía de remisión.
+7. Logística inversa de recojo en almacén: costales y paquetes devueltos, fotografías, GPS y control de sacos vacíos, sin guía de remisión.
 
 En recepción de camión exclusivo, logística inversa de camión y logística inversa por encomienda también se controlan los **sacos vacíos retornados**. Los sacos con código se escanean (o se ingresan manualmente) sin permitir duplicados; los sacos sin código se registran por cantidad y observación. Cuando se registra al menos uno, la operación exige hasta tres fotografías de evidencia, guardadas en Drive.
 
@@ -19,6 +21,8 @@ Los paquetes no se guardan como texto dentro del costal. Cada uno mantiene una r
 ## Flujo de OT y estados
 
 Cada recepción y cada logística inversa se crea con una **OT obligatoria**. La OT se utiliza como el ID visible de la gestión. La guía de remisión transporte se puede adjuntar como imagen o PDF y aparece debajo de la OT en los registros. Al seleccionar el archivo se guarda de inmediato en Drive; mientras la operación no esté completada se puede reemplazar o eliminar.
+
+Las operaciones **Recojo en almacén** y **Logística inversa de recojo en almacén** no solicitan guía de remisión. El recojo utiliza el flujo de escaneo y evidencias de encomiendas; su logística inversa utiliza el flujo de costales y paquetes devueltos.
 
 - `PENDIENTE`: la gestión acaba de crearse.
 - `EN_PROCESO`: ya contiene guías, costales, paquetes, precintos o evidencias.
@@ -45,7 +49,7 @@ Solo el usuario ADMINISTRADOR puede eliminar una operación completa mientras es
 3. Crear una consulta nueva, pegar todo `supabase/schema.sql` y ejecutarla.
 4. Ir a **Authentication → Providers → Email** y desactivar el registro público de usuarios. Las cuentas se crearán desde el panel administrativo de la aplicación.
 
-Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, el estado automático, la categoría de documento en evidencias, la tabla `sacos_vacios`, la tabla `auditoria_cambios`, las tablas `recepciones_devoluciones` y `evidencias_recepciones_devoluciones`, el estado `estado_recepcion_devolucion`, sus políticas RLS y la validación de paquetes `JPE`.
+Si el proyecto ya tenía la versión anterior, vuelve a ejecutar el `schema.sql` actualizado: migra `BORRADOR/FINALIZADO` a `PENDIENTE/EN_PROCESO/COMPLETADO`, agrega la OT, el número de guía de remisión, los tipos `RECOJO_ALMACEN` e `INVERSA_RECOJO_ALMACEN`, el estado automático, la categoría de documento en evidencias, la tabla `sacos_vacios`, la tabla `auditoria_cambios`, las tablas `recepciones_devoluciones` y `evidencias_recepciones_devoluciones`, el estado `estado_recepcion_devolucion`, sus políticas RLS y la validación de paquetes `JPE`.
 
 ### Crear el primer administrador
 
@@ -127,7 +131,8 @@ Después de actualizar `apps-script/Code.gs`, vuelve a crear una versión de la 
 5. Crear la cuenta PDV.
 6. Probar una operación de cada tipo desde un iPhone.
 7. Ingresar como Administrador o Encargado, abrir **Devoluciones**, consultar una OT inversa, adjuntar la foto y guardar la recepción.
-8. Confirmar que Administrador, Encargado y PDV solo consultan los registros permitidos.
+8. Probar **Recojo en almacén** y **Logística inversa de recojo en almacén**; confirmar que no solicitan guía de remisión.
+9. Confirmar que Administrador, Encargado y PDV solo consultan los registros permitidos.
 
 ## Seguridad
 
