@@ -105,6 +105,8 @@ input:disabled, select:disabled { background: #eef3f6; color: var(--muted); }
 .operation-card small { margin-top: 7px; color: var(--muted); line-height: 1.4; }
 .operation-card .operation-icon { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: auto; border-radius: 13px; font-size: 22px; background: var(--sky); }
 .operation-card.reverse .operation-icon, .operation-card.reverse-parcel .operation-icon { background: var(--orange-soft); color: var(--orange); }
+.operation-card.warehouse .operation-icon, .operation-card.warehouse-reverse .operation-icon { background: #eee8fb; color: #6845a8; }
+.operation-card.warehouse-reverse .operation-icon { background: #f7e6f2; color: #a2387b; }
 .compact-grid .operation-card { min-height: 112px; }
 
 .operation-banner { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px; margin-bottom: 15px; border-radius: 15px; color: white; background: linear-gradient(135deg, var(--navy), #246ea8); box-shadow: var(--shadow); }
