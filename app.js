@@ -7,12 +7,16 @@
     INVERSA_CAMION: "Logística inversa de camión exclusivo",
     RECEPCION_ENCOMIENDA: "Recepción de encomiendas",
     INVERSA_ENCOMIENDA: "Logística inversa por encomienda",
+    RECOJO_ALMACEN: "Recojo en almacén",
+    INVERSA_RECOJO_ALMACEN: "Logística inversa de recojo en almacén",
   };
   const TYPE_PREFIX = {
     RECEPCION_CAMION: "RC",
     INVERSA_CAMION: "IC",
     RECEPCION_ENCOMIENDA: "RE",
     INVERSA_ENCOMIENDA: "IE",
+    RECOJO_ALMACEN: "RA",
+    INVERSA_RECOJO_ALMACEN: "IRA",
   };
   const STATUS_LABELS = {
     PENDIENTE: "Pendiente",
@@ -22,9 +26,10 @@
     BORRADOR: "Pendiente",
     FINALIZADO: "Completado",
   };
-  const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA"]);
-  const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
-  const EMPTY_SACK_TYPES = new Set(["RECEPCION_CAMION", "INVERSA_CAMION", "INVERSA_ENCOMIENDA"]);
+  const RECEIPT_TYPES = new Set(["RECEPCION_CAMION", "RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"]);
+  const INVERSE_TYPES = new Set(["INVERSA_CAMION", "INVERSA_ENCOMIENDA", "INVERSA_RECOJO_ALMACEN"]);
+  const EMPTY_SACK_TYPES = new Set(["RECEPCION_CAMION", "INVERSA_CAMION", "INVERSA_ENCOMIENDA", "INVERSA_RECOJO_ALMACEN"]);
+  const NO_TRANSPORT_GUIDE_TYPES = new Set(["RECOJO_ALMACEN", "INVERSA_RECOJO_ALMACEN"]);
   const BULK_PDV_HEADERS = ["CODIGO_PDV", "NOMBRE_PDV", "REGION", "AREA", "USUARIO_ENCARGADO", "USUARIO_PDV", "CONTRASENA_TEMPORAL", "ESTADO"];
   const BULK_PDV_MAX_ROWS = 1000;
   const BULK_PDV_BATCH_SIZE = 25;
@@ -93,6 +98,7 @@
   const isReceipt = () => RECEIPT_TYPES.has(state.operation?.tipo || state.selectedType);
   const isInverse = () => INVERSE_TYPES.has(state.operation?.tipo || state.selectedType);
   const hasEmptySackControl = () => EMPTY_SACK_TYPES.has(state.operation?.tipo || state.selectedType);
+  const requiresTransportGuide = () => !NO_TRANSPORT_GUIDE_TYPES.has(state.operation?.tipo || state.selectedType);
   const isTruckReceipt = () => (state.operation?.tipo || state.selectedType) === "RECEPCION_CAMION";
   const statusLabel = (status) => STATUS_LABELS[status] || status || "Pendiente";
   const statusClass = (status) => status === "COMPLETADO" || status === "FINALIZADO" ? "done" : status === "EN_PROCESO" ? "process" : status === "ANULADO" ? "cancelled" : "draft";
@@ -327,7 +333,7 @@
       placa: normalizeCode($("#vehiclePlate").value) || null,
       empresa_encomienda: $("#parcelCompany").value.trim() || null,
       numero_encomienda: normalizeCode($("#parcelNumber").value) || null,
-      guia_remision_transporte: normalizeCode($("#transportGuideNumber").value) || null,
+      guia_remision_transporte: NO_TRANSPORT_GUIDE_TYPES.has(type) ? null : (normalizeCode($("#transportGuideNumber").value) || null),
     };
 
     if (!data.ot) return toast("Ingrese o escanee la OT.", "error");
@@ -417,19 +423,23 @@
     $("#transportGuideNumber").value = state.operation.guia_remision_transporte || "";
     renderOperationStatus();
 
+    $("#transportGuideSection").classList.toggle("hidden", !requiresTransportGuide());
     $("#truckArrivalSection").classList.toggle("hidden", type !== "RECEPCION_CAMION");
     $("#receiptItemsSection").classList.toggle("hidden", !RECEIPT_TYPES.has(type));
     $("#inverseSection").classList.toggle("hidden", !INVERSE_TYPES.has(type));
     $("#emptySacksSection").classList.toggle("hidden", !EMPTY_SACK_TYPES.has(type));
     $("#truckDepartureSection").classList.toggle("hidden", type !== "RECEPCION_CAMION");
-    $("#parcelPhotosSection").classList.toggle("hidden", type !== "RECEPCION_ENCOMIENDA");
+    $("#parcelPhotosSection").classList.toggle("hidden", !["RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"].includes(type));
     $("#loadPhotoSlot").classList.toggle("hidden", type !== "RECEPCION_CAMION");
-    $("#itemTypeChooser").classList.toggle("hidden", type === "RECEPCION_ENCOMIENDA");
-    $("#receiptItemsTitle").textContent = type === "RECEPCION_ENCOMIENDA" ? "Sacos recibidos por encomienda" : "Sacos y bultos recibidos";
+    $("#itemTypeChooser").classList.toggle("hidden", ["RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"].includes(type));
+    $("#parcelPhotosSection .step-title strong").textContent = type === "RECOJO_ALMACEN" ? "Evidencias del recojo en almacén" : "Evidencias de recepción";
+    $("#receiptItemsTitle").textContent = type === "RECEPCION_ENCOMIENDA"
+      ? "Sacos recibidos por encomienda"
+      : type === "RECOJO_ALMACEN" ? "Sacos recibidos en almacén" : "Sacos y bultos recibidos";
     $("#receiptStepNumber").textContent = type === "RECEPCION_CAMION" ? "3" : "2";
     $("#parcelPhotosSection .step-title > span").textContent = "2";
     $("#truckDepartureSection .step-title > span").textContent = "4";
-    if (type === "RECEPCION_ENCOMIENDA") state.receiptItemType = "SACO";
+    if (["RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"].includes(type)) state.receiptItemType = "SACO";
     setEmptySackType("CON_CODIGO");
 
     createSealCards();
@@ -525,7 +535,7 @@
       const order = state.items.reduce((max, item) => Math.max(max, Number(item.orden) || 0), 0) + 1;
       const { data, error } = await db.from("items_recepcion").insert({
         operacion_id: state.operation.id,
-        tipo: state.operation.tipo === "RECEPCION_ENCOMIENDA" ? "SACO" : state.receiptItemType,
+        tipo: ["RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"].includes(state.operation.tipo) ? "SACO" : state.receiptItemType,
         codigo: code,
         orden: order,
         escaneado_por: state.profile.id,
@@ -1135,11 +1145,12 @@
   }
 
   async function syncGeneralEvidence() {
-    if (state.operation.tipo === "RECEPCION_ENCOMIENDA") {
+    if (["RECEPCION_ENCOMIENDA", "RECOJO_ALMACEN"].includes(state.operation.tipo)) {
       const existing = state.evidences.filter((item) => item.categoria === "EVIDENCIA_GENERAL");
       if (!state.parcelPhotos.length && !existing.length) throw new Error("Debe adjuntar al menos una fotografía de la recepción.");
       for (let index = 0; index < state.parcelPhotos.length; index += 1) {
-        await uploadEvidence({ ...state.parcelPhotos[index], category: "EVIDENCIA_GENERAL", reference: `RECEPCION-${index + 1}`, label: `Evidencia de recepción ${index + 1}` });
+        const label = state.operation.tipo === "RECOJO_ALMACEN" ? "Evidencia de recojo en almacén" : "Evidencia de recepción";
+        await uploadEvidence({ ...state.parcelPhotos[index], category: "EVIDENCIA_GENERAL", reference: `RECEPCION-${index + 1}`, label: `${label} ${index + 1}` });
       }
     }
     if (INVERSE_TYPES.has(state.operation.tipo)) {
@@ -1170,12 +1181,15 @@
       if (!state.sacks.length || !state.packages.length) return toast("Registre costales y paquetes.", "error");
       if (state.sacks.some((item) => item.estado === "ABIERTO")) return toast("Cierre todos los costales.", "error");
     }
-    if (!confirm("¿Confirmar la descarga y completar la operación? Después ya no podrá editar guías.")) return;
+    const completionNotice = requiresTransportGuide() ? " Después ya no podrá editar la guía de remisión." : "";
+    if (!confirm(`¿Confirmar la descarga y completar la operación?${completionNotice}`)) return;
 
     showLoading("Subiendo evidencias…");
     try {
-      await syncOperationMetadata();
-      await syncTransportGuide();
+      if (requiresTransportGuide()) {
+        await syncOperationMetadata();
+        await syncTransportGuide();
+      }
       if (isTruckReceipt()) await syncTruckReceipt();
       else await syncGeneralEvidence();
       await syncEmptySackEvidence();
@@ -1538,7 +1552,7 @@
     const { data, error } = await db.from("operaciones")
       .select("id,codigo,ot,tipo,estado,estado_recepcion_devolucion,pdv_id,pdvs:pdv_id(codigo,nombre)")
       .eq("ot", ot)
-      .in("tipo", ["INVERSA_CAMION", "INVERSA_ENCOMIENDA"])
+      .in("tipo", ["INVERSA_CAMION", "INVERSA_ENCOMIENDA", "INVERSA_RECOJO_ALMACEN"])
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle();
@@ -1717,7 +1731,7 @@
       : "";
     target.innerHTML = rows.length ? rows.map((row) => `
       <article class="record-card" data-record-id="${row.id}">
-        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.ot || row.codigo)}</strong><small class="record-document">${escapeHtml(row.guia_remision_nombre || row.guia_remision_transporte || "Guía de remisión pendiente")}</small><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span>${receptionBadge(row)}</div></div>
+        <div class="record-main"><small>${formatDate(row.created_at)} · ${escapeHtml(row.pdv_codigo || "")}</small><strong>${escapeHtml(row.ot || row.codigo)}</strong><small class="record-document">${escapeHtml(NO_TRANSPORT_GUIDE_TYPES.has(row.tipo) ? "Sin guía de remisión" : (row.guia_remision_nombre || row.guia_remision_transporte || "Guía de remisión pendiente"))}</small><div class="record-meta"><span class="record-tag">${escapeHtml(TYPE_LABELS[row.tipo] || row.tipo)}</span>${receptionBadge(row)}</div></div>
         <div class="record-side"><span class="status-pill ${statusClass(row.estado)}">${escapeHtml(statusLabel(row.estado))}</span><small>${row.total_costales ? "Paquetes" : "Recibidos"}</small><strong>${row.total_costales ? Number(row.total_paquetes || 0) : Number(row.total_recibidos || 0)}</strong></div>
       </article>`).join("") : '<div class="empty-state">No se encontraron registros.</div>';
   }
@@ -1734,7 +1748,7 @@
       <div class="admin-edit-title"><div><h3>Editar información registrada</h3><small>Disponible únicamente para Administrador. Las correcciones quedan auditadas.</small></div><span class="status-pill process">ADMIN</span></div>
       <div class="field-grid">
         ${field("OT / ID", "ot", operation.ot || operation.codigo, "required autocapitalize=\"characters\"")}
-        ${field("N.° guía de remisión", "guia_remision_transporte", operation.guia_remision_transporte)}
+        ${NO_TRANSPORT_GUIDE_TYPES.has(operation.tipo) ? "" : field("N.° guía de remisión", "guia_remision_transporte", operation.guia_remision_transporte)}
         ${field("ID de ruta", "id_ruta", operation.id_ruta)}
         ${field("Placa", "placa", operation.placa)}
         ${field("Empresa de encomienda", "empresa_encomienda", operation.empresa_encomienda)}
@@ -1844,7 +1858,7 @@
       $("#recordDialogTitle").textContent = o.codigo;
       const details = [
         ["Operación", TYPE_LABELS[o.tipo] || o.tipo], ["Estado", statusLabel(o.estado)], ["PDV", `${o.pdvs?.codigo || ""} ${o.pdvs?.nombre || ""}`], ["Inicio", formatDate(o.iniciada_at)],
-        ["OT / ID", o.ot || o.codigo], ["Guía de remisión", o.guia_remision_transporte || "-"], ["Finalización", formatDate(o.finalizada_at)], ["Ruta", o.id_ruta || "-"], ["Placa", o.placa || "-"], ["Encomienda", o.numero_encomienda || "-"],
+        ["OT / ID", o.ot || o.codigo], ["Guía de remisión", NO_TRANSPORT_GUIDE_TYPES.has(o.tipo) ? "No aplica" : (o.guia_remision_transporte || "-")], ["Finalización", formatDate(o.finalizada_at)], ["Ruta", o.id_ruta || "-"], ["Placa", o.placa || "-"], ["Encomienda", o.numero_encomienda || "-"],
         ["Responsable", o.dni_ruc_responsable || "-"], ["GPS", o.latitud ? `${o.latitud}, ${o.longitud}` : "-"],
         ...(INVERSE_TYPES.has(o.tipo) ? [["Recepción devolución", o.estado_recepcion_devolucion === "RECEPCIONADO" ? "Recepcionado" : "Pendiente"]] : []),
       ];
