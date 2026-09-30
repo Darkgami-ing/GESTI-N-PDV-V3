@@ -769,14 +769,14 @@
     $("#packageCount").textContent = String(state.packages.length);
     const active = state.activeSack;
     $("#activeSackBox").classList.toggle("empty", !active);
-    $("#activeSackCode").textContent = active?.codigo || "Ninguno";
+    $("#activeSackCode").textContent = active?.codigo || (active ? "SIN CÓDIGO" : "Ninguno");
     const activeCount = active ? state.packages.filter((item) => item.costal_id === active.id).length : 0;
     $("#activeSackCount").textContent = active ? `${activeCount} paquete(s) asignado(s)` : "Escanee un costal para comenzar";
     $("#closeSackButton").disabled = !active;
     $("#packageScannerButton").disabled = !active;
     list.innerHTML = state.sacks.length ? state.sacks.map((sack) => {
       const packages = state.packages.filter((item) => item.costal_id === sack.id);
-      return `<div class="sack-card"><div class="sack-head"><div><small>Costal ${sack.orden} · ${sack.estado}</small><strong>${escapeHtml(sack.codigo)}</strong></div><button class="delete-button" data-delete-sack="${sack.id}">×</button></div><div class="sack-packages">${packages.length ? packages.map((item) => `<span>${escapeHtml(item.codigo)} <button class="link-button danger-text" data-delete-package="${item.id}">quitar</button></span>`).join(" · ") : "Sin paquetes"}</div></div>`;
+      return `<div class="sack-card"><div class="sack-head"><div><small>Costal ${sack.orden} · ${sack.estado}</small><strong>${escapeHtml(sack.codigo || "SIN CÓDIGO")}</strong></div><button class="delete-button" data-delete-sack="${sack.id}">×</button></div><div class="sack-packages">${packages.length ? packages.map((item) => `<span>${escapeHtml(item.codigo)} <button class="link-button danger-text" data-delete-package="${item.id}">quitar</button></span>`).join(" · ") : "Sin paquetes"}</div></div>`;
     }).join("") : '<div class="empty-state">Aún no hay costales registrados.</div>';
   }
 
@@ -1740,8 +1740,8 @@
     if (state.profile?.rol !== "ADMINISTRADOR") return "";
     const field = (label, key, value, extra = "") => `<div class="field"><label>${label}</label><input data-admin-operation-field="${key}" value="${escapeHtml(value || "")}" ${extra}></div>`;
     const itemEditor = items.length ? `<div class="admin-edit-list">${items.map((item) => `<div class="admin-edit-row"><small>${escapeHtml(item.tipo.replaceAll("_", " "))} · ${formatDate(item.escaneado_at)}</small><input data-admin-item-code="${item.id}" value="${escapeHtml(item.codigo)}" placeholder="Código"><select data-admin-item-type="${item.id}"><option value="SACO" ${item.tipo === "SACO" ? "selected" : ""}>Saco</option><option value="BULTO_SUELTO" ${item.tipo === "BULTO_SUELTO" ? "selected" : ""}>Bulto suelto</option></select></div>`).join("")}</div>` : '<div class="empty-state">No hay sacos o bultos registrados.</div>';
-    const sackEditor = sacks.length ? `<div class="admin-edit-list">${sacks.map((sack) => `<div class="admin-edit-row"><small>Costal ${Number(sack.orden) || ""} · ${escapeHtml(sack.estado)}</small><input data-admin-sack-code="${sack.id}" value="${escapeHtml(sack.codigo)}" placeholder="Código del costal"></div>`).join("")}</div>` : '<div class="empty-state">No hay costales registrados.</div>';
-    const packageEditor = packages.length ? `<div class="admin-edit-list">${packages.map((item) => { const sack = sacks.find((candidate) => candidate.id === item.costal_id); return `<div class="admin-edit-row"><small>Costal: ${escapeHtml(sack?.codigo || "-")}</small><input data-admin-package-code="${item.id}" data-admin-package-original="${escapeHtml(item.codigo)}" value="${escapeHtml(item.codigo)}" placeholder="Código JPE..."></div>`; }).join("")}</div>` : '<div class="empty-state">No hay paquetes registrados.</div>';
+    const sackEditor = `<div id="adminSackEditorList" class="admin-edit-list">${sacks.length ? sacks.map((sack) => `<div class="admin-edit-row"><small>Costal ${Number(sack.orden) || ""} · ${escapeHtml(sack.estado)} · ${sack.codigo ? escapeHtml(sack.codigo) : "Sin código"}</small><input data-admin-sack-code="${sack.id}" value="${escapeHtml(sack.codigo || "")}" placeholder="Código (opcional; vacío = sin código)"></div>`).join("") : '<div class="empty-state">No hay costales registrados.</div>'}</div><button type="button" class="button secondary full" data-action="add-admin-sack">Agregar costal</button>`;
+    const packageEditor = packages.length ? `<div class="admin-edit-list">${packages.map((item) => { const sack = sacks.find((candidate) => candidate.id === item.costal_id); return `<div class="admin-edit-row"><small>Costal: ${escapeHtml(sack?.codigo || "Sin código")}</small><input data-admin-package-code="${item.id}" data-admin-package-original="${escapeHtml(item.codigo)}" value="${escapeHtml(item.codigo)}" placeholder="Código JPE..."></div>`; }).join("")}</div>` : '<div class="empty-state">No hay paquetes registrados.</div>';
     const emptyEditor = emptySacks.length ? `<div class="admin-edit-list">${emptySacks.map((item) => `<div class="admin-edit-row admin-empty-row"><select data-admin-empty-type="${item.id}"><option value="CON_CODIGO" ${item.tipo === "CON_CODIGO" ? "selected" : ""}>Con código</option><option value="SIN_CODIGO" ${item.tipo === "SIN_CODIGO" ? "selected" : ""}>Sin código</option></select><input data-admin-empty-code="${item.id}" value="${escapeHtml(item.codigo || "")}" placeholder="Código"><input data-admin-empty-quantity="${item.id}" type="number" min="1" value="${Number(item.cantidad || 1)}"><input data-admin-empty-observation="${item.id}" value="${escapeHtml(item.observacion || "")}" placeholder="Observación"></div>`).join("")}</div>` : '<div class="empty-state">No hay sacos vacíos registrados.</div>';
     const sealEditor = seals.length ? `<div class="admin-edit-list">${seals.map((seal) => `<div class="admin-edit-row"><small>Precinto ${escapeHtml(seal.etapa)} ${Number(seal.numero)}</small><input data-admin-seal-code="${seal.id}" value="${escapeHtml(seal.codigo)}" placeholder="Código del precinto"></div>`).join("")}</div>` : '<div class="empty-state">No hay precintos registrados.</div>';
     return `<section class="detail-section admin-edit-section">
@@ -1757,12 +1757,23 @@
       </div>
       <div class="field"><label>Observaciones</label><textarea data-admin-operation-field="observaciones" rows="3">${escapeHtml(operation.observaciones || "")}</textarea></div>
       <h4 class="admin-edit-subtitle">Sacos y bultos recibidos</h4>${itemEditor}
-      <h4 class="admin-edit-subtitle">Costales</h4>${sackEditor}
+      ${INVERSE_TYPES.has(operation.tipo) ? `<h4 class="admin-edit-subtitle">Costales <small>(código opcional; vacío = sin código)</small></h4>${sackEditor}` : ""}
       <h4 class="admin-edit-subtitle">Paquetes <small>(deben comenzar con JPE)</small></h4>${packageEditor}
       <h4 class="admin-edit-subtitle">Sacos vacíos retornados</h4>${emptyEditor}
       <h4 class="admin-edit-subtitle">Precintos</h4>${sealEditor}
       <button type="button" class="button primary full" data-action="save-admin-record" data-admin-operation-id="${operation.id}">Guardar correcciones y registrar auditoría</button>
     </section>`;
+  }
+
+  function addAdminSackRow() {
+    const list = $("#adminSackEditorList");
+    if (!list) return;
+    list.querySelector(".empty-state")?.remove();
+    const row = document.createElement("div");
+    row.className = "admin-edit-row";
+    row.innerHTML = '<small>Nuevo costal · código opcional</small><input data-admin-new-sack-code placeholder="Código (opcional; vacío = sin código)" autocapitalize="characters">';
+    list.appendChild(row);
+    row.querySelector("input")?.focus();
   }
 
   async function saveAdminRecord(operationId) {
@@ -1776,8 +1787,8 @@
     if (invalidPackage) return toast("Todos los códigos de paquetes deben comenzar con JPE.", "error");
     const itemUpdates = $$('[data-admin-item-code]').map((input) => ({ id: input.dataset.adminItemCode, codigo: normalizeCode(input.value), tipo: $(`[data-admin-item-type="${input.dataset.adminItemCode}"]`).value }));
     if (itemUpdates.some((item) => !item.codigo)) return toast("Los códigos de sacos o bultos no pueden quedar vacíos.", "error");
-    const sackUpdates = $$('[data-admin-sack-code]').map((input) => ({ id: input.dataset.adminSackCode, codigo: normalizeCode(input.value) }));
-    if (sackUpdates.some((item) => !item.codigo)) return toast("Los códigos de costales no pueden quedar vacíos.", "error");
+    const sackUpdates = $$('[data-admin-sack-code]').map((input) => ({ id: input.dataset.adminSackCode, codigo: normalizeCode(input.value) || null }));
+    const newSackUpdates = $$('[data-admin-new-sack-code]').map((input) => ({ codigo: normalizeCode(input.value) || null }));
     const sealUpdates = $$('[data-admin-seal-code]').map((input) => ({ id: input.dataset.adminSealCode, codigo: normalizeCode(input.value) }));
     if (sealUpdates.some((item) => !item.codigo)) return toast("Los códigos de precintos no pueden quedar vacíos.", "error");
 
@@ -1818,6 +1829,21 @@
       for (const item of sackUpdates) {
         result = await db.from("costales").update({ codigo: item.codigo }).eq("id", item.id).eq("operacion_id", operationId);
         if (result.error) throw result.error;
+      }
+      if (newSackUpdates.length) {
+        const orderResult = await db.from("costales").select("orden").eq("operacion_id", operationId).order("orden", { ascending: false }).limit(1).maybeSingle();
+        if (orderResult.error) throw orderResult.error;
+        let nextOrder = Number(orderResult.data?.orden || 0) + 1;
+        for (const item of newSackUpdates) {
+          result = await db.from("costales").insert({
+            operacion_id: operationId,
+            codigo: item.codigo,
+            orden: nextOrder++,
+            estado: "CERRADO",
+            creado_por: state.profile.id,
+          }).select("id").single();
+          if (result.error) throw result.error;
+        }
       }
       for (const item of packageUpdates.filter((candidate) => candidate.codigo !== candidate.original)) {
         result = await db.from("paquetes").update({ codigo: item.codigo }).eq("id", item.id).eq("operacion_id", operationId);
@@ -1864,7 +1890,7 @@
       ];
       let html = `<div class="detail-grid">${details.map(([label, value]) => `<div class="detail-cell"><small>${escapeHtml(label)}</small><strong>${escapeHtml(value)}</strong></div>`).join("")}</div>`;
       if (itemsResult.data.length) html += `<section class="detail-section"><h3>Sacos y bultos (${itemsResult.data.length})</h3><div class="sack-packages">${itemsResult.data.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></section>`;
-      if (sacksResult.data.length) html += `<section class="detail-section"><h3>Costales y paquetes</h3>${sacksResult.data.map((sack) => { const packages = packagesResult.data.filter((item) => item.costal_id === sack.id); return `<div class="sack-card"><div class="sack-head"><strong>${escapeHtml(sack.codigo)}</strong><span class="record-tag">${packages.length} paquetes</span></div><div class="sack-packages">${packages.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></div>`; }).join("")}</section>`;
+      if (sacksResult.data.length) html += `<section class="detail-section"><h3>Costales y paquetes</h3>${sacksResult.data.map((sack) => { const packages = packagesResult.data.filter((item) => item.costal_id === sack.id); return `<div class="sack-card"><div class="sack-head"><strong>${escapeHtml(sack.codigo || "SIN CÓDIGO")}</strong><span class="record-tag">${packages.length} paquetes</span></div><div class="sack-packages">${packages.map((item) => escapeHtml(item.codigo)).join(" · ")}</div></div>`; }).join("")}</section>`;
       if (emptySacksResult.data.length) {
         const withCode = emptySacksResult.data.filter((item) => item.tipo === "CON_CODIGO");
         const withoutCode = emptySacksResult.data.filter((item) => item.tipo === "SIN_CODIGO");
@@ -2309,6 +2335,7 @@
         else if (action === "get-gps") await getGps();
         else if (action === "finish-operation") await finishOperation();
         else if (action === "delete-active-operation") await deleteOperation(state.operation?.id);
+        else if (action === "add-admin-sack") addAdminSackRow();
         else if (action === "save-admin-record") await saveAdminRecord(actionButton.dataset.adminOperationId);
         else if (action === "remove-transport-guide") await removeTransportGuide();
         else if (["refresh-records", "search-records"].includes(action)) await loadRecords();

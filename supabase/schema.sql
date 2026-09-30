@@ -129,7 +129,7 @@ create table if not exists public.items_recepcion (
 create table if not exists public.costales (
   id uuid primary key default gen_random_uuid(),
   operacion_id uuid not null references public.operaciones(id) on delete cascade,
-  codigo text not null,
+  codigo text,
   orden integer not null,
   estado text not null default 'ABIERTO' check (estado in ('ABIERTO', 'CERRADO')),
   creado_por uuid not null references auth.users(id) on delete restrict,
@@ -139,6 +139,11 @@ create table if not exists public.costales (
   updated_at timestamptz not null default now(),
   unique (operacion_id, codigo)
 );
+
+-- Un costal puede quedar identificado sin código cuando el Administrador
+-- completa una auditoría. La restricción de duplicidad sigue aplicando a
+-- los códigos informados y PostgreSQL permite varios valores NULL.
+alter table public.costales alter column codigo drop not null;
 
 create table if not exists public.paquetes (
   id uuid primary key default gen_random_uuid(),
@@ -685,6 +690,38 @@ create trigger costales_auditar_cambio_admin
 after update on public.costales
 for each row execute function public.registrar_cambio_admin();
 
+-- Registrar también los costales que el Administrador agrega durante una
+-- auditoría, incluidos los que no tienen código.
+create or replace function public.registrar_alta_costal_admin()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if auth.uid() is not null and public.rol_actual() = 'ADMINISTRADOR' then
+    insert into public.auditoria_cambios (
+      operacion_id, entidad, registro_id, campo, valor_anterior, valor_nuevo, resumen, cambiado_por
+    ) values (
+      new.operacion_id,
+      'COSTALES',
+      new.id,
+      'alta',
+      null,
+      coalesce(new.codigo, 'SIN_CODIGO'),
+      format('Costal agregado: %s', coalesce(new.codigo, 'Sin código')),
+      auth.uid()
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists costales_auditar_alta_admin on public.costales;
+create trigger costales_auditar_alta_admin
+after insert on public.costales
+for each row execute function public.registrar_alta_costal_admin();
+
 drop trigger if exists paquetes_auditar_cambio_admin on public.paquetes;
 create trigger paquetes_auditar_cambio_admin
 after update on public.paquetes
@@ -911,7 +948,10 @@ using (exists (
 drop policy if exists costales_insert on public.costales;
 create policy costales_insert on public.costales
 for insert to authenticated
-with check (creado_por = auth.uid() and public.puede_editar_operacion(operacion_id));
+with check (
+  creado_por = auth.uid()
+  and (public.puede_editar_operacion(operacion_id) or public.puede_editar_registro_admin(operacion_id))
+);
 
 drop policy if exists costales_update on public.costales;
 create policy costales_update on public.costales
